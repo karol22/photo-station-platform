@@ -16,7 +16,7 @@ Variables de entorno:
 
 | Variable | Por defecto | Uso |
 |---|---|---|
-| `PSP_VAR_DIR` | `var/control-plane` | Base SQLite (`control-plane.sqlite`) y activos (`assets/<hash>`) |
+| `PSP_VAR_DIR` | `var/` (raíz del repo); usa `<PSP_VAR_DIR>/control-plane` | Base SQLite (`control-plane.sqlite`) y activos (`assets/<hash>`) |
 | `PORT` | `4000` | Puerto HTTP |
 | `HOST` | `127.0.0.1` | Interfaz |
 | `PSP_SIMULATOR` | — | `1` arranca el simulador de flota al iniciar (también lo arranca `POST /fleet/simulate`) |

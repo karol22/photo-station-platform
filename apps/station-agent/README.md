@@ -19,7 +19,7 @@ Variables de entorno (todas con valor por defecto):
 | `PSP_STATION_MACHINE_ID` | `mch_demo_doc_01`       | Identidad de la máquina; también nombra `var/station/<machineId>/`    |
 | `PSP_STATION_AGENT_PORT` | `4100`                  | Puerto HTTP                                                           |
 | `PSP_CONTROL_PLANE_URL`  | `http://localhost:4000` | Base del control-plane (`/fleet/v1`)                                  |
-| `PSP_VAR_DIR`            | `./var`                 | Raíz de datos: base SQLite, sesiones, impresiones, activos, identidad |
+| `PSP_VAR_DIR`            | `var/` (raíz del repo)  | Raíz de estado; el agente usa `<PSP_VAR_DIR>/station/<machineId>` para base SQLite, sesiones, impresiones, activos e identidad |
 | `PSP_STATION_TECH_PIN`   | `2468`                  | PIN del panel técnico cuando `techPanel.pinHash` efectivo está vacío  |
 | `PSP_SOFTWARE_VERSION`   | `0.1.0`                 | Versión reportada en heartbeat y registros                            |
 
