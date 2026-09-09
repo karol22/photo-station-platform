@@ -8,8 +8,12 @@ import { drawText } from './font';
 import { FONT_GLYPH_HEIGHT } from './font';
 import { brightness, contrast, exposure, grayscale, saturation, temperature } from './ops/adjust';
 import { blend } from './ops/composite';
+import { duotone } from './ops/duotone';
 import { backgroundLighten, sharpen, vignette } from './ops/filters';
 import { crop, mirrorH, resize, rotate90, rotateSmall } from './ops/geometry';
+import { blurBackground, colorBackground, cutoutPerson, replaceBackground } from './background';
+import { smoothSkin } from './retouch';
+import type { Mask } from './mask';
 import { WHITE, cloneRaster } from './raster';
 import type { Raster } from './raster';
 
@@ -28,6 +32,12 @@ export type EditOpKey =
   | 'vignette'
   | 'preset'
   | 'backgroundAdjust'
+  | 'backgroundColor'
+  | 'backgroundBlur'
+  | 'backgroundReplace'
+  | 'cutout'
+  | 'duotone'
+  | 'smoothSkin'
   | 'frame'
   | 'sticker'
   | 'text'
@@ -89,6 +99,21 @@ export const EDIT_OPS: Record<EditOpKey, EditOpSpec> = {
   preset: spec('presets', { presetId: string() }),
   /** Aclara sólo fuera de una elipse central: aproximación local sin segmentación. */
   backgroundAdjust: spec('backgroundAdjust', { lighten: number(0, 1, 0.5) }),
+  /**
+   * Fondo de color plano con la máscara de recorte. Va por la herramienta `backgroundAdjust`, que sí es
+   * segura para documentos, porque un retrato de pasaporte pide exactamente eso: un fondo uniforme.
+   */
+  backgroundColor: spec('backgroundAdjust', { color: string('#FFFFFF'), feather: { kind: 'integer', min: 0, max: 8, default: 2 }, shrink: number(-0.45, 0.45, 0.08) }),
+  /** Desenfoca el fondo y deja a la persona nítida. Creativa: nunca en un documento. */
+  backgroundBlur: spec('backgrounds', { radius: { kind: 'integer', min: 0, max: 64, default: 8 }, feather: { kind: 'integer', min: 0, max: 8, default: 2 } }),
+  /** Sustituye el fondo por la escena de `assetId`; sin el activo la op se omite. */
+  backgroundReplace: spec('backgrounds', { assetId: string(), fit: { kind: 'string', allowed: ['cover', 'contain'], default: 'cover' }, feather: { kind: 'integer', min: 0, max: 8, default: 2 } }),
+  /** Deja sólo a la persona, con alfa real fuera de ella. */
+  cutout: spec('masks', { feather: { kind: 'integer', min: 0, max: 8, default: 2 }, shrink: number(-0.45, 0.45, 0.08) }),
+  /** Virado a dos tonos entre `shadow` y `highlight`. */
+  duotone: spec('filterIntensity', { shadow: string('#22304A'), highlight: string('#F2C27B'), amount: number(0, 1, 1) }),
+  /** Suavizado de piel que preserva bordes; con máscara en recursos actúa sólo sobre la persona. */
+  smoothSkin: spec('filterIntensity', { amount: number(0, 1, 0.5), radius: { kind: 'integer', min: 1, max: 8, default: 2 }, threshold: number(1, 128, 18) }),
   /** Sin x/y/w/h, el marco cubre toda la imagen. */
   frame: spec('frames', overlayParams()),
   /** Sin w/h, el sticker conserva su tamaño natural. */
@@ -178,6 +203,11 @@ export function expandEditOps(ops: EditOp[], presets?: Record<Id, EditingPreset>
 export type EditResources = {
   assets?: Record<Id, Raster>;
   presets?: Record<Id, EditingPreset>;
+  /**
+   * Máscara de recorte de persona del motor de visión, a cualquier resolución. Las ops de fondo y el
+   * recorte la necesitan: sin ella se omiten, igual que un overlay sin su activo.
+   */
+  mask?: Mask;
 };
 
 function numberParam(op: EditOp, key: EditOpKey, name: string): number | undefined {
@@ -198,6 +228,13 @@ function stringParam(op: EditOp, key: EditOpKey, name: string): string | undefin
   if (typeof raw === 'string') return raw;
   const def = EDIT_OPS[key].params[name]?.default;
   return typeof def === 'string' ? def : undefined;
+}
+
+/** Parámetros de calidad de borde comunes a las ops que usan la máscara. */
+function edgeOptions(op: EditOp, key: EditOpKey): { feather?: number; shrink?: number } {
+  const feather = numberParam(op, key, 'feather');
+  const shrink = EDIT_OPS[key].params['shrink'] ? numberParam(op, key, 'shrink') : undefined;
+  return { ...(feather === undefined ? {} : { feather }), ...(shrink === undefined ? {} : { shrink }) };
 }
 
 function applyOverlay(r: Raster, op: EditOp, key: 'frame' | 'sticker' | 'overlay', resources: EditResources | undefined): Raster {
@@ -250,6 +287,36 @@ function applyOne(r: Raster, op: EditOp, resources: EditResources | undefined): 
       return vignette(r, numberParam(op, key, 'strength') ?? 0);
     case 'backgroundAdjust':
       return backgroundLighten(r, numberParam(op, key, 'lighten') ?? 0);
+    case 'backgroundColor': {
+      const mask = resources?.mask;
+      if (!mask) return r;
+      return colorBackground(r, mask, stringParam(op, key, 'color') ?? '#FFFFFF', { edge: edgeOptions(op, key) });
+    }
+    case 'backgroundBlur': {
+      const mask = resources?.mask;
+      if (!mask) return r;
+      return blurBackground(r, mask, { radius: numberParam(op, key, 'radius') ?? 8, edge: edgeOptions(op, key) });
+    }
+    case 'backgroundReplace': {
+      const mask = resources?.mask;
+      const assetId = stringParam(op, key, 'assetId');
+      const scene = assetId === undefined ? undefined : resources?.assets?.[assetId];
+      if (!mask || !scene) return r;
+      const fit = stringParam(op, key, 'fit') === 'contain' ? 'contain' : 'cover';
+      return replaceBackground(r, mask, scene, { fit, edge: edgeOptions(op, key) });
+    }
+    case 'cutout': {
+      const mask = resources?.mask;
+      if (!mask) return r;
+      return cutoutPerson(r, mask, { edge: edgeOptions(op, key) });
+    }
+    case 'duotone':
+      return duotone(r, stringParam(op, key, 'shadow') ?? '#22304A', stringParam(op, key, 'highlight') ?? '#F2C27B', numberParam(op, key, 'amount') ?? 1);
+    case 'smoothSkin':
+      return smoothSkin(r, resources?.mask, numberParam(op, key, 'amount') ?? 0, {
+        radius: numberParam(op, key, 'radius') ?? 2,
+        threshold: numberParam(op, key, 'threshold') ?? 18,
+      });
     case 'preset':
       // Ya expandido por `expandEditOps`; un preset que llega aquí no tiene recursos y se omite.
       return r;

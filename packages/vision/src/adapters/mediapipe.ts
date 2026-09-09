@@ -16,6 +16,7 @@ import type {
 import { computeFrameMetrics } from '../metrics';
 import type { FaceAnalyzer, FaceLandmarks, FrameAnalysis, HeadPose, ImageDataLike, LandmarkPoint } from '../types';
 import { clamp01, degrees } from '../util';
+import { createWithDelegate, toImageSource, VideoTimestamps, type MediaPipeDelegate } from './frame';
 
 export interface MediaPipeAnalyzerOptions {
   /** URL del modelo `.task` (en el kiosco: `/models/face_landmarker.task`). */
@@ -26,7 +27,7 @@ export interface MediaPipeAnalyzerOptions {
   numFaces?: number;
 }
 
-export type MediaPipeDelegate = 'GPU' | 'CPU';
+export type { MediaPipeDelegate };
 
 export interface MediaPipeFaceAnalyzer extends FaceAnalyzer {
   readonly kind: 'mediapipe';
@@ -122,20 +123,11 @@ export function convertResult(result: FaceLandmarkerResult): FaceLandmarks[] {
   );
 }
 
-/** Construye la fuente de imagen que MediaPipe acepta. Requiere `ImageData` (navegador). */
-function toImageSource(frame: ImageDataLike): ImageData {
-  if (typeof ImageData === 'undefined') {
-    throw new Error('createMediaPipeAnalyzer requiere un navegador con ImageData; en Node usa MockFaceAnalyzer');
-  }
-  if (frame instanceof ImageData) return frame;
-  return new ImageData(frame.data as Uint8ClampedArray<ArrayBuffer>, frame.width, frame.height);
-}
-
 class MediaPipeAnalyzer implements MediaPipeFaceAnalyzer {
   readonly kind = 'mediapipe' as const;
   private landmarker: FaceLandmarker | undefined;
   private initializing: Promise<void> | undefined;
-  private lastTimestampMs = -1;
+  private readonly timestamps = new VideoTimestamps();
   private activeDelegate: MediaPipeDelegate | undefined;
 
   constructor(private readonly opts: MediaPipeAnalyzerOptions) {}
@@ -161,29 +153,23 @@ class MediaPipeAnalyzer implements MediaPipeFaceAnalyzer {
       outputFaceBlendshapes: true,
       outputFacialTransformationMatrixes: true,
     };
-    const create = (delegate: MediaPipeDelegate) =>
+    // Sin WebGL utilizable (o contexto ya tomado), `createWithDelegate` reintenta en CPU.
+    const { task, delegate } = await createWithDelegate((d) =>
       mp.FaceLandmarker.createFromOptions(fileset, {
         ...common,
-        baseOptions: { modelAssetPath: this.opts.modelUrl, delegate },
-      });
-    try {
-      this.landmarker = await create('GPU');
-      this.activeDelegate = 'GPU';
-    } catch {
-      // Sin WebGL utilizable (o contexto ya tomado): se reintenta en CPU.
-      this.landmarker = await create('CPU');
-      this.activeDelegate = 'CPU';
-    }
+        baseOptions: { modelAssetPath: this.opts.modelUrl, delegate: d },
+      }),
+    );
+    this.landmarker = task;
+    this.activeDelegate = delegate;
   }
 
   async analyze(frame: ImageDataLike, atMs: number): Promise<FrameAnalysis> {
     if (!this.landmarker) await this.init();
     const landmarker = this.landmarker;
     if (!landmarker) throw new Error('MediaPipe no inicializado');
-    // detectForVideo exige marcas de tiempo estrictamente crecientes.
-    const timestamp = atMs > this.lastTimestampMs ? atMs : this.lastTimestampMs + 1;
-    this.lastTimestampMs = timestamp;
-    const result = landmarker.detectForVideo(toImageSource(frame), timestamp);
+    const source = toImageSource(frame, 'createMediaPipeAnalyzer', 'MockFaceAnalyzer');
+    const result = landmarker.detectForVideo(source, this.timestamps.next(atMs));
     const faces = convertResult(result);
     const metrics = computeFrameMetrics(frame, faces[0]?.box);
     return { width: frame.width, height: frame.height, faces, metrics, atMs };
@@ -193,7 +179,7 @@ class MediaPipeAnalyzer implements MediaPipeFaceAnalyzer {
     this.landmarker?.close();
     this.landmarker = undefined;
     this.activeDelegate = undefined;
-    this.lastTimestampMs = -1;
+    this.timestamps.reset();
   }
 }
 

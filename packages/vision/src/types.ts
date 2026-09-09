@@ -201,3 +201,141 @@ export type MockFaceScript = (
   atMs: number,
   frame: { width: number; height: number },
 ) => FaceLandmarks[];
+
+/* ── Recorte de persona (`segmentation.person`) ─────────────────────────────── */
+
+/**
+ * Máscara de persona: **un byte por píxel**, 255 = persona, 0 = fondo. Los valores intermedios
+ * sólo aparecen tras `featherMask`, y significan mezcla parcial (canal alfa).
+ *
+ * La máscara **puede venir a menor resolución que el cuadro**: el modelo trabaja a 256×256 y el
+ * adaptador devuelve lo que el modelo produce, sin reescalar, porque reescalar en el adaptador
+ * cuesta y muchas veces el consumidor la dibuja estirada en la GPU. Quien la use debe escalarla
+ * con `scaleMask` o dejar que el lienzo la estire; nunca suponer que coincide con el cuadro.
+ */
+export interface SegmentationMask {
+  width: number;
+  height: number;
+  data: Uint8ClampedArray;
+}
+
+export interface PersonSegmenter {
+  readonly kind: 'mediapipe' | 'mock';
+  init(): Promise<void>;
+  segment(frame: ImageDataLike, atMs: number): Promise<SegmentationMask>;
+  dispose(): void;
+}
+
+/** Silueta del mock: cabeza y hombros. Posición y tamaño son inyectables para las pruebas. */
+export interface SilhouetteOptions {
+  /** Ancho de la máscara en px. Por defecto se deriva del cuadro (más chica, como el modelo real). */
+  width: number;
+  height: number;
+  /** Centro horizontal de la persona, 0..1 del ancho. */
+  cx: number;
+  /** Centro vertical del óvalo de la cabeza, 0..1 del alto. */
+  headCy: number;
+  /** Alto de la cabeza como proporción del alto de la máscara. */
+  headHeight: number;
+  /** Ancho de los hombros como proporción del ancho de la máscara. */
+  shoulderWidth: number;
+}
+
+/** Guion del segmentador mock: silueta para un instante y un tamaño de cuadro. */
+export type MockSilhouetteScript = (
+  atMs: number,
+  frame: { width: number; height: number },
+) => Partial<SilhouetteOptions>;
+
+/* ── Gestos de mano (`gesture.hands`) ───────────────────────────────────────── */
+
+/** Gestos que el recorrido usa. `none` = mano vista sin gesto reconocible. */
+export type GestureName =
+  | 'open_palm'
+  | 'victory'
+  | 'thumb_up'
+  | 'closed_fist'
+  | 'pointing_up'
+  | 'none';
+
+export interface HandGesture {
+  gesture: GestureName;
+  /** Confianza 0..1 del clasificador. */
+  score: number;
+  /** Caja de la mano, normalizada 0..1 respecto al cuadro. */
+  box: Box;
+}
+
+export interface GestureReading {
+  hands: HandGesture[];
+  atMs: number;
+}
+
+export interface GestureRecognizer {
+  readonly kind: 'mediapipe' | 'mock';
+  init(): Promise<void>;
+  recognize(frame: ImageDataLike, atMs: number): Promise<GestureReading>;
+  dispose(): void;
+}
+
+/** Guion del reconocedor mock: manos para un instante y un tamaño de cuadro. */
+export type MockGestureScript = (
+  atMs: number,
+  frame: { width: number; height: number },
+) => HandGesture[];
+
+export type GestureTriggerState = 'idle' | 'holding' | 'fired' | 'cooldown';
+
+export interface GestureTriggerUpdate {
+  state: GestureTriggerState;
+  /** 0..1: avance del sostén; en `cooldown`, avance del enfriamiento. */
+  progress: number;
+  /** true exactamente una vez por ciclo, en el estado `fired`. */
+  shouldCapture: boolean;
+  /** Gesto que sostiene el disparo, o `none` cuando no hay ninguno válido. */
+  gesture: GestureName;
+}
+
+/* ── Detección de rostros (`face.detection`) ────────────────────────────────── */
+
+export interface FaceDetectionResult {
+  /** Cajas normalizadas 0..1, en el orden que devuelve el modelo. */
+  faces: Box[];
+  atMs: number;
+}
+
+export interface FaceDetector {
+  readonly kind: 'mediapipe' | 'mock';
+  init(): Promise<void>;
+  detect(frame: ImageDataLike, atMs: number): Promise<FaceDetectionResult>;
+  dispose(): void;
+}
+
+/** Guion del detector mock: cajas para un instante y un tamaño de cuadro. */
+export type MockFaceBoxScript = (
+  atMs: number,
+  frame: { width: number; height: number },
+) => Box[];
+
+/**
+ * Consejo de encuadre de grupo. Sale de lo que la cámara ve; nunca de un número declarado por
+ * nadie (`docs/producto/00-que-es.md`: no se le pregunta a la gente cuántos son).
+ */
+export type FramingAdvice = 'ok' | 'step_back' | 'step_closer' | 'move_center' | 'nobody';
+
+export interface GroupFramingResult {
+  /** Caja que contiene a todo el grupo con margen, recortada al cuadro. */
+  box: Box;
+  advice: FramingAdvice;
+}
+
+export interface GroupFramingOptions {
+  /** Margen alrededor del grupo, proporción del lado mayor de la unión de rostros. */
+  margin?: number;
+  /** Por debajo de esta ocupación del cuadro el grupo se ve chico → `step_closer`. */
+  minCoverage?: number;
+  /** Por encima, o si la caja con margen ya no cabe, → `step_back`. */
+  maxCoverage?: number;
+  /** Descentrado tolerado del grupo respecto al centro del cuadro, 0..1. */
+  centerTolerance?: number;
+}

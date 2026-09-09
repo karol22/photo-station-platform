@@ -454,6 +454,14 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.failed.text': ['Ocurrió un problema. Tus fotos se eliminaron de esta máquina.', 'Something went wrong. Your photos were deleted from this machine.'],
 
   /* ---------- tiempo ---------- */
+  'kiosk.edit.filters': ['Filtros', 'Filters'],
+  'kiosk.edit.filter.none': ['Original', 'Original'],
+  'kiosk.edit.filter.vivid': ['Vivo', 'Vivid'],
+  'kiosk.edit.filter.warm': ['Cálido', 'Warm'],
+  'kiosk.edit.filter.cool': ['Frío', 'Cool'],
+  'kiosk.edit.filter.bw_contrast': ['Blanco y negro', 'Black and white'],
+  'kiosk.edit.filter.faded': ['Desvanecido', 'Faded'],
+  'kiosk.edit.filter.duotone': ['Dos tonos', 'Duotone'],
   'kiosk.handoff.coming_soon': ['Muy pronto podrás sumar esta visita a tu membresía', 'Soon you will be able to add this visit to your membership'],
   'kiosk.handoff.instruction.display_qr': ['¿Eres del Club? Escanea con la cámara de tu teléfono', 'In the Club? Scan with your phone camera'],
   'kiosk.handoff.instruction.scan_qr': ['Acerca tu tarjeta del Club o tu cupón a la cámara', 'Hold your Club card or coupon up to the camera'],

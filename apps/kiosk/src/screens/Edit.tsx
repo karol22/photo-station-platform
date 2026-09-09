@@ -9,6 +9,7 @@ import type { EditOp, EditingTool } from '@psp/contracts';
 import { EDIT_OPS, applyEditOps, editingPresetToOps, validateEditOps, type EditOpKey, type Raster } from '@psp/imaging';
 import { canvasToRaster, loadRaster, rasterToCanvas, rasterToDataUrl } from '@psp/imaging/browser';
 import { BigButton, Icon, IconButton, Spinner, Toggle, TouchSlider } from '@psp/ui';
+import { FilterStrip, filterOptions, type FilterOption } from '../components/FilterStrip';
 import { stationApi } from '../api/station';
 import { SessionFrame } from '../components/SessionFrame';
 import { useT } from '../i18n';
@@ -159,6 +160,25 @@ export function EditScreen() {
   };
 
   const has = (tool: EditingTool) => allowed.includes(tool);
+
+  // Los filtros con nombre son una combinación de ajustes ya existentes; se ofrecen sólo si el
+  // producto permite la herramienta que los agrupa. No hay una operación "filtro": un filtro es la
+  // cola de operaciones que agrega, así que el filtro activo se deduce de las operaciones reales y
+  // sobrevive a deshacer y rehacer sin estado paralelo que se pueda desincronizar.
+  const filters = useMemo(() => (has('filterIntensity') ? filterOptions([]) : []), [allowed]);
+
+  const endsWith = (list: EditOp[], tail: EditOp[]): boolean =>
+    tail.length > 0 &&
+    list.length >= tail.length &&
+    JSON.stringify(list.slice(list.length - tail.length)) === JSON.stringify(tail);
+
+  const activeFilter = filters.find((f) => endsWith(ops, f.ops))?.key ?? 'none';
+
+  const pickFilter = (option: FilterOption): void => {
+    const current = filters.find((f) => endsWith(ops, f.ops));
+    const manual = current ? ops.slice(0, ops.length - current.ops.length) : ops;
+    push([...manual, ...option.ops]);
+  };
   const canUndo = cursor > 0;
   const canRedo = cursor < history.length - 1;
 
@@ -170,6 +190,9 @@ export function EditScreen() {
           <div className="kiosk-preview" style={{ position: 'relative' }}>
             {preview || (showBefore && capture) ? <img src={showBefore ? capture?.url : preview} alt={t('kiosk.edit.title')} data-testid="edit-preview" /> : <Spinner size="xl" label={t('kiosk.common.loading')} />}
           </div>
+          {filters.length > 1 ? (
+            <FilterStrip source={original} options={filters} activeKey={typeof activeFilter === 'string' ? activeFilter : 'none'} onPick={pickFilter} />
+          ) : null}
           <div className="kiosk-row" style={{ justifyContent: 'center' }}>
             <IconButton label={t('kiosk.edit.undo')} icon={<Icon name="back" />} size="lg" variant="outline" showLabel disabled={!canUndo} onClick={() => setCursor(cursor - 1)} />
             <IconButton label={t('kiosk.edit.redo')} icon={<Icon name="forward" />} size="lg" variant="outline" showLabel disabled={!canRedo} onClick={() => setCursor(cursor + 1)} />

@@ -38,3 +38,8 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 32 | Estándar de repositorio listo para agentes guardado y referenciado | hecho | `docs/estandares/repositorio-listo-para-agentes.md` íntegro; citado en `AGENTS.md` §3.b, `README.md` y `docs/README.md` | 2026-09-09 |
 | 33 | Auditoría contra las 24 guías del estándar | hecho | `docs/estandares/auditoria.md`: 12 cumple, 9 parcial, 3 pendiente, con los tres huecos que cerrar primero | 2026-09-09 |
 | 34 | Catálogo de capacidades de visión con paridad Android | hecho | `packages/contracts/src/vision-effects.ts`; modelos de segmentación, gestos y detección descargados | 2026-09-09 |
+| 35 | Visión en el aparato: recorte de persona, gestos y detección de rostros | hecho | `pnpm --filter @psp/vision test` → 70 pruebas; `capabilityReport()` declara la clase equivalente de Android por capacidad | 2026-09-09 |
+| 36 | Efectos sobre la foto: fondo, elementos pegados a la cara, retoque y filtros | hecho | `pnpm --filter @psp/imaging test` → 114 pruebas; composición con alfa gradual, no umbral duro | 2026-09-09 |
+| 37 | Tira de filtros con vista previa sobre la foto de la persona | hecho | `apps/kiosk/src/components/FilterStrip.tsx`; miniaturas a 132 px, una por cuadro de animación | 2026-09-09 |
+| 38 | Los cuatro modelos se descargan con un solo guion | hecho | `scripts/fetch-models.sh` y `apps/kiosk/public/models/README.md` con la tabla de los cuatro | 2026-09-09 |
+| 39 | Pendiente: efectos de fondo y disparo por gesto en el kiosco | pendiente | los puertos y efectos existen; falta el bucle que los une en la pantalla de captura | |

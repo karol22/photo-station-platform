@@ -23,6 +23,7 @@ export {
   sharpen,
   vignette,
   blurBox,
+  duotone,
   backgroundLighten,
   DEFAULT_SUBJECT_ELLIPSE,
   blend,
@@ -88,6 +89,30 @@ export {
   QR_MASK_COUNT,
 } from './qr';
 export type { QrCode, EncodeQrOptions, QrDecoded, QrEcc, QrMode } from './qr';
+
+// Máscara de recorte de persona y calidad del borde
+export { createMask, maskAt, resampleMask, refineMaskEdge, prepareMask, edgeSoftness, DEFAULT_EDGE } from './mask';
+export type { Mask, EdgeOptions } from './mask';
+
+// Efectos de fondo
+export { replaceBackground, blurBackground, colorBackground, cutoutPerson, compositeWithMask } from './background';
+export type { BackgroundOptions, ReplaceBackgroundOptions, BlurBackgroundOptions } from './background';
+
+// Elementos pegados a la cara
+export { anchorProp, drawProp, drawPropInto } from './props';
+export type { Point2, FaceLandmarks, PropAnchor, PropSpec, PropPlacement, DrawPropOptions, RasterSize } from './props';
+
+// Retoque
+export { smoothSkin } from './retouch';
+export type { SmoothSkinOptions } from './retouch';
+
+// Filtros con nombre
+export { COLOR_FILTERS, COLOR_FILTER_KEYS, isColorFilterKey, colorFilterOps } from './color-filters';
+export type { ColorFilterKey } from './color-filters';
+
+// Registro de efectos
+export { EFFECT_IMPLEMENTATIONS, EFFECT_KEYS, applyEffect, effectInfo, liveEffects, documentSafeEffects } from './effects';
+export type { EffectImplementation, EffectInput, EffectCost, EffectStage } from './effects';
 
 // Catálogo
 export { CATALOG } from './catalog';

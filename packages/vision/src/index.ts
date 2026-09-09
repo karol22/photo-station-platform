@@ -51,4 +51,42 @@ export { MockFaceAnalyzer, defaultMockScript } from './mock-analyzer';
 export { SAMPLE_DOCUMENT_SPEC, sampleDocumentSpec } from './spec-fixture';
 export type { DocumentSpecOverrides } from './spec-fixture';
 
+export {
+  MASK_PERSON_THRESHOLD,
+  createMask,
+  featherMask,
+  maskBounds,
+  maskCoverage,
+  scaleMask,
+} from './mask';
+
+export {
+  DEFAULT_SILHOUETTE,
+  MOCK_MASK_MAX_SIDE,
+  MockPersonSegmenter,
+  defaultMaskSize,
+  personSilhouetteMask,
+} from './segmentation';
+
+export { GestureTriggerController, MockGestureRecognizer, emptyGestureScript } from './gestures';
+export type { GestureTriggerOptions } from './gestures';
+
+export {
+  GROUP_FRAMING_DEFAULTS,
+  MockFaceDetector,
+  defaultFaceBoxScript,
+  groupFraming,
+} from './face-detection';
+
+export { FramePacer, lerp, lerpBox } from './pacing';
+export type { FramePacerOptions } from './pacing';
+
+export { capabilityBinding, capabilityReport } from './capabilities';
+export type {
+  CapabilityAdapterInfo,
+  CapabilityAndroidInfo,
+  CapabilityBinding,
+  CapabilityStatus,
+} from './capabilities';
+
 export { CATALOG } from './catalog';

@@ -231,7 +231,7 @@ export function CaptureScreen() {
           {pose && !isDocument ? (
             <div className="kiosk-card">
               <h2 style={{ margin: 0 }}>{tl(pose.name) || t('kiosk.common.photo_n_of_m', { n: currentIndex + 1, m: total })}</h2>
-              <p className="kiosk-lead" style={{ marginBottom: 0 }}>{tl(pose.instruction) || t('kiosk.capture.pose_intro')}</p>
+              <p className="kiosk-lead" style={{ marginBottom: 0 }}>{tl(pose.instruction) || t('kiosk.capture.pose_intro', { n: currentIndex + 1, m: total })}</p>
               {pose.guidance?.expectedPeople ? <p className="kiosk-small kiosk-muted">{t('kiosk.capture.expected_people', { n: pose.guidance.expectedPeople })}</p> : null}
             </div>
           ) : null}

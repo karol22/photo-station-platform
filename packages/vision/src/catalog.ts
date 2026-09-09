@@ -2,6 +2,7 @@
  * Entradas de @psp/vision para el catálogo descubrible (`pnpm catalog`). Lo no registrado no existe.
  */
 import type { CatalogEntry } from '@psp/contracts';
+import { capabilityReport } from './capabilities';
 import { VISION_CRITERIA } from './criteria';
 
 const PACKAGE = '@psp/vision';
@@ -35,7 +36,7 @@ export const CATALOG: CatalogEntry[] = [
     key: 'vision',
     name: PACKAGE,
     description:
-      'Análisis facial local: puertos y adaptadores, métricas de frame, cumplimiento documental, guía de poses y auto-captura.',
+      'Visión en el dispositivo: puertos y adaptadores para rostro, recorte de persona, gestos de mano y detección de rostros; métricas de frame, cumplimiento documental, encuadre de grupo, auto-captura y disparo por gesto.',
     package: PACKAGE,
     status: 'stable',
     docs: 'packages/vision/README.md',
@@ -64,11 +65,88 @@ export const CATALOG: CatalogEntry[] = [
   {
     kind: 'adapter',
     key: 'vision.mock',
-    name: 'Analizador mock',
+    name: 'Mocks deterministas',
     description:
-      'Rostros sintéticos deterministas y métricas ideales o calculadas; para pruebas, máquinas sin cámara y la cámara sintética del kiosco.',
+      'MockFaceAnalyzer, MockPersonSegmenter, MockGestureRecognizer y MockFaceDetector: rostros sintéticos, silueta ovalada, guion de gestos y cajas inyectables, sin aleatoriedad ni reloj propio; para pruebas, máquinas sin cámara y la cámara sintética del kiosco.',
     package: PACKAGE,
     status: 'mock',
     docs: 'packages/vision/README.md',
   },
+  {
+    kind: 'adapter',
+    key: 'vision.segmenter',
+    name: 'MediaPipe Image Segmenter',
+    description:
+      'Recorte de persona con selfie_segmenter.tflite en modo VIDEO (GPU con reintento en CPU). La máscara llega a la resolución del modelo, no a la del cuadro. Import dinámico desde @psp/vision/segmenter.',
+    package: PACKAGE,
+    status: 'stable',
+    docs: 'packages/vision/docs/mediapipe.md',
+  },
+  {
+    kind: 'adapter',
+    key: 'vision.gestures',
+    name: 'MediaPipe Gesture Recognizer',
+    description:
+      'Gestos de mano con gesture_recognizer.task en modo VIDEO (GPU con reintento en CPU). Import dinámico desde @psp/vision/gestures.',
+    package: PACKAGE,
+    status: 'stable',
+    docs: 'packages/vision/docs/mediapipe.md',
+  },
+  {
+    kind: 'adapter',
+    key: 'vision.faceDetector',
+    name: 'MediaPipe Face Detector',
+    description:
+      'Cajas de rostro con blaze_face_short_range.tflite en modo VIDEO (GPU con reintento en CPU). Import dinámico desde @psp/vision/face-detector.',
+    package: PACKAGE,
+    status: 'stable',
+    docs: 'packages/vision/docs/mediapipe.md',
+  },
+  {
+    kind: 'port',
+    key: 'vision.port.FaceAnalyzer',
+    name: 'Puerto FaceAnalyzer',
+    description: 'analyze(frame, atMs) → rostros con malla, blendshapes y pose de cabeza, más métricas del cuadro.',
+    package: PACKAGE,
+    status: 'stable',
+    docs: 'packages/vision/README.md',
+  },
+  {
+    kind: 'port',
+    key: 'vision.port.PersonSegmenter',
+    name: 'Puerto PersonSegmenter',
+    description: 'segment(frame, atMs) → máscara de persona de un byte por píxel (255 persona, 0 fondo), posiblemente más chica que el cuadro.',
+    package: PACKAGE,
+    status: 'stable',
+    docs: 'packages/vision/README.md',
+  },
+  {
+    kind: 'port',
+    key: 'vision.port.GestureRecognizer',
+    name: 'Puerto GestureRecognizer',
+    description: 'recognize(frame, atMs) → manos con gesto, confianza y caja; GestureTriggerController las convierte en disparo.',
+    package: PACKAGE,
+    status: 'stable',
+    docs: 'packages/vision/README.md',
+  },
+  {
+    kind: 'port',
+    key: 'vision.port.FaceDetector',
+    name: 'Puerto FaceDetector',
+    description: 'detect(frame, atMs) → cajas de rostro normalizadas; groupFraming las convierte en encuadre y consejo.',
+    package: PACKAGE,
+    status: 'stable',
+    docs: 'packages/vision/README.md',
+  },
+  ...capabilityReport().map(
+    (c): CatalogEntry => ({
+      kind: 'capability',
+      key: `vision.${c.key}`,
+      name: c.name,
+      description: `${c.notes} Puerto: ${c.port ?? 'ninguno'}; adaptador: ${c.adapter?.name ?? 'ninguno'}; Android: ${c.android.className ?? 'sin equivalente'}.`,
+      package: PACKAGE,
+      status: c.status === 'ready' ? 'stable' : 'planned',
+      docs: 'packages/vision/docs/mediapipe.md',
+    }),
+  ),
 ];
