@@ -96,6 +96,9 @@ importers:
       '@psp/bundler':
         specifier: workspace:*
         version: link:../../packages/bundler
+      '@psp/catalog':
+        specifier: workspace:*
+        version: link:../../packages/catalog
       '@psp/config-engine':
         specifier: workspace:*
         version: link:../../packages/config-engine
