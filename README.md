@@ -34,4 +34,6 @@ pnpm dev         # control-plane :4000 · station-agent :4100 · kiosk :5173 · 
 | `ops/` | Estado en disco para agentes: progreso, artefactos, libro mayor, evaluaciones |
 
 ## Cómo evoluciona
-El repositorio está diseñado para desarrollarse con agentes de IA: `AGENTS.md` es el único punto de entrada, el estado vive en `ops/`, las compuertas (`pnpm gate:quick`) comprueban hechos, y la documentación se mantiene en presente. Ver `docs/README.md` y `docs/arquitectura/00-vision-general.md`.
+El repositorio está diseñado para desarrollarse con agentes de IA: `AGENTS.md` es el único punto de entrada, el estado vive en `ops/`, las compuertas (`pnpm gate:quick`) comprueban hechos, y la documentación se mantiene en presente.
+
+Esas prácticas siguen un estándar explícito, [Repositorio listo para agentes](docs/estandares/repositorio-listo-para-agentes.md), y la medición de este repositorio contra sus veinticuatro guías está en [la auditoría](docs/estandares/auditoria.md). Ver también `docs/README.md` y `docs/arquitectura/00-vision-general.md`.

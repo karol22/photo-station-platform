@@ -242,6 +242,9 @@ export const validationAtEdges: Gate = {
   },
 };
 
+/** Documentos que se conservan tal cual vienen de fuera y no se reescriben. */
+const VERBATIM_DOCS = ['requisitos-producto.md', 'estandares/repositorio-listo-para-agentes.md'];
+
 /** 10. Documentación en presente. */
 export const docsPresentTense: Gate = {
   key: 'docs-present-tense',
@@ -252,7 +255,9 @@ export const docsPresentTense: Gate = {
     const forbidden = [/\bantes era\b/i, /\banteriormente\b/i, /\bpreviously\b/i, /\bused to\b/i];
     const problems: string[] = [];
     const files = [
-      ...walk(root, 'docs', (p) => p.endsWith('.md') && !p.endsWith('requisitos-producto.md')),
+      // Se excluyen los documentos que se conservan íntegros de una fuente externa: la regla del
+      // presente gobierna la prosa propia, no lo que sólo se guarda tal cual.
+      ...walk(root, 'docs', (p) => p.endsWith('.md') && !VERBATIM_DOCS.some((v) => p.endsWith(v))),
       ...workspaceDirs(root).map((d) => `${d}/README.md`).filter((f) => exists(root, f)),
       'AGENTS.md',
       'README.md',

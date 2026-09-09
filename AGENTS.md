@@ -7,13 +7,13 @@ Eres un agente que llega en frío. Este archivo te dice qué leer y qué reglas 
 | Modo | Cuándo | Lista de lectura |
 |---|---|---|
 | **A · Usar el producto** | Te piden correrlo, demostrarlo, probar un flujo, sembrar datos, simular una flota o un despliegue | `docs/producto/00-que-es.md` → `docs/operacion/como-correr.md` → `docs/arquitectura/00-vision-general.md` §1, §4.3, §11 → `pnpm catalog` |
-| **B · Cambiar el repo** | Te piden implementar, corregir, refactorizar, documentar o extender | `docs/producto/00-que-es.md` → `ops/state/PROGRESS.md` → `docs/arquitectura/00-vision-general.md` completo → `docs/trazabilidad.md` → el `README.md` del paquete que vas a tocar → `packages/contracts/src` de lo que uses |
+| **B · Cambiar el repo** | Te piden implementar, corregir, refactorizar, documentar o extender | `docs/producto/00-que-es.md` → `docs/producto/03-en-que-trabajar-ahora.md` → `ops/state/PROGRESS.md` → `docs/arquitectura/00-vision-general.md` completo → `docs/trazabilidad.md` → el `README.md` del paquete que vas a tocar → `packages/contracts/src` de lo que uses |
 
 Si no sabes el modo, es **B**. Si te piden "hacer que funcione X" y X ya existe según `docs/trazabilidad.md`, es **A**.
 
 ## 1. Qué es esto
 
-**Lee `docs/producto/00-que-es.md` antes de suponer nada del producto.** Manda sobre cualquier otra fuente, incluido este archivo. En corto: cabina de autoservicio en centro comercial, la cámara está dentro, el cliente paga ahí, no hay app ni cuenta ni contraseña, y **las fotografías nunca salen de la máquina** salvo un tránsito consentido para procesamiento pesado que no las almacena.
+**Lee `docs/producto/00-que-es.md` y `docs/producto/03-en-que-trabajar-ahora.md` antes de suponer nada del producto.** Manda sobre cualquier otra fuente, incluido este archivo. En corto: cabina de autoservicio en centro comercial, la cámara está dentro, el cliente paga ahí, no hay app ni cuenta ni contraseña, y **las fotografías nunca salen de la máquina** salvo un tránsito consentido para procesamiento pesado que no las almacena. **La máquina física todavía no existe: no trabajes en papel, impresión ni gabinete.**
 
 Plataforma multi-tenant para estaciones fotográficas de autoservicio. Cuatro apps (`control-plane`, `station-agent`, `kiosk`, `admin`) y paquetes puros compartidos. Requisitos de producto en `docs/requisitos-producto.md`; arquitectura en `docs/arquitectura/`. Español es el idioma de documentación y de la UI por defecto; el código y sus identificadores están en inglés.
 
@@ -39,6 +39,10 @@ Las compuertas viven en `tools/gates/` y bloquean. Lo que sigue es un hecho veri
 8. Cada entrada de `ops/state/PROGRESS.md` tiene evidencia: un comando, una ruta o una prueba.
 9. Los mensajes de contratos de red se validan con zod al entrar (`safeParse`) en control-plane, station-agent y kiosco.
 10. La documentación está en presente: no contiene las frases de bitácora que enumera la compuerta `docs-present-tense` en `tools/gates/src/gates.ts`.
+
+## 3.b Cómo se opera este repositorio
+
+Este repositorio sigue el estándar de repositorio listo para agentes: `docs/estandares/repositorio-listo-para-agentes.md`. Explica por qué existen la entrada única, el estado en disco, las compuertas de hechos, el aislamiento por worktree y el ciclo de datos. Si vas a cambiar **cómo se trabaja aquí** (no el producto), léelo antes; la medición actual está en `docs/estandares/auditoria.md`.
 
 ## 4. Reglas de criterio (las lees, las aplicas, nadie las ejecuta por ti)
 

@@ -11,6 +11,7 @@ Lee esto antes que nada: manda sobre cualquier otra fuente del repositorio.
 | [Qué es Una de Todos](producto/00-que-es.md) | Qué es el producto y qué no es, identidad de marca, paleta, la familia de formas, línea de productos y las suposiciones que no deben repetirse |
 | [El recorrido del cliente](producto/01-flujo-de-sesion.md) | Los cinco pasos canónicos de la sesión y su distancia con lo implementado |
 | [Decisiones abiertas](producto/02-decisiones-abiertas.md) | Lo que aún no está decidido, con la restricción que ya sí lo está |
+| [En qué trabajar ahora](producto/03-en-que-trabajar-ahora.md) | La máquina no existe: qué se construye hoy, qué se pospone y la restricción de correr sin conexión en Android |
 
 ## Requisitos y trazabilidad
 
@@ -47,3 +48,10 @@ Lee esto antes que nada: manda sobre cualquier otra fuente del repositorio.
 | [`operacion/como-correr.md`](./operacion/como-correr.md) | Cómo levantar el monorepo en desarrollo: comandos, puertos, credenciales demo |
 | [`operacion/secretos.md`](./operacion/secretos.md) | Cómo se resuelven y dónde viven los secretos fuera del repositorio |
 | [`operacion/trabajo-con-agentes.md`](./operacion/trabajo-con-agentes.md) | Convenciones para agentes que trabajan en este repositorio |
+
+## Cómo se opera este repositorio
+
+| Documento | Qué contiene |
+|---|---|
+| [Repositorio listo para agentes](estandares/repositorio-listo-para-agentes.md) | El estándar que sigue este repositorio para poder ser operado por agentes de IA. Se conserva íntegro y en su idioma original |
+| [Auditoría contra el estándar](estandares/auditoria.md) | Qué cumple hoy este repositorio de las veinticuatro guías, con evidencia, y qué falta |

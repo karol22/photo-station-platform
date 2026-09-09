@@ -35,3 +35,6 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 29 | Marca Una de Todos en el dataset demo | hecho | `pnpm psp bundle` muestra publicName Una de Todos, paleta propia y retención `none`; 26 activos | 2026-09-09 |
 | 30 | La tira social es imprimible en la máquina por defecto | hecho | las tiras 2x6 se cortan de una hoja 4x6; `prd_tira_amigos` disponible en `mch_demo_doc_01` | 2026-09-09 |
 | 31 | Las siluetas de pose no llevan texto | hecho | la vista de cámara va en espejo y el texto salía invertido; la instrucción vive en la interfaz | 2026-09-09 |
+| 32 | Estándar de repositorio listo para agentes guardado y referenciado | hecho | `docs/estandares/repositorio-listo-para-agentes.md` íntegro; citado en `AGENTS.md` §3.b, `README.md` y `docs/README.md` | 2026-09-09 |
+| 33 | Auditoría contra las 24 guías del estándar | hecho | `docs/estandares/auditoria.md`: 12 cumple, 9 parcial, 3 pendiente, con los tres huecos que cerrar primero | 2026-09-09 |
+| 34 | Catálogo de capacidades de visión con paridad Android | hecho | `packages/contracts/src/vision-effects.ts`; modelos de segmentación, gestos y detección descargados | 2026-09-09 |

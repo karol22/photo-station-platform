@@ -14,6 +14,7 @@ export * from './campaigns';
 export * from './releases';
 export * from './sessions';
 export * from './customer';
+export * from './vision-effects';
 export * from './ops';
 export * from './metrics';
 export * from './bundle';

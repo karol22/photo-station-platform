@@ -81,7 +81,7 @@ La familia aparece en el gabinete, en la pantalla, en las tiras impresas, en los
 
 ## Familia de productos
 
-Variantes comerciales de la estación. Cada una es una configuración distinta de la misma plataforma.
+Variantes comerciales de la estación, como concepto. Cada una sería una configuración distinta de la misma plataforma. Los detalles de cada variante se deciden cuando exista hardware.
 
 | Variante | Promesa |
 |---|---|
@@ -96,9 +96,13 @@ Variantes comerciales de la estación. Cada una es una configuración distinta d
 
 El Club es la forma de pertenecer: más fotos, más gente, más historias. La tarjeta es física y se identifica con un gesto de segundos, sin cuenta ni contraseña. Los detalles de cómo se lee esa tarjeta viven en `docs/arquitectura/decisiones/ADR-011-identidad-efimera-de-cliente.md`.
 
+## Prioridad actual
+
+La máquina física no existe todavía. Qué se trabaja y qué se pospone está en `docs/producto/03-en-que-trabajar-ahora.md`, y esa prioridad manda sobre este documento en caso de conflicto.
+
 ## Piezas físicas
 
-Gabinete modular con superficies brillantes y redondeadas, luz cálida que invita, piso a cuadros como detalle icónico y materiales duraderos para uso real. Rótulo superior iluminado y paneles gráficos intercambiables en las cuatro caras.
+Referencia visual de la marca, no especificación de ingeniería. Gabinete modular con superficies brillantes y redondeadas, luz cálida que invita, piso a cuadros como detalle icónico y materiales duraderos para uso real. Rótulo superior iluminado y paneles gráficos intercambiables en las cuatro caras.
 
 Impresos y coleccionables: tiras de cuatro fotos, stickers de la familia y bolsa de tela.
 
