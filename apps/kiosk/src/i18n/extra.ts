@@ -264,7 +264,7 @@ export const EXTRA_TABLE: Record<string, Pair> = {
 
   /* ---------- revisión ---------- */
   'kiosk.review.title': ['¿Te gusta esta foto?', 'Do you like this photo?'],
-  'kiosk.review.title_set': ['Revisa tus fotos', 'Review your photos'],
+  'kiosk.review.title_set': ['¡Qué buena una de todos!', 'What a great one of everyone!'],
   'kiosk.review.approved': ['Criterios cumplidos', 'Checks passed'],
   'kiosk.review.warnings': ['Advertencias', 'Warnings'],
   'kiosk.review.no_warnings': ['Sin advertencias', 'No warnings'],
@@ -431,6 +431,7 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.ai.result': ['Resultado', 'Result'],
 
   /* ---------- finalización ---------- */
+  'kiosk.done.ready': ['Listo para llevar', 'Ready to take with you'],
   'kiosk.done.title': ['¡Listo!', 'All done!'],
   'kiosk.done.thanks': ['Gracias por usar esta estación.', 'Thank you for using this station.'],
   'kiosk.done.print_status': ['Impresión', 'Print'],
@@ -453,6 +454,15 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.failed.text': ['Ocurrió un problema. Tus fotos se eliminaron de esta máquina.', 'Something went wrong. Your photos were deleted from this machine.'],
 
   /* ---------- tiempo ---------- */
+  'kiosk.group.title': ['¿Cuántos son hoy?', 'How many are you today?'],
+  'kiosk.group.subtitle': ['Elige y armamos la foto para todos.', 'Pick one and we set the photo up for everyone.'],
+  'kiosk.group.solo': ['Yo', 'Just me'],
+  'kiosk.group.duo': ['Dos', 'Two of us'],
+  'kiosk.group.squad': ['Tres o cuatro', 'Three or four'],
+  'kiosk.group.crew': ['Cinco o más', 'Five or more'],
+  'kiosk.group.none': ['Hoy no disponible', 'Not available today'],
+  'kiosk.group.see_all': ['Ver todo lo que hay', 'See everything'],
+  'kiosk.group.hint': ['Siempre cabe uno más.', 'There is always room for one more.'],
   'kiosk.handoff.coming_soon': ['Muy pronto podrás sumar esta visita a tu membresía', 'Soon you will be able to add this visit to your membership'],
   'kiosk.handoff.instruction.display_qr': ['¿Eres del Club? Escanea con la cámara de tu teléfono', 'In the Club? Scan with your phone camera'],
   'kiosk.handoff.instruction.scan_qr': ['Acerca tu tarjeta del Club o tu cupón a la cámara', 'Hold your Club card or coupon up to the camera'],

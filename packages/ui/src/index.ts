@@ -19,6 +19,7 @@ export {
   toHex,
 } from './theme';
 export type { BrandingPalette, BrandingPaletteKey, ContrastOptions, Rgb, ThemeRoot } from './theme';
+export { readBrandingAccents, DEFAULT_ACCENTS } from './theme';
 export { ThemeProvider, useTheme } from './ThemeProvider';
 export type { ThemeContextValue, ThemeMode, ThemeProviderProps } from './ThemeProvider';
 
@@ -39,6 +40,8 @@ export type { CardProps } from './shared/Card';
 // Kiosco
 export { KioskShell } from './kiosk/KioskShell';
 export type { KioskShellProps } from './kiosk/KioskShell';
+export { BlobFace, BLOB_VARIANTS } from './kiosk/BlobFace';
+export type { BlobExpression, BlobFaceProps, BlobVariant } from './kiosk/BlobFace';
 export { BigButton } from './kiosk/BigButton';
 export type { BigButtonProps, BigButtonSize, BigButtonVariant } from './kiosk/BigButton';
 export { ChoiceCard, CHOICE_STATE_ICON, choiceStateFromAvailability } from './kiosk/ChoiceCard';

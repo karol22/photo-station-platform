@@ -125,6 +125,7 @@ export const CONFIG_KEYS: ConfigKeyDefinition[] = [
   { key: 'branding.palette.accent', type: 'color', group: 'branding', name: L('Color de acento', 'Accent color'), default: '#FFB020', editableAt: fromOrg, sensitive: false },
   { key: 'branding.palette.background', type: 'color', group: 'branding', name: L('Fondo', 'Background'), default: '#F6F7FB', editableAt: fromOrg, sensitive: false },
   { key: 'branding.palette.text', type: 'color', group: 'branding', name: L('Texto', 'Text'), default: '#0B1B3F', editableAt: fromOrg, sensitive: false },
+  { key: 'branding.palette.accents', type: 'stringList', group: 'branding', name: L('Colores de acento', 'Accent colors'), description: L('Colores vivos de la marca para elementos decorativos e ilustración.', 'Brand accent colors for decorative and illustrated elements.'), default: ['#FF6FA5', '#FF7A3C', '#FFC24A', '#5FCB92', '#4C86E8', '#A87BE8'], editableAt: fromOrg, sensitive: false },
   { key: 'branding.attractImageAssetIds', type: 'stringList', group: 'branding', name: L('Imágenes de atracción', 'Attract images'), default: [], editableAt: fromOrg, sensitive: false },
   { key: 'branding.tone', type: 'enum', group: 'branding', name: L('Tono textual', 'Text tone'), default: 'friendly', editableAt: fromOrg, enumValues: ['friendly', 'formal', 'playful'], sensitive: false },
   { key: 'branding.footerText', type: 'text', group: 'branding', name: L('Pie de pantalla', 'Footer text'), default: '', editableAt: fromOrg, sensitive: false },

@@ -8,6 +8,7 @@ import { BigButton, ChoiceCard, Icon, Toggle } from '@psp/ui';
 import { Shell } from '../components/Shell';
 import { useT } from '../i18n';
 import { finalPrice, groupByCategory, listPrice, productViews, type ProductView } from '../lib/products';
+import { optionForSize, viewsForGroup } from '../lib/groups';
 import { ROUTES, productRoute } from '../session/flow';
 import { useKioskStore } from '../store';
 import { configBool, resolveAssetUrl } from '../theme/assets';
@@ -16,7 +17,18 @@ export function HomeScreen() {
   const { t, tl, money } = useT();
   const navigate = useNavigate();
   const bundle = useKioskStore((s) => s.bundle);
-  const views = useMemo(() => productViews(bundle), [bundle]);
+  // El catálogo respeta la respuesta del paso anterior: si dijo cuántos son, no le ofrecemos
+  // experiencias que no le sirven. Puede quitar el filtro y ver todo.
+  const groupSize = useKioskStore((s) => s.groupSize);
+  const setGroupSize = useKioskStore((s) => s.setGroupSize);
+  const option = useMemo(() => optionForSize(groupSize), [groupSize]);
+  const allViews = useMemo(() => productViews(bundle), [bundle]);
+  const views = useMemo(() => {
+    const filtered = viewsForGroup(bundle, allViews, option);
+    // Un filtro que deja la pantalla vacía no ayuda a nadie: en ese caso se muestra todo.
+    return filtered.length > 0 ? filtered : allViews;
+  }, [bundle, allViews, option]);
+  const filtering = option !== undefined && views.length < allViews.length;
   const groups = useMemo(() => groupByCategory(views), [views]);
   const simplified = configBool(bundle, 'kiosk.simplifiedMode');
   const [accessible, setAccessible] = useState(false);
@@ -55,6 +67,14 @@ export function HomeScreen() {
       }
     >
       <h1 className="kiosk-title">{t('kiosk.home.title')}</h1>
+      {filtering ? (
+        <div className="kiosk-home__filter">
+          <span className="kiosk-lead" style={{ margin: 0 }}>{t(`kiosk.group.${option?.key ?? 'solo'}`)}</span>
+          <button type="button" className="kiosk-chip" onClick={() => setGroupSize(undefined)} data-testid="home-clear-group">
+            {t('kiosk.group.see_all')}
+          </button>
+        </div>
+      ) : null}
       {!simplified ? (
         <div className="kiosk-row" style={{ marginBottom: 16 }}>
           <Toggle checked={accessible} onChange={setAccessible} label={t('kiosk.home.more_time')} description={t('kiosk.home.more_time_on')} />

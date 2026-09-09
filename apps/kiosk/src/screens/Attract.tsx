@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BigButton, Icon, Notice, StatusPill } from '@psp/ui';
+import { BigButton, BlobFace, BLOB_VARIANTS, Icon, Notice, StatusPill } from '@psp/ui';
 import { Shell } from '../components/Shell';
 import { useT } from '../i18n';
 import { groupByCategory, minPrice, productViews } from '../lib/products';
@@ -69,6 +69,14 @@ export function AttractScreen() {
             ) : null}
           </div>
         ) : null}
+        {/* La familia: el recurso de marca que hace que la cabina se reconozca de lejos. */}
+        {!blocked ? (
+          <div className="kiosk-attract__family" aria-hidden="true">
+            {BLOB_VARIANTS.map((variant) => (
+              <BlobFace key={variant} variant={variant} size={104} animated />
+            ))}
+          </div>
+        ) : null}
         {blocked ? (
           <Notice tone={maintenance ? 'info' : 'warn'} position="static" title={blockedTitle}>
             {blockedText}
@@ -76,7 +84,7 @@ export function AttractScreen() {
         ) : (
           <>
             <div className="kiosk-attract__cta">
-              <BigButton size="xl" variant="primary" icon={<Icon name="camera" />} onClick={() => navigate(ROUTES.home)} data-testid="attract-cta">
+              <BigButton size="xl" variant="primary" icon={<Icon name="camera" />} onClick={() => navigate(ROUTES.group)} data-testid="attract-cta">
                 {t('kiosk.attract.cta')}
               </BigButton>
             </div>

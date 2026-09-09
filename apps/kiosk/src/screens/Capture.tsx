@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import type { PoseStep } from '@psp/contracts';
-import { BigButton, Countdown, CriteriaList, Icon, InstructionBanner, Notice, ProgressDots, Sheet, StatusPill, type CriteriaItem } from '@psp/ui';
+import { BigButton, BlobFace, Countdown, CriteriaList, Icon, InstructionBanner, Notice, ProgressDots, Sheet, StatusPill, type BlobVariant, type CriteriaItem } from '@psp/ui';
 import { AutoCaptureController, VISION_CRITERIA, evaluateDocumentCompliance, evaluatePoseGuidance, mirrorInstruction, type ComplianceResult, type FrameAnalysis, type InstructionKey } from '@psp/vision';
 import { stationApi } from '../api/station';
 import { ANALYSIS_HEIGHT, ANALYSIS_WIDTH, useCamera, useFrameLoop } from '../camera/useCamera';
@@ -209,7 +209,14 @@ export function CaptureScreen() {
           />
           {phase === 'countdown' ? (
             <div className="kiosk-capture__countdown">
-              <Countdown seconds={countdown} total={captureCountdown} label={t('kiosk.capture.countdown')} size={200} tone="accent" caption={pose && !isDocument ? t('kiosk.capture.smile') : t('kiosk.capture.stability')} />
+              {/* Cuenta regresiva con personalidad: en el recorrido social acompaña una forma
+                  distinta en cada segundo; en el documental el número va solo, sin distraer. */}
+              <div className="kiosk-capture__countdown-figure">
+                {!isDocument ? (
+                  <BlobFace variant={((countdown % 6) + 1) as BlobVariant} size={132} expression={countdown <= 1 ? 'grin' : 'happy'} />
+                ) : null}
+                <Countdown seconds={countdown} total={captureCountdown} label={t('kiosk.capture.countdown')} size={isDocument ? 200 : 168} tone="accent" caption={pose && !isDocument ? t('kiosk.capture.smile') : t('kiosk.capture.stability')} />
+              </div>
             </div>
           ) : null}
           {flash ? <div className="kiosk-capture__flash" /> : null}

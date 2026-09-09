@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { CustomerHandoff, FinishSessionResponse } from '@psp/contracts';
 import { featureMode } from '@psp/domain';
-import { BigButton, Countdown, Icon, StatusPill } from '@psp/ui';
+import { BigButton, BlobFace, BLOB_VARIANTS, Countdown, Icon, StatusPill } from '@psp/ui';
 import { stationApi } from '../api/station';
 import { HandoffPanel } from '../components/HandoffPanel';
 import { Shell } from '../components/Shell';
@@ -84,8 +84,12 @@ export function FinishScreen() {
   return (
     <Shell contentAlign="center" hideLang>
       <div className="kiosk-card kiosk-stack" style={{ alignItems: 'center', textAlign: 'center', maxWidth: 720, margin: '0 auto' }} data-testid="finish">
-        <Icon name="check" size={96} />
-        <h1 className="kiosk-title" style={{ margin: 0 }}>{t('kiosk.done.title')}</h1>
+        <div className="kiosk-done__family" aria-hidden="true">
+          {BLOB_VARIANTS.slice(0, 3).map((variant) => (
+            <BlobFace key={variant} variant={variant} size={88} expression="grin" animated />
+          ))}
+        </div>
+        <h1 className="kiosk-title" style={{ margin: 0 }}>{t('kiosk.done.ready')}</h1>
         <p className="kiosk-lead">{completion || t('kiosk.done.thanks')}</p>
         {session ? (
           <ul className="kiosk-list" style={{ width: '100%', textAlign: 'left' }}>

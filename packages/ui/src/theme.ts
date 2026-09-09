@@ -122,6 +122,21 @@ export function readBrandingPalette(values: Record<string, unknown>): BrandingPa
   return palette;
 }
 
+/** Colores de acento de reserva cuando la marca no declara los suyos. */
+export const DEFAULT_ACCENTS = ['#FF6FA5', '#FF7A3C', '#FFC24A', '#5FCB92', '#4C86E8', '#A87BE8'] as const;
+
+/**
+ * Lee `branding.palette.accents`: los colores vivos con los que la marca viste sus elementos
+ * ilustrados. Se completan hasta seis repitiendo la lista, así una marca puede declarar dos o tres.
+ */
+export function readBrandingAccents(values: Record<string, unknown>): string[] {
+  const nested = isRecord(values.branding) && isRecord(values.branding.palette) ? values.branding.palette : undefined;
+  const raw = values['branding.palette.accents'] ?? nested?.['accents'];
+  const list = Array.isArray(raw) ? raw.filter((c): c is string => typeof c === 'string' && parseHexColor(c) !== null) : [];
+  const source = list.length > 0 ? list : [...DEFAULT_ACCENTS];
+  return Array.from({ length: 6 }, (_unused, i) => source[i % source.length]!.trim());
+}
+
 /** Destino mínimo de `applyBrandingTheme`: cualquier objeto con `style.setProperty`. */
 export interface ThemeRoot {
   style: { setProperty(name: string, value: string): void };
@@ -182,6 +197,9 @@ export function applyBrandingTheme(
   root?: ThemeRoot | null,
 ): Record<string, string> {
   const variables = buildThemeVariables(readBrandingPalette(values));
+  readBrandingAccents(values).forEach((color, i) => {
+    variables[`--psp-color-accent-${i + 1}`] = color;
+  });
   const target = root === undefined ? defaultRoot() : root;
   if (target) {
     for (const [name, value] of Object.entries(variables)) target.style.setProperty(name, value);
