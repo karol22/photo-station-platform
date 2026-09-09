@@ -238,6 +238,25 @@ importers:
         specifier: 3.2.7
         version: 3.2.7(@types/node@26.5.0)(tsx@4.23.13)
 
+  packages/bundler:
+    dependencies:
+      '@psp/config-engine':
+        specifier: workspace:*
+        version: link:../config-engine
+      '@psp/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@psp/domain':
+        specifier: workspace:*
+        version: link:../domain
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 3.2.7
+        version: 3.2.7(@types/node@26.5.0)(tsx@4.23.13)
+
   packages/catalog:
     dependencies:
       '@psp/config-engine':
@@ -427,6 +446,9 @@ importers:
 
   tools/cli:
     dependencies:
+      '@psp/bundler':
+        specifier: workspace:*
+        version: link:../../packages/bundler
       '@psp/catalog':
         specifier: workspace:*
         version: link:../../packages/catalog
@@ -445,6 +467,9 @@ importers:
       '@psp/fixtures':
         specifier: workspace:*
         version: link:../../packages/fixtures
+      '@psp/gates':
+        specifier: workspace:*
+        version: link:../gates
       '@psp/sqlite':
         specifier: workspace:*
         version: link:../../packages/sqlite
