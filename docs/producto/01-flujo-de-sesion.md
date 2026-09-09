@@ -5,7 +5,7 @@ Cinco pasos. Es el recorrido canónico de Una de Todos y manda sobre cualquier p
 | # | Pantalla | Qué dice | Qué hace la persona |
 |---|---|---|---|
 | 1 | Inicio | *Toca para empezar* | Toca. Una experiencia simple y amigable. |
-| 2 | Elige | *¿Cuántos son hoy?* | Elige el modo de foto según cuántos son. |
+| 2 | Elige | *¿Qué hacemos hoy?* | Elige qué foto quiere. |
 | 3 | Sesión | *Posa, ríe, repite* | Se coloca y posa. Cuenta regresiva con personalidad. |
 | 4 | Vista previa | *¡Qué buena una de todos!* | Revisa, edita y elige su diseño. |
 | 5 | Comparte | *Listo para llevar* | Imprime y, si aplica, recibe en su celular. |
@@ -18,9 +18,9 @@ La pantalla en reposo muestra la familia de formas y una sola llamada a la acci�
 
 ### 2 · Elige
 
-La pregunta no es "qué producto quieres", es **cuántos son**. La cantidad de personas determina el encuadre, el modo y el diseño sugerido. Las opciones se representan con la familia de formas, y existe un camino para grupos grandes.
+Elige qué foto quiere, con pocas opciones grandes y claras. Si la máquina ofrece una sola cosa, este paso no existe y el recorrido sigue solo.
 
-Esta es la diferencia más importante con un catálogo de productos: la persona no está comprando una unidad de negocio, está diciendo quién viene con ella.
+**La cabina no pregunta cuántas personas son.** Es una foto: entra quien entra y la cámara ve a quien esté enfrente. Preguntarlo añade un toque, admite una respuesta equivocada y no cambia el resultado. El encuadre y la guía salen de lo que la cámara observa, nunca de lo que alguien declaró.
 
 ### 3 · Sesión
 
@@ -46,6 +46,6 @@ Una máquina puede ofrecer ambos recorridos, uno o ninguno, según su configurac
 
 ## Distancia con lo implementado
 
-El kiosco implementa hoy un recorrido completo de extremo a extremo, pero organiza la entrada como catálogo de productos por categoría en lugar de la pregunta *¿cuántos son hoy?*, y la cuenta regresiva es numérica sin los personajes.
+El kiosco implementa el recorrido completo de extremo a extremo. La entrada es un catálogo por categoría y queda pendiente simplificarla a pocas opciones grandes. La cuenta regresiva ya lleva la familia de formas.
 
-Alinear esas dos pantallas con este documento es trabajo pendiente, registrado en `ops/state/PROGRESS.md`.
+Lo pendiente está registrado en `ops/state/PROGRESS.md`.

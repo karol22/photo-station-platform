@@ -12,7 +12,6 @@ import { useKioskStore } from './store';
 import { applyBundleTheme, configBool } from './theme/assets';
 import { AttractScreen } from './screens/Attract';
 import { HomeScreen } from './screens/Home';
-import { GroupSizeScreen } from './screens/GroupSize';
 import { ProductDetailScreen } from './screens/ProductDetail';
 import { ConsentScreen } from './screens/Consent';
 import { PaymentScreen } from './screens/Payment';
@@ -113,7 +112,6 @@ export function App() {
       <Bootstrap>
         <Routes>
           <Route path={ROUTES.attract} element={<AttractScreen />} />
-          <Route path={ROUTES.group} element={<GroupSizeScreen />} />
           <Route path={ROUTES.home} element={<HomeScreen />} />
           <Route path={ROUTES.product} element={<ProductDetailScreen />} />
           <Route path={ROUTES.consent} element={<ConsentScreen />} />

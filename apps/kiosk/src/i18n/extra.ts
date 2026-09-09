@@ -454,15 +454,6 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.failed.text': ['Ocurrió un problema. Tus fotos se eliminaron de esta máquina.', 'Something went wrong. Your photos were deleted from this machine.'],
 
   /* ---------- tiempo ---------- */
-  'kiosk.group.title': ['¿Cuántos son hoy?', 'How many are you today?'],
-  'kiosk.group.subtitle': ['Elige y armamos la foto para todos.', 'Pick one and we set the photo up for everyone.'],
-  'kiosk.group.solo': ['Yo', 'Just me'],
-  'kiosk.group.duo': ['Dos', 'Two of us'],
-  'kiosk.group.squad': ['Tres o cuatro', 'Three or four'],
-  'kiosk.group.crew': ['Cinco o más', 'Five or more'],
-  'kiosk.group.none': ['Hoy no disponible', 'Not available today'],
-  'kiosk.group.see_all': ['Ver todo lo que hay', 'See everything'],
-  'kiosk.group.hint': ['Siempre cabe uno más.', 'There is always room for one more.'],
   'kiosk.handoff.coming_soon': ['Muy pronto podrás sumar esta visita a tu membresía', 'Soon you will be able to add this visit to your membership'],
   'kiosk.handoff.instruction.display_qr': ['¿Eres del Club? Escanea con la cámara de tu teléfono', 'In the Club? Scan with your phone camera'],
   'kiosk.handoff.instruction.scan_qr': ['Acerca tu tarjeta del Club o tu cupón a la cámara', 'Hold your Club card or coupon up to the camera'],

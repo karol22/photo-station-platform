@@ -13,8 +13,6 @@ export interface KioskActions {
   refreshStatus: () => Promise<void>;
   refreshBundle: () => Promise<void>;
   setLocale: (locale: Locale) => void;
-  /** Cuántas personas dijo que son; guía el catálogo y, más adelante, el encuadre. */
-  setGroupSize: (size: number | undefined) => void;
   setSession: (session: StationSession | undefined) => void;
   setStatus: (status: StationStatus) => void;
   setConnection: (connection: ConnectionState) => void;
@@ -48,7 +46,6 @@ export const useKioskStore = create<KioskState>()((set, get) => ({
     set({ bundle });
   },
   setLocale: (locale) => set({ locale }),
-  setGroupSize: (groupSize) => set({ groupSize }),
   setSession: (session) => set({ session }),
   setStatus: (status) => set({ status }),
   setConnection: (connection) => set({ connection }),
@@ -62,7 +59,7 @@ export const useKioskStore = create<KioskState>()((set, get) => ({
   setTechStatus: (techStatus) => set({ techStatus }),
   setError: (lastError) => set({ lastError }),
   applyEvent: (event) => set((state) => applyStationEvent(state, event)),
-  resetSession: () => set({ session: undefined, lastError: undefined, groupSize: undefined, locale: initialLocale(get().bundle, get().locale) }),
+  resetSession: () => set({ session: undefined, lastError: undefined, locale: initialLocale(get().bundle, get().locale) }),
 }));
 
 export type { CameraKind, ConnectionState, KioskData } from './reducers';

@@ -29,5 +29,6 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 23 | Documento de producto: qué es Una de Todos, marca, paleta y familia de formas | hecho | `docs/producto/00-que-es.md`; `AGENTS.md` lo pone primero en la lista de lectura de ambos modos | 2026-09-09 |
 | 24 | Recorrido canónico de cinco pasos y decisiones abiertas | hecho | `docs/producto/01-flujo-de-sesion.md`, `docs/producto/02-decisiones-abiertas.md` | 2026-09-09 |
 | 25 | Corrección: el enlace efímero identifica al Club, no entrega fotos | hecho | ADR-011 y `03-sesiones-y-privacidad.md` reescritos; el kiosco pide propósito `loyalty` | 2026-09-09 |
-| 26 | Pendiente: inicio con ¿cuántos son hoy? y cuenta regresiva con personajes | pendiente | `docs/producto/01-flujo-de-sesion.md` describe la distancia con lo implementado | |
+| 26 | Cuenta regresiva con la familia de formas | hecho | `apps/kiosk/src/screens/Capture.tsx` usa `BlobFace` en el conteo del recorrido social | 2026-09-09 |
+| 28 | La cabina no pregunta cuántas personas son | hecho | principio escrito en `docs/producto/00-que-es.md`; el paso se retiró del kiosco | 2026-09-09 |
 | 27 | Pendiente: paleta y familia de formas de Una de Todos en el dataset y el kiosco | pendiente | `docs/producto/00-que-es.md` fija los seis colores y los seis personajes | |

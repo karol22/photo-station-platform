@@ -9,8 +9,6 @@ export type CameraKind = 'webcam' | 'synthetic';
 export type ConnectionState = 'connecting' | 'online' | 'lost';
 
 export interface KioskData {
-  /** Cuántas personas dijo que son en el paso *¿cuántos son hoy?*. */
-  groupSize?: number | undefined;
   status: StationStatus | undefined;
   bundle: KioskBundle | undefined;
   session: StationSession | undefined;
@@ -25,7 +23,6 @@ export interface KioskData {
 }
 
 export const INITIAL_DATA: KioskData = {
-  groupSize: undefined,
   status: undefined,
   bundle: undefined,
   session: undefined,

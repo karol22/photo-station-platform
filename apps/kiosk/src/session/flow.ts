@@ -11,7 +11,6 @@ type ConfigSource = { effective: { values: Record<string, unknown> } };
 
 export const ROUTES = {
   attract: '/',
-  group: '/quienes',
   home: '/home',
   product: '/product/:productId',
   consent: '/session/consent',

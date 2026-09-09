@@ -84,7 +84,7 @@ export function AttractScreen() {
         ) : (
           <>
             <div className="kiosk-attract__cta">
-              <BigButton size="xl" variant="primary" icon={<Icon name="camera" />} onClick={() => navigate(ROUTES.group)} data-testid="attract-cta">
+              <BigButton size="xl" variant="primary" icon={<Icon name="camera" />} onClick={() => navigate(ROUTES.home)} data-testid="attract-cta">
                 {t('kiosk.attract.cta')}
               </BigButton>
             </div>

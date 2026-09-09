@@ -30,6 +30,8 @@ Estas afirmaciones existen porque son suposiciones que ya se cometieron y no deb
 - **No hay fotografías en la nube.** Las imágenes viven en el disco de la máquina y se borran ahí según la política de retención. El plano de control nunca recibe una fotografía: el registro de sesión que viaja hacia arriba no tiene ningún campo de imagen, y eso está garantizado por el contrato, no por disciplina.
 - **No hay identidad de consumidor.** No existe registro, perfil ni recuperación de contraseña. Si alguna vez hay membresía, se identifica con un gesto de segundos y nunca se confunde con un usuario administrativo.
 - **No se pide correo ni teléfono en la pantalla de la cabina.** Teclear datos personales con una fila detrás es exactamente lo que el producto evita.
+- **No se le pregunta a la gente cuántos son.** Es una foto: entra quien entra y la cámara ve a quien esté enfrente. Una respuesta equivocada no puede romper nada porque el dato no se pide. Cualquier ajuste de encuadre sale de lo que la cámara observa, nunca de lo que alguien declaró.
+- **No se añaden pasos que no cambian el resultado.** Cada toque de más es tiempo de la persona y de la fila detrás.
 
 ## El único caso en que una imagen sale de la máquina
 
@@ -75,7 +77,7 @@ La marca no es un logotipo solo: es un grupo de formas orgánicas con cara, cada
 | La Curiosa | Verde | Todo lo explora |
 | La Chispa | Morado | Hace todo más divertido |
 
-La familia aparece en el gabinete, en la pantalla, en las tiras impresas, en los stickers y en la tarjeta de membresía. En la interfaz sirve para dar personalidad a los momentos sin texto: la cuenta regresiva, la elección de cuántas personas son, la celebración al ver el resultado.
+La familia aparece en el gabinete, en la pantalla, en las tiras impresas, en los stickers y en la tarjeta de membresía. En la interfaz sirve para dar personalidad a los momentos sin texto: la pantalla en reposo, la cuenta regresiva y la celebración al ver el resultado.
 
 ## Familia de productos
 
