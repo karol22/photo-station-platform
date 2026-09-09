@@ -44,4 +44,7 @@ pnpm psp catalog                        # capacidades registradas
 Desde admin: Releases → crear rollout → observar estados por máquina. Desde el panel técnico: simular aprobación, rechazo o expiración de pago; simular impresora sin papel; poner en mantenimiento.
 
 ## Estado local
-Todo vive en `var/` (ignorado). Borrar `var/` y volver a `pnpm seed` deja el sistema como nuevo.
+Todo vive en `var/` en la raíz del repo (ignorado por git): `var/control-plane/` (base SQLite y activos) y `var/station/<machineId>/` (base local, identidad, fotos efímeras de sesiones e impresiones simuladas en `prints/`). Borrar `var/` y volver a `pnpm seed` deja el sistema como nuevo.
+
+## Sin nube
+El agente arranca aunque el control-plane no exista: usa el último bundle cacheado o, si no hay, materializa el dataset demo localmente. El kiosco funciona igual; `cloudReachable` aparece en falso en el panel técnico y los eventos esperan en el outbox hasta reconectar.

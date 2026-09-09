@@ -105,7 +105,8 @@ export async function demoOrMinimalBundle(machineId: string, now: Date): Promise
       now,
       assetUrlBase: ASSET_URL_BASE,
     });
-  } catch {
+  } catch (error) {
+    console.error('[station-agent] dataset demo no disponible; se usa el bundle mínimo:', (error as Error).message);
     return standaloneBundle(machineId, { now, assetUrlBase: ASSET_URL_BASE });
   }
 }
