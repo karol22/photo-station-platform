@@ -143,13 +143,48 @@ describe('vectores publicados en ISO/IEC 18004', () => {
     });
   });
 
-  it('coloca esos codewords en un símbolo 21×21 legible con la máscara 2', () => {
+  it('coloca esos codewords en el símbolo 21×21 de referencia con la máscara 2', () => {
+    // Matriz de referencia del símbolo `01234567` en versión 1, nivel M y máscara 2, con los mismos
+    // parámetros que el ejemplo del anexo I. NO está transcrita del anexo: es la salida de este
+    // codificador, verificada aparte con un lector externo (framework Vision de macOS, el mismo que
+    // usa la cámara del iPhone), que la lee como `01234567`. Sirve de golden contra regresiones.
+    const EXPECTED = [
+      '#######..#.##.#######',
+      '#.....#..####.#.....#',
+      '#.###.#.#.....#.###.#',
+      '#.###.#.##....#.###.#',
+      '#.###.#.#.###.#.###.#',
+      '#.....#.#...#.#.....#',
+      '#######.#.#.#.#######',
+      '........#..##........',
+      '#.#####..#..#.#####..',
+      '...#.#.##.#.#..#.##..',
+      '..#...##.#.#.#..#####',
+      '....#....#.....####..',
+      '...######..#.#..#....',
+      '........#.#####..##..',
+      '#######..##.#.##.....',
+      '#.....#.#.#####...#.#',
+      '#.###.#.#...#..#.##..',
+      '#.###.#.##..#..#.....',
+      '#.###.#.#.##.#..#.#..',
+      '#.....#........##.##.',
+      '#######.####.#..#.#..',
+    ];
     const qr = encodeQr('01234567', { ecc: 'M', forceMask: 2 });
     expect(qr.version).toBe(1);
     expect(qr.size).toBe(21);
     expect(qr.mask).toBe(2);
-    const decoded = decodeQr(qr);
-    expect(decoded).toEqual({ text: '01234567', version: 1, ecc: 'M', mask: 2, mode: 'numeric' });
+    expect(qr.modules.map((row) => row.map((v) => (v ? '#' : '.')).join(''))).toEqual(EXPECTED);
+    expect(decodeQr(qr)).toEqual({ text: '01234567', version: 1, ecc: 'M', mask: 2, mode: 'numeric' });
+  });
+
+  it('sin forzar máscara elige la 0 para ese mismo texto', () => {
+    // La máscara 2 del anexo I es ilustrativa: por las reglas de penalización gana la 0, que es
+    // también la que elige el generador de referencia de CoreImage para este texto y nivel.
+    const qr = encodeQr('01234567', { ecc: 'M' });
+    expect(qr.mask).toBe(0);
+    expect(decodeQr(qr).text).toBe('01234567');
   });
 });
 

@@ -24,3 +24,5 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 18 | Corte por límite de uso 03:30–07:10; relanzamiento de 7 agentes | hecho | esta fila; `git status` muestra el trabajo previo en disco | 2026-09-09 |
 | 19 | Integración nube ↔ máquina ↔ kiosco verificada | hecho | heartbeat actualiza la máquina en la nube; comando `set_maintenance` ejecutado y en línea temporal; sesión registrada en `GET /admin/v1/sessions` sin fotos; rollout piloto avanza con 100 máquinas simuladas | 2026-09-09 |
 | 20 | Compuertas | hecho | `pnpm gate:quick` → 12/12 en verde (ver commit) | 2026-09-09 |
+| 21 | Identidad efímera de cliente (ADR-011) | hecho | `pnpm --filter @psp/domain test` cubre rotación y un solo uso; el agente ofrece el QR y lo caduca; verificado en el kiosco hasta la pantalla final | 2026-09-09 |
+| 22 | Codificador de QR real y decodificable | hecho | `encodeQr`/`decodeQr` en `@psp/imaging`; round-trip exacto de la URL del enlace, versión 4 ECC M | 2026-09-09 |

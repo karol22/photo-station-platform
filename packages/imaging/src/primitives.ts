@@ -2,7 +2,7 @@
  * Primitivas de composición: el `RenderPlan` es la salida del planificador de plantillas y la entrada de los
  * dos renderizadores (el puro sobre Raster y el de canvas en el navegador). Todo está en píxeles absolutos
  * del lienzo para que ambos dibujen exactamente la misma geometría. Aquí viven también las utilidades
- * compartidas por ambos: ajuste cover/contain, marcas de corte, QR de sustitución y conversión mm ↔ px.
+ * compartidas por ambos: ajuste cover/contain, marcas de corte, matriz de códigos QR y conversión mm ↔ px.
  */
 import { encodeQr } from './qr';
 import type { EncodeQrOptions } from './qr';
