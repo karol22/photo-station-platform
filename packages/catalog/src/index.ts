@@ -44,6 +44,31 @@ export const STATIC_CATALOG: CatalogEntry[] = [
   ),
 ];
 
+
+export const GATE_CATALOG: CatalogEntry[] = [
+  { kind: 'gate', key: 'agents-size', name: 'Tamaño de AGENTS.md', description: 'AGENTS.md mide menos de 12 000 caracteres.', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'readmes', name: 'README por paquete', description: 'Todo paquete y app tiene README con Propósito, Cómo se usa y Cómo se prueba.', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'catalog-complete', name: 'Catálogo completo', description: 'Features, capacidades, permisos, claves, apps, paquetes, comandos y compuertas están registrados.', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'i18n-parity', name: 'Paridad i18n', description: 'Los catálogos es y en tienen exactamente las mismas claves.', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'no-hardcoded-business-text', name: 'Sin texto de negocio en UIs', description: 'Ningún nombre de marca, precio, ciudad o dirección literal en kiosk y admin.', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'no-secrets', name: 'Sin secretos', description: 'Ningún archivo versionado contiene un secreto reconocible.', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'traceability', name: 'Trazabilidad', description: 'docs/trazabilidad.md referencia secciones existentes con estados válidos.', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'progress-evidence', name: 'Evidencia en progreso', description: 'Cada fila de ops/state/PROGRESS.md tiene evidencia.', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'validation-at-edges', name: 'Validación en bordes', description: 'Los mensajes de red se validan con safeParse en control-plane, station-agent y kiosco.', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'docs-present-tense', name: 'Docs en presente', description: 'La documentación no contiene frases de bitácora.', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'typecheck', name: 'Typecheck', description: 'Los paquetes compilan (quick); todo compila (full).', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'unit-tests', name: 'Pruebas unitarias', description: 'Pruebas de packages y tools (quick) o de todo el repo (full).', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+  { kind: 'gate', key: 'build-apps', name: 'Build de apps', description: 'Las apps web construyen (full).', package: '@psp/gates', status: 'stable', docs: 'tools/gates/README.md' },
+];
+
+export const COMMAND_CATALOG: CatalogEntry[] = [
+  { kind: 'command', key: 'catalog', name: 'pnpm psp catalog', description: 'Imprime el catálogo de capacidades.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
+  { kind: 'command', key: 'seed', name: 'pnpm psp seed', description: 'Siembra el dataset demo en var/control-plane.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
+  { kind: 'command', key: 'bundle', name: 'pnpm psp bundle', description: 'Materializa e imprime el bundle efectivo de una máquina con procedencia.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
+  { kind: 'command', key: 'simulate-fleet', name: 'pnpm psp simulate-fleet', description: 'Crea N máquinas virtuales que envían heartbeats.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
+  { kind: 'command', key: 'demo', name: 'pnpm psp demo', description: 'Arranque guiado de la demo local.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
+];
+
 export function contractsCatalog(): CatalogEntry[] {
   const features: CatalogEntry[] = FEATURE_DEFINITIONS.map((f) => ({
     kind: 'feature',
@@ -116,9 +141,9 @@ export function dedupe(entries: CatalogEntry[]): CatalogEntry[] {
 /** Catálogo completo: paquetes primero (pueden enriquecer), luego derivadas de contratos y estáticas. */
 export async function fullCatalog(extra: CatalogEntry[] = []): Promise<CatalogEntry[]> {
   const { entries } = await packageCatalogs();
-  return dedupe([...extra, ...entries, ...contractsCatalog(), ...STATIC_CATALOG]).sort((a, b) =>
+  return dedupe([...extra, ...entries, ...contractsCatalog(), ...STATIC_CATALOG, ...GATE_CATALOG, ...COMMAND_CATALOG]).sort((a, b) =>
     a.kind === b.kind ? a.key.localeCompare(b.key) : a.kind.localeCompare(b.kind),
   );
 }
 
-export const CATALOG: CatalogEntry[] = STATIC_CATALOG;
+export const CATALOG: CatalogEntry[] = [...STATIC_CATALOG, ...GATE_CATALOG, ...COMMAND_CATALOG];

@@ -9,15 +9,16 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 3 | Arquitectura y ADRs 001–010 | hecho | `docs/arquitectura/00-vision-general.md`, `docs/arquitectura/decisiones/` | 2026-09-09 |
 | 4 | AGENTS.md con dos modos y estado en disco | hecho | `wc -c AGENTS.md` < 12000 | 2026-09-09 |
 | 5 | Contratos compartidos (`packages/contracts`) | hecho | `pnpm --filter @psp/contracts test` → 9 pruebas en verde; `docs/arquitectura/01-apis-de-paquetes.md` | 2026-09-09 |
-| 6 | Dominio puro (`packages/domain`) | en curso | agente en paralelo; evidencia al cerrar: `pnpm --filter @psp/domain test` | 2026-09-09 |
-| 7 | Motor de configuración (`packages/config-engine`) | en curso | agente en paralelo; `pnpm --filter @psp/config-engine test` | 2026-09-09 |
-| 8 | Visión local (`packages/vision`) | en curso | agente en paralelo; `pnpm --filter @psp/vision test` | 2026-09-09 |
-| 9 | Edición y composición (`packages/imaging`) | en curso | agente en paralelo; `pnpm --filter @psp/imaging test` | 2026-09-09 |
-| 10 | Integraciones mock (`packages/integrations`) | en curso | agente en paralelo; `pnpm --filter @psp/integrations test` | 2026-09-09 |
-| 11 | i18n, ui, sqlite, fixtures, catalog | en curso | agentes en paralelo: i18n+sqlite, ui, fixtures; catalog lo escribe el coordinador | 2026-09-09 |
-| 12 | control-plane con seed y simulación de flota | en curso | agente en paralelo (incluye `@psp/bundler`); `pnpm --filter @psp/control-plane test` | 2026-09-09 |
-| 13 | station-agent con sync, outbox y hardware mock | en curso | agente en paralelo; `pnpm --filter @psp/station-agent test` | 2026-09-09 |
-| 14 | kiosk: flujos documental, entretenimiento, pago, panel técnico | en curso | agente en paralelo; `pnpm --filter @psp/kiosk build` | 2026-09-09 |
-| 15 | admin: consola completa y portal de franquicia | en curso | agente en paralelo; `pnpm --filter @psp/admin build` | 2026-09-09 |
-| 16 | CLI y compuertas | en curso | `tools/gates` escrito por el coordinador; CLI en curso | 2026-09-09 |
-| 17 | Trazabilidad de requisitos | en curso | agente de documentación escribe `docs/trazabilidad.md` inicial; el coordinador la actualiza al integrar | 2026-09-09 |
+| 6 | Dominio puro (`packages/domain`) | hecho | `pnpm --filter @psp/domain test` → 77 pruebas en verde | 2026-09-09 |
+| 7 | Motor de configuración (`packages/config-engine`) | hecho | `pnpm --filter @psp/config-engine test` → 69 pruebas en verde | 2026-09-09 |
+| 8 | Visión local (`packages/vision`) | en curso | implementado sin pruebas; agente relanzado 07:20 para pruebas; `pnpm --filter @psp/vision typecheck` verde | 2026-09-09 |
+| 9 | Edición y composición (`packages/imaging`) | en curso | faltan `template/*`, `render`, `primitives`; agente relanzado 07:20; evidencia al cerrar: `pnpm --filter @psp/imaging typecheck && test` | 2026-09-09 |
+| 10 | Integraciones mock (`packages/integrations`) | hecho | `pnpm --filter @psp/integrations test` → 119 pruebas en verde | 2026-09-09 |
+| 11 | i18n, ui, sqlite, fixtures, catalog | en curso | i18n 44 pruebas, sqlite 20, ui compila; fixtures relanzado 07:20 (camino crítico); catalog registra gates y comandos | 2026-09-09 |
+| 12 | control-plane con seed y simulación de flota | en curso | agente relanzado 07:20 (control-plane); `@psp/bundler` listo con 12 pruebas | 2026-09-09 |
+| 13 | station-agent con sync, outbox y hardware mock | en curso | agente relanzado 07:20 (station-agent) | 2026-09-09 |
+| 14 | kiosk: flujos documental, entretenimiento, pago, panel técnico | en curso | agente relanzado 07:20 (kiosk); sólo existían vite.config e i18n extra | 2026-09-09 |
+| 15 | admin: consola completa y portal de franquicia | en curso | agente relanzado 07:20 (admin); existían api client y lib con 28 pruebas | 2026-09-09 |
+| 16 | CLI y compuertas | hecho | `pnpm gate:quick` ejecuta 12 compuertas; `pnpm psp catalog` imprime el catálogo | 2026-09-09 |
+| 17 | Trazabilidad de requisitos | en curso | agente de documentación relanzado 07:20 escribe `docs/trazabilidad.md` | 2026-09-09 |
+| 18 | Corte por límite de uso 03:30–07:10; relanzamiento de 7 agentes | hecho | esta fila; `git status` muestra el trabajo previo en disco | 2026-09-09 |

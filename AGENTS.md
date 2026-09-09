@@ -36,7 +36,7 @@ Las compuertas viven en `tools/gates/` y bloquean. Lo que sigue es un hecho veri
 7. `docs/trazabilidad.md` referencia secciones que existen en `docs/requisitos-producto.md` y cada estado es `completo`, `parcial` o `pendiente`.
 8. Cada entrada de `ops/state/PROGRESS.md` tiene evidencia: un comando, una ruta o una prueba.
 9. Los mensajes de contratos de red se validan con zod al entrar (`safeParse`) en control-plane, station-agent y kiosco.
-10. La documentación está en presente: no contiene "antes era", "anteriormente", "previously", "used to".
+10. La documentación está en presente: no contiene las frases de bitácora que enumera la compuerta `docs-present-tense` en `tools/gates/src/gates.ts`.
 
 ## 4. Reglas de criterio (las lees, las aplicas, nadie las ejecuta por ti)
 

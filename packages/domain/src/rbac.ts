@@ -212,9 +212,12 @@ export function visibleScopes(principal: Principal): Scope[] {
   });
 }
 
-/** Forma mínima que aceptan los listados: la jerarquía a la que pertenece cada elemento. */
+/**
+ * Forma mínima que aceptan los listados: la jerarquía a la que pertenece cada elemento. Una
+ * organización se lista con su propio `id` (no lleva `organizationId`).
+ */
 export interface ScopedItem {
-  organizationId: Id;
+  organizationId?: Id;
   franchiseId?: Id;
   regionId?: Id;
   locationId?: Id;
@@ -222,38 +225,39 @@ export interface ScopedItem {
   id?: Id;
 }
 
+/** Id de organización del elemento: explícito o, al listar organizaciones, su propio id. */
+function organizationIdOf(item: ScopedItem, level: ScopeLevel): Id | undefined {
+  return item.organizationId ?? (level === 'organization' ? item.id : undefined);
+}
+
 /** Alcance propio del elemento según el nivel del listado. */
 function ownScope(item: ScopedItem, level: ScopeLevel): Scope {
+  const organizationId = organizationIdOf(item, level);
+  const organization: Scope = organizationId === undefined ? { level: 'platform' } : { level: 'organization', id: organizationId };
   switch (level) {
     case 'platform':
       return { level: 'platform' };
     case 'organization':
-      return { level: 'organization', id: item.organizationId };
+      return organization;
     case 'franchise':
-      return item.franchiseId !== undefined || item.id !== undefined
-        ? { level: 'franchise', id: item.franchiseId ?? item.id }
-        : { level: 'organization', id: item.organizationId };
+      return item.franchiseId !== undefined || item.id !== undefined ? { level: 'franchise', id: item.franchiseId ?? item.id } : organization;
     case 'region':
-      return item.regionId !== undefined || item.id !== undefined
-        ? { level: 'region', id: item.regionId ?? item.id }
-        : { level: 'organization', id: item.organizationId };
+      return item.regionId !== undefined || item.id !== undefined ? { level: 'region', id: item.regionId ?? item.id } : organization;
     case 'location':
-      return item.locationId !== undefined || item.id !== undefined
-        ? { level: 'location', id: item.locationId ?? item.id }
-        : { level: 'organization', id: item.organizationId };
+      return item.locationId !== undefined || item.id !== undefined ? { level: 'location', id: item.locationId ?? item.id } : organization;
     case 'machine':
-      return item.machineId !== undefined || item.id !== undefined
-        ? { level: 'machine', id: item.machineId ?? item.id }
-        : { level: 'organization', id: item.organizationId };
+      return item.machineId !== undefined || item.id !== undefined ? { level: 'machine', id: item.machineId ?? item.id } : organization;
     default:
-      return { level: 'organization', id: item.organizationId };
+      return organization;
   }
 }
 
 /** Cadena del elemento: sus propios campos más lo que el índice sepa de su alcance propio. */
 export function itemScopeChain(item: ScopedItem, level: ScopeLevel, index: HierarchyIndex): Scope[] {
   const own = ownScope(item, level);
-  const chain: Scope[] = [{ level: 'platform' }, { level: 'organization', id: item.organizationId }];
+  const organizationId = organizationIdOf(item, level);
+  const chain: Scope[] = [{ level: 'platform' }];
+  if (organizationId !== undefined) chain.push({ level: 'organization', id: organizationId });
   if (item.franchiseId !== undefined) chain.push({ level: 'franchise', id: item.franchiseId });
   if (item.regionId !== undefined) chain.push({ level: 'region', id: item.regionId });
   if (item.locationId !== undefined) chain.push({ level: 'location', id: item.locationId });

@@ -295,8 +295,8 @@ export const unitTests: Gate = {
   modes: ['quick', 'full'],
   async run({ root, mode }) {
     return mode === 'quick'
-      ? runPnpm(root, ['exec', 'vitest', 'run', '--project', 'packages/*', '--project', 'tools/*'])
-      : runPnpm(root, ['exec', 'vitest', 'run']);
+      ? runPnpm(root, ['-r', '--filter', './packages/*', '--filter', './tools/*', 'test'])
+      : runPnpm(root, ['-r', 'test']);
   },
 };
 
