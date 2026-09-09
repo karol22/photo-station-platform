@@ -81,7 +81,8 @@ export function ComposeScreen() {
     const tokens = { date: new Date().toLocaleDateString(locale === 'en' ? 'en-US' : 'es-MX'), time: new Date().toLocaleTimeString(locale === 'en' ? 'en-US' : 'es-MX', { hour: '2-digit', minute: '2-digit' }), locationName: bundle?.location?.publicName ?? '', sessionCode: session.code, machineCode: bundle?.machine.code ?? '', userMessage: session.userMessage ?? '', campaignCode: '' };
     if (isDocument) {
       const { widthMm, heightMm } = preset.spec.physical;
-      return planForDocument(template, { widthMm, heightMm }, Math.max(1, copies), { cutMarks: configBool(bundle, 'printing.cutMarks', true), dpi });
+      const perSheet = Math.max(1, session?.presetVersion?.spec.defaultCopies ?? 1);
+      return planForDocument(template, { widthMm, heightMm }, perSheet, { cutMarks: configBool(bundle, 'printing.cutMarks', true), dpi });
     }
     return planForTemplate(template, { locale, tokens, photoCount: sourcesRef.current?.photos.length ?? 0, dpi });
   };

@@ -26,7 +26,10 @@ export function useStationEvents(): void {
         setConnection('online');
         void refreshStatus().catch(() => undefined);
       };
-      source.onmessage = (message) => {
+      // El agente emite eventos con nombre (`event: <type>`); EventSource sólo los entrega a
+      // listeners por nombre, así que se registra el mismo manejador para cada tipo del contrato
+      // además de `onmessage` (eventos sin nombre).
+      const handle = (message: MessageEvent) => {
         let raw: unknown;
         try {
           raw = JSON.parse(String(message.data));
@@ -38,6 +41,10 @@ export function useStationEvents(): void {
         applyEvent(parsed.data);
         if (parsed.data.type === 'bundle_changed') void refreshBundle().catch(() => undefined);
       };
+      source.onmessage = handle;
+      for (const option of StationEvent.options) {
+        source.addEventListener(option.shape.type.value, handle as EventListener);
+      }
       source.onerror = () => {
         setConnection('lost');
         source?.close();

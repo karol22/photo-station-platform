@@ -18,7 +18,8 @@ export function ErrorScreen() {
   const error = useKioskStore((s) => s.lastError);
   const bundle = useKioskStore((s) => s.bundle);
   const { session, cancel } = useSession();
-  const code = error && `kiosk.errors.${error.code}.title` in EXTRA_TABLE ? error.code : 'generic';
+  const rawCode = error?.code === 'session_closed' || error?.code === 'session_expired' ? 'session_expired' : error?.code;
+  const code = rawCode && `kiosk.errors.${rawCode}.title` in EXTRA_TABLE ? rawCode : 'generic';
   const support = configString(bundle, 'legal.supportContact') ?? bundle?.organization.support?.phone ?? bundle?.organization.support?.email;
   const incident = error?.incidentCode ?? session?.errors.at(-1)?.incidentCode;
 

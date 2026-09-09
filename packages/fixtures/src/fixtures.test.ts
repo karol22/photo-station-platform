@@ -96,7 +96,8 @@ describe('integridad referencial', () => {
       expect(template?.paperSize).toBe(p.output.paperSize);
       if (p.kind === 'document') { expect(template?.kind).toBe('document_sheet'); expect(p.presetId).toBeDefined(); for (const tool of p.editing.allowedTools) expect(DOCUMENT_SAFE_TOOLS).toContain(tool); }
       for (const id of p.editing.allowedPresetIds) expectIn(editingPresetIds, id, 'prd.editingPreset');
-      if (p.presetId !== undefined) { const preset = data.presets.find((x) => x.id === p.presetId); const version = data.presetVersions.find((v) => v.presetId === p.presetId && v.version === preset?.currentVersion); expect(p.output.copies).toBe(version?.spec.defaultCopies); }
+      if (p.presetId !== undefined) { const preset = data.presets.find((x) => x.id === p.presetId); const version = data.presetVersions.find((v) => v.presetId === p.presetId && v.version === preset?.currentVersion); // `output.copies` = hojas a imprimir; `spec.defaultCopies` = fotos por hoja (requisito 5.9).
+        expect(p.output.copies).toBeGreaterThanOrEqual(1); expect(version?.spec.defaultCopies ?? 0).toBeGreaterThanOrEqual(1); }
     }
     for (const a of data.productAvailabilities) { expectIn(productIds, a.productId, 'pav.product'); expectScope(a.scope); }
     for (const r of data.priceRules) { expectIn(productIds, r.productId, 'prr.product'); expectScope(r.scope); expect(r.price.currency).toBe(data.products.find((p) => p.id === r.productId)?.basePrice.currency); }

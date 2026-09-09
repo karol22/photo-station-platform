@@ -85,7 +85,7 @@ export function SessionFrame({ title, children, noTimeout, timeoutSec, footer, h
       <Sheet
         open={!noTimeout && timeout.warning && timeout.remaining > 0 && !confirmCancel}
         title={t('kiosk.timeout.still_there')}
-        description={t('kiosk.timeout.still_there_text')}
+        description={t('kiosk.timeout.still_there_text', { seconds: Math.max(0, Math.ceil(timeout.remaining)) })}
         dismissible={false}
         hideHandle
         actions={

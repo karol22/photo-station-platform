@@ -37,11 +37,12 @@ export function planDocumentSheet(
 
   const natural = layoutFor(sheetW, sheetH, photo.widthMm, photo.heightMm, gutter, margin, false);
   const turned = layoutFor(sheetW, sheetH, photo.heightMm, photo.widthMm, gutter, margin, true);
-  const layout = turned.fitted > natural.fitted ? turned : natural;
+  const wanted = Math.max(0, Math.floor(copies));
+  // Orientación natural salvo que girar permita caber las copias pedidas y la natural no.
+  const layout = natural.fitted >= wanted || natural.fitted >= turned.fitted ? natural : turned;
 
   const widthPx = Math.max(1, mmToPx(sheetW, dpi));
   const heightPx = Math.max(1, mmToPx(sheetH, dpi));
-  const wanted = Math.max(0, Math.floor(copies));
   const count = Math.min(wanted, layout.fitted);
   const sheets = layout.fitted === 0 || wanted === 0 ? 0 : Math.ceil(wanted / layout.fitted);
 

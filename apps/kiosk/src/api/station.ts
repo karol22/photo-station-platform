@@ -59,7 +59,7 @@ const OkResponse = z.object({ ok: z.boolean().optional() }).passthrough();
 async function request<T>(schema: z.ZodType<T>, method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
-  if (techToken && path.startsWith('/tech')) headers['Authorization'] = `Bearer ${techToken}`;
+  if (techToken && path.startsWith('/tech')) headers['Authorization'] = `Tech ${techToken}`;
   let response: Response;
   try {
     response = await fetch(`${STATION_BASE}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
@@ -91,6 +91,20 @@ async function request<T>(schema: z.ZodType<T>, method: string, path: string, bo
 
 const MaybeSession = z.union([StationSession, z.null(), z.undefined(), z.object({ session: StationSession.nullable() })]);
 
+/**
+ * Mutación de sesión tolerante: si el agente responde la sesión completa se usa tal cual; si responde
+ * el recurso creado (Capture, PrintJob, PaymentIntent) se vuelve a leer la sesión. Así el kiosco no
+ * depende de qué forma devuelve cada ruta.
+ */
+async function requestSession(id: string, method: string, path: string, body?: unknown): Promise<StationSession> {
+  const raw = await request(z.unknown(), method, path, body);
+  const asSession = StationSession.safeParse(raw);
+  if (asSession.success) return asSession.data;
+  const wrapped = z.object({ session: StationSession }).safeParse(raw);
+  if (wrapped.success) return wrapped.data.session;
+  return request(StationSession, 'GET', `/sessions/${encodeURIComponent(id)}`);
+}
+
 /** Compuerta: toda respuesta del agente se valida aquí. */
 export const stationApi = {
   status: () => request(StationStatus, 'GET', '/status'),
@@ -110,20 +124,20 @@ export const stationApi = {
   createSession: (input: { productId: string; locale: 'es' | 'en'; isDemo?: boolean; accessible?: boolean }) =>
     request(StationSession, 'POST', '/sessions', { productId: input.productId, locale: input.locale, isDemo: input.isDemo ?? false, operatorStarted: false, accessible: input.accessible ?? false }),
   advanceStage: (id: string, to: SessionStage, reason?: string) =>
-    request(StationSession, 'POST', `/sessions/${encodeURIComponent(id)}/stage`, { to, ...(reason ? { reason } : {}) }),
+    requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/stage`, { to, ...(reason ? { reason } : {}) }),
   recordConsents: (id: string, consents: ConsentRecord[]) =>
-    request(StationSession, 'POST', `/sessions/${encodeURIComponent(id)}/consents`, { consents }),
-  uploadCapture: (id: string, input: UploadCaptureRequest) => request(StationSession, 'POST', `/sessions/${encodeURIComponent(id)}/captures`, input),
+    requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/consents`, { consents }),
+  uploadCapture: (id: string, input: UploadCaptureRequest) => requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/captures`, input),
   saveEdits: (id: string, input: { captureId: string; ops: EditOp[]; toolsUsed: EditingTool[]; resultBase64?: string }) =>
-    request(StationSession, 'POST', `/sessions/${encodeURIComponent(id)}/edits`, input),
-  setSelection: (id: string, captureIds: string[]) => request(StationSession, 'POST', `/sessions/${encodeURIComponent(id)}/selection`, { captureIds }),
+    requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/edits`, input),
+  setSelection: (id: string, captureIds: string[]) => requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/selection`, { captureIds }),
   saveComposition: (id: string, input: { imageBase64: string; width: number; height: number; copies?: number }) =>
-    request(StationSession, 'POST', `/sessions/${encodeURIComponent(id)}/composition`, input),
+    requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/composition`, input),
   print: (id: string, input: { copies?: number; printerId?: string; idempotencyKey: string }) =>
-    request(StationSession, 'POST', `/sessions/${encodeURIComponent(id)}/print`, input),
+    requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/print`, input),
   finish: (id: string) => request(FinishSessionResponse, 'POST', `/sessions/${encodeURIComponent(id)}/finish`),
-  cancel: (id: string, reason?: string) => request(StationSession, 'POST', `/sessions/${encodeURIComponent(id)}/cancel`, { ...(reason ? { reason } : {}) }),
-  extend: (id: string, extraSec: number) => request(StationSession, 'POST', `/sessions/${encodeURIComponent(id)}/extend`, { extraSec }),
+  cancel: (id: string, reason?: string) => requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/cancel`, { ...(reason ? { reason } : {}) }),
+  extend: (id: string, extraSec: number) => requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/extend`, { extraSec }),
   createPaymentIntent: (sessionId: string) => request(PaymentIntent, 'POST', '/payments/intents', { sessionId }),
   cancelPaymentIntent: (intentId: string) => request(PaymentIntent, 'POST', `/payments/intents/${encodeURIComponent(intentId)}/cancel`),
   simulatePayment: (intentId: string, outcome: 'approve' | 'decline' | 'cancel' | 'expire' | 'review' | 'device_out' | 'recover') =>

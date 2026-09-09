@@ -19,19 +19,20 @@ export function PrintScreen() {
   const setSession = useKioskStore((s) => s.setSession);
   const [retrying, setRetrying] = useState(false);
   const advanced = useRef(false);
+  const advanceRef = useRef(advance);
+  advanceRef.current = advance;
 
   const job = session?.printJobs.at(-1);
   const printer = status?.printers.find((p) => p.id === job?.printerId);
   const state = job?.status ?? 'preparing';
 
+  // Depende sólo del estado del trabajo: un refresco de sesión por SSE no debe cancelar el avance.
   useEffect(() => {
-    if (state === 'completed' && !advanced.current) {
-      advanced.current = true;
-      const timer = setTimeout(() => void advance('print_completed'), 2500);
-      return () => clearTimeout(timer);
-    }
-    return undefined;
-  }, [state, advance]);
+    if (state !== 'completed' || advanced.current) return undefined;
+    advanced.current = true;
+    const timer = setTimeout(() => void advanceRef.current('print_completed'), 2500);
+    return () => clearTimeout(timer);
+  }, [state]);
 
   if (!session) return null;
   const pickup = configString(bundle, 'printing.pickupInstructions') ?? t('kiosk.printing.pickup_default');

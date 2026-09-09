@@ -22,13 +22,17 @@ export function PaymentScreen() {
   const applyEvent = useKioskStore((s) => s.applyEvent);
   const [creating, setCreating] = useState(false);
   const advanced = useRef(false);
+  const requested = useRef(false);
+  const advanceRef = useRef(advance);
+  advanceRef.current = advance;
 
   const intent = session?.payment;
   const state: PaymentState = intent?.state ?? session?.commercial.paymentState ?? 'awaiting';
   const canSimulate = (status?.demoMode || session?.isDemo || import.meta.env.DEV) && intent && !SETTLED.includes(state);
 
   const createIntent = async () => {
-    if (!session) return;
+    if (!session || requested.current) return;
+    requested.current = true;
     setCreating(true);
     try {
       const created = await stationApi.createPaymentIntent(session.id);
@@ -46,14 +50,13 @@ export function PaymentScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.id]);
 
+  // Depende sólo del estado: los eventos SSE que refrescan la sesión no deben cancelar el avance.
   useEffect(() => {
-    if (SETTLED.includes(state) && !advanced.current && session) {
-      advanced.current = true;
-      const timer = setTimeout(() => void advance('payment_settled'), 900);
-      return () => clearTimeout(timer);
-    }
-    return undefined;
-  }, [state, session, advance]);
+    if (!SETTLED.includes(state) || advanced.current) return undefined;
+    advanced.current = true;
+    const timer = setTimeout(() => void advanceRef.current('payment_settled'), 900);
+    return () => clearTimeout(timer);
+  }, [state]);
 
   if (!session) return null;
   const amount = session.commercial.finalPrice ?? intent?.amount;
