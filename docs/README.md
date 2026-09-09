@@ -2,6 +2,16 @@
 
 Índice de `docs/`. Para el punto de entrada de un agente, empieza siempre por `AGENTS.md` en la raíz.
 
+## Producto
+
+Lee esto antes que nada: manda sobre cualquier otra fuente del repositorio.
+
+| Documento | Qué contiene |
+|---|---|
+| [Qué es Una de Todos](producto/00-que-es.md) | Qué es el producto y qué no es, identidad de marca, paleta, la familia de formas, línea de productos y las suposiciones que no deben repetirse |
+| [El recorrido del cliente](producto/01-flujo-de-sesion.md) | Los cinco pasos canónicos de la sesión y su distancia con lo implementado |
+| [Decisiones abiertas](producto/02-decisiones-abiertas.md) | Lo que aún no está decidido, con la restricción que ya sí lo está |
+
 ## Requisitos y trazabilidad
 
 | Documento | Qué contiene |

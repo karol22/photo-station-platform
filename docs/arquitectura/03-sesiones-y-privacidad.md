@@ -91,7 +91,7 @@ Ninguna ruta de `admin.v1` ni de `station.v1` sirve una fotografía de cliente (
 
 ## Identidad efímera del cliente
 
-El recorrido normal es anónimo: nadie escribe un correo ni una contraseña en una pantalla compartida. Cuando el cliente necesita quedar enlazado a algo (llevarse la foto en el teléfono, canjear un cupón del anfitrión), la cabina crea un `CustomerHandoff` (ADR-011): un vínculo temporal que muestra un QR de un solo uso o lee lo que el cliente acerca a la cámara.
+El recorrido normal es anónimo: nadie escribe un correo ni una contraseña en una pantalla compartida. Cuando el cliente necesita quedar enlazado a algo (presentar su membresía del Club, canjear un cupón del anfitrión), la cabina crea un `CustomerHandoff` (ADR-011): un vínculo temporal que muestra un QR de un solo uso o lee lo que el cliente acerca a la cámara.
 
 Lo que protege la privacidad de la persona que entra después:
 
@@ -101,3 +101,4 @@ Lo que protege la privacidad de la persona que entra después:
 - Transporta un identificador opaco, nunca datos personales.
 - `SessionRecord` no tiene el campo, así que el enlace nunca sale de la máquina.
 - No es una cuenta: no hay registro, perfil ni contraseña que recuperar.
+- No transporta imágenes: el enlace identifica a una persona; las fotografías siguen su propia política y no salen de la máquina.

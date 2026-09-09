@@ -4,11 +4,11 @@
 
 La estación vive en un centro comercial. El cliente llega, resuelve algo en dos o tres minutos y se va; la siguiente persona ya está esperando. En ese escenario cualquier autenticación clásica es inviable: escribir un correo y una contraseña en una pantalla táctil compartida es lento, se equivoca, deja rastro en la pantalla y genera una cuenta que nadie quiere administrar.
 
-Aun así hay momentos en que el cliente necesita quedar enlazado a algo: recibir sus fotos en el teléfono, canjear un cupón del centro comercial, aplicar una membresía de la marca o continuar una campaña. El requisito 46 lo acota: el uso es anónimo y no debe implementarse una identidad de consumidor ahora, pero si más adelante existe debe distinguirse claramente de los usuarios administrativos.
+Aun así hay momentos en que el cliente necesita quedar enlazado a algo. El caso principal es la **membresía del Club**: la persona presenta su tarjeta para que su visita cuente. Le siguen los cupones del centro comercial y las campañas. El requisito 46 lo acota: el uso es anónimo y no debe implementarse una identidad de consumidor ahora, pero si más adelante existe debe distinguirse claramente de los usuarios administrativos.
 
 ## Decisión
 
-El cliente es **anónimo por defecto** y el recorrido normal jamás pide identificarse. Cuando hace falta un enlace, se usa un **enlace efímero** (`CustomerHandoff`): un vínculo temporal entre la sesión en curso y el teléfono o la credencial del cliente, que nace y muere con la sesión.
+El cliente es **anónimo por defecto** y el recorrido normal jamás pide identificarse. Las fotografías no participan de este mecanismo: el enlace identifica a una persona, no transporta imágenes. Cuando hace falta un enlace, se usa un **enlace efímero** (`CustomerHandoff`): un vínculo temporal entre la sesión en curso y el teléfono o la credencial del cliente, que nace y muere con la sesión.
 
 Cinco métodos, ninguno con contraseña:
 
@@ -35,7 +35,8 @@ El panel técnico conserva su PIN local, que es otra cosa: identifica a un opera
 ## Consecuencias
 
 - El recorrido feliz sigue siendo anónimo y sin pasos añadidos.
-- La entrega digital futura ya tiene por dónde entrar sin rediseñar la experiencia: el QR de la pantalla es el punto de enganche.
+- La membresía del Club se identifica sin cuenta, sin contraseña y sin teclear.
+- El mecanismo no presupone nada sobre la entrega digital, que es una decisión abierta con su propia restricción en `docs/producto/02-decisiones-abiertas.md`.
 - Los cupones y membresías del anfitrión se leen con la cámara que la cabina ya tiene.
 - Una identidad persistente de consumidor, si algún día existe, se construye del lado del teléfono y nunca dentro de la cabina.
 - La pantalla se limpia entre clientes por diseño, no por disciplina del operador.

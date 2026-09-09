@@ -66,11 +66,12 @@ export function FinishScreen() {
   const canSimulate = Boolean(status?.demoMode || session?.isDemo || import.meta.env.DEV);
   const requested = useRef(false);
 
-  // El enlace nace al llegar aquí y muere con la sesión: la persona siguiente nunca lo hereda.
+  // Membresía del Club: el enlace identifica a la persona, nunca transporta la fotografía.
+  // Nace al llegar aquí y muere con la sesión, así la persona siguiente nunca lo hereda.
   useEffect(() => {
     if (handoffMode !== 'enabled' || !session || requested.current) return;
     requested.current = true;
-    void stationApi.createHandoff(session.id, 'delivery').then(setHandoff).catch(() => undefined);
+    void stationApi.createHandoff(session.id, 'loyalty').then(setHandoff).catch(() => undefined);
   }, [handoffMode, session]);
 
   const simulate = async (outcome: 'link' | 'expire'): Promise<void> => {

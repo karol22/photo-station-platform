@@ -6,12 +6,14 @@ Eres un agente que llega en frío. Este archivo te dice qué leer y qué reglas 
 
 | Modo | Cuándo | Lista de lectura |
 |---|---|---|
-| **A · Usar el producto** | Te piden correrlo, demostrarlo, probar un flujo, sembrar datos, simular una flota o un despliegue | `docs/operacion/como-correr.md` → `docs/arquitectura/00-vision-general.md` §1, §4.3, §11 → `pnpm catalog` |
-| **B · Cambiar el repo** | Te piden implementar, corregir, refactorizar, documentar o extender | `ops/state/PROGRESS.md` → `docs/arquitectura/00-vision-general.md` completo → `docs/trazabilidad.md` → el `README.md` del paquete que vas a tocar → `packages/contracts/src` de lo que uses |
+| **A · Usar el producto** | Te piden correrlo, demostrarlo, probar un flujo, sembrar datos, simular una flota o un despliegue | `docs/producto/00-que-es.md` → `docs/operacion/como-correr.md` → `docs/arquitectura/00-vision-general.md` §1, §4.3, §11 → `pnpm catalog` |
+| **B · Cambiar el repo** | Te piden implementar, corregir, refactorizar, documentar o extender | `docs/producto/00-que-es.md` → `ops/state/PROGRESS.md` → `docs/arquitectura/00-vision-general.md` completo → `docs/trazabilidad.md` → el `README.md` del paquete que vas a tocar → `packages/contracts/src` de lo que uses |
 
 Si no sabes el modo, es **B**. Si te piden "hacer que funcione X" y X ya existe según `docs/trazabilidad.md`, es **A**.
 
 ## 1. Qué es esto
+
+**Lee `docs/producto/00-que-es.md` antes de suponer nada del producto.** Manda sobre cualquier otra fuente, incluido este archivo. En corto: cabina de autoservicio en centro comercial, la cámara está dentro, el cliente paga ahí, no hay app ni cuenta ni contraseña, y **las fotografías nunca salen de la máquina** salvo un tránsito consentido para procesamiento pesado que no las almacena.
 
 Plataforma multi-tenant para estaciones fotográficas de autoservicio. Cuatro apps (`control-plane`, `station-agent`, `kiosk`, `admin`) y paquetes puros compartidos. Requisitos de producto en `docs/requisitos-producto.md`; arquitectura en `docs/arquitectura/`. Español es el idioma de documentación y de la UI por defecto; el código y sus identificadores están en inglés.
 

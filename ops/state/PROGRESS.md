@@ -26,3 +26,8 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 20 | Compuertas | hecho | `pnpm gate:quick` → 12/12 en verde (ver commit) | 2026-09-09 |
 | 21 | Identidad efímera de cliente (ADR-011) | hecho | `pnpm --filter @psp/domain test` cubre rotación y un solo uso; el agente ofrece el QR y lo caduca; verificado en el kiosco hasta la pantalla final | 2026-09-09 |
 | 22 | Codificador de QR real y decodificable | hecho | `encodeQr`/`decodeQr` en `@psp/imaging`; round-trip exacto de la URL del enlace, versión 4 ECC M | 2026-09-09 |
+| 23 | Documento de producto: qué es Una de Todos, marca, paleta y familia de formas | hecho | `docs/producto/00-que-es.md`; `AGENTS.md` lo pone primero en la lista de lectura de ambos modos | 2026-09-09 |
+| 24 | Recorrido canónico de cinco pasos y decisiones abiertas | hecho | `docs/producto/01-flujo-de-sesion.md`, `docs/producto/02-decisiones-abiertas.md` | 2026-09-09 |
+| 25 | Corrección: el enlace efímero identifica al Club, no entrega fotos | hecho | ADR-011 y `03-sesiones-y-privacidad.md` reescritos; el kiosco pide propósito `loyalty` | 2026-09-09 |
+| 26 | Pendiente: inicio con ¿cuántos son hoy? y cuenta regresiva con personajes | pendiente | `docs/producto/01-flujo-de-sesion.md` describe la distancia con lo implementado | |
+| 27 | Pendiente: paleta y familia de formas de Una de Todos en el dataset y el kiosco | pendiente | `docs/producto/00-que-es.md` fija los seis colores y los seis personajes | |

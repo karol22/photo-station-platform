@@ -628,7 +628,7 @@ Transiciones desde un intento activo (`PAYMENT_TRANSITIONS`):
 
 ## Enlace efímero de cliente
 
-El cliente es anónimo por defecto. Cuando la función `customer.handoff` está habilitada para la máquina, la cabina puede ofrecer un enlace temporal para que el cliente se lleve su foto en el teléfono o presente un cupón, **sin crear cuenta y sin escribir contraseñas** (ADR-011).
+El cliente es anónimo por defecto. Cuando la función `customer.handoff` está habilitada para la máquina, la cabina puede ofrecer un enlace temporal para que el cliente presente su membresía del Club o un cupón, **sin crear cuenta y sin escribir contraseñas** (ADR-011). El enlace identifica a una persona y nunca transporta fotografías.
 
 | Ruta | Cuerpo | Respuesta |
 |---|---|---|

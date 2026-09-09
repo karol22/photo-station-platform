@@ -1,7 +1,7 @@
 # @psp/imaging
 
 ## Propósito
-Edición y composición deterministas: operaciones sobre buffers RGBA, pipeline de EditOps, presets, composición de plantillas a raster, layout de hojas documentales en mm con marcas de corte, codificación PNG sin dependencias.
+Edición y composición deterministas: operaciones sobre buffers RGBA, pipeline de EditOps, presets, composición de plantillas a raster, layout de hojas documentales en mm con marcas de corte, codificación PNG y de códigos QR sin dependencias.
 
 Todo el paquete es puro y corre en Node sin canvas. Lo único que toca el DOM vive en `@psp/imaging/browser`. Mismo insumo, misma salida: no hay `Math.random()` ni relojes. Las firmas públicas están fijadas en `docs/arquitectura/01-apis-de-paquetes.md`; lo demás son exports aditivos.
 
@@ -84,7 +84,7 @@ Capacidad máxima por versión y nivel, en caracteres `numérico/alfanumérico/b
 `encodePNG(raster)` produce un PNG RGBA de 8 bits con deflate stored (válido, sin compresión); `decodePNG(bytes)` lee PNG de 8 bits sin entrelazado en gris, gris+alpha, RGB y RGBA. Ambos aceptan `{ deflate }` / `{ inflate }` inyectables para usar `node:zlib` en apps Node; el inflate propio en TS cubre bloques stored, Huffman fijo y dinámico.
 
 ### Catálogo
-`CATALOG` registra el paquete y cada operación de edición para `packages/catalog`.
+`CATALOG` registra el paquete, la capacidad `qr` y cada operación de edición para `packages/catalog`.
 
 ## Cómo se prueba
 ```bash
