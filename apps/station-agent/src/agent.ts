@@ -23,7 +23,7 @@ import {
   type TechTestKind,
 } from '@psp/contracts';
 import type { z } from 'zod';
-import { localTimeParts } from '@psp/domain';
+import { localTimeParts, stableHash } from '@psp/domain';
 import { assetContent, demoDataset } from '@psp/fixtures';
 import {
   ASSET_URL_BASE,
@@ -290,7 +290,10 @@ export class StationAgent {
   #identity(): { machineId: string; secret: string } {
     const existing = this.store.getKv<{ machineId: string; secret: string }>(KV_IDENTITY);
     if (existing) return existing;
-    const identity = { machineId: this.config.machineId, secret: randomBytes(24).toString('hex') };
+    // Secreto derivado de forma determinista: coincide con el que siembra el control-plane para las máquinas demo.
+    // En producción lo sustituye el enrolamiento (`POST /fleet/v1/enroll`) o `PSP_STATION_SECRET`.
+    const secret = process.env['PSP_STATION_SECRET'] || stableHash(`secret:${this.config.machineId}`);
+    const identity = { machineId: this.config.machineId, secret };
     this.store.setKv(KV_IDENTITY, identity, iso(this.clock()));
     try {
       writeFileSync(join(this.baseDir, 'identity.json'), JSON.stringify(identity), { mode: 0o600 });
