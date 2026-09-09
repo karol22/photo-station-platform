@@ -364,7 +364,7 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.confirm.price': ['Precio', 'Price'],
   'kiosk.confirm.print': ['Imprimir', 'Print'],
   'kiosk.confirm.finish': ['Finalizar', 'Finish'],
-  'kiosk.confirm.no_print': ['Este producto no incluye impresión.', 'This product does not include a print.'],
+  'kiosk.confirm.no_print': ['Continuar sin imprimir', 'Continue without printing'],
   'kiosk.confirm.printer_unavailable': ['La impresora no está disponible: la sesión terminará sin imprimir.', 'The printer is unavailable: the session will end without printing.'],
   'kiosk.confirm.demo_no_print': ['En modo demo la impresión se simula.', 'In demo mode printing is simulated.'],
   'kiosk.confirm.sending': ['Enviando a la impresora…', 'Sending to the printer…'],

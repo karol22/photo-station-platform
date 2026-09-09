@@ -48,17 +48,27 @@ export function AttractScreen() {
   const blockedText = maintenance ? status?.maintenance.message || t('kiosk.attract.maintenance_text') : outOfService ? t('kiosk.attract.out_of_service_text') : t('kiosk.attract.no_bundle_text');
 
   return (
-    <Shell
-      background={images[slide] ? <div className="kiosk-attract__bg" style={{ backgroundImage: `url(${images[slide]})` }} /> : undefined}
-      footer={footerText ? <p className="kiosk-small kiosk-muted">{footerText}</p> : undefined}
-      contentAlign="center"
-    >
+    <Shell footer={footerText ? <p className="kiosk-small kiosk-muted">{footerText}</p> : undefined} contentAlign="center">
       <div className="kiosk-attract" data-testid="attract">
         <div className="kiosk-attract__hero">
           <h1>{publicName}</h1>
           {status?.demoMode ? <StatusPill tone="info">{t('kiosk.common.demo')}</StatusPill> : null}
           {!blocked && showPrices && from ? <p className="kiosk-lead">{t('kiosk.attract.from_price', { price: money(from) })}</p> : null}
         </div>
+        {/* La imagen promocional es contenido, no decoración: se muestra completa y rota por
+            programación local (requisito 4.1), nunca detrás del texto. */}
+        {!blocked && images[slide] ? (
+          <div className="kiosk-attract__promo">
+            <img src={images[slide]} alt="" className="kiosk-attract__promo-img" />
+            {images.length > 1 ? (
+              <div className="kiosk-attract__dots" aria-hidden="true">
+                {images.map((src, i) => (
+                  <span key={src} className={i === slide ? 'is-active' : undefined} />
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         {blocked ? (
           <Notice tone={maintenance ? 'info' : 'warn'} position="static" title={blockedTitle}>
             {blockedText}

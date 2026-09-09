@@ -127,7 +127,7 @@ export function ComposeScreen() {
     }
   };
 
-  const sheetsLabel = info ? (info.sheets === 1 ? t('kiosk.compose.sheet_one') : t('kiosk.compose.sheets', { copies, sheets: info.sheets })) : '';
+  const sheetsLabel = info ? t(info.sheets === 1 ? 'kiosk.compose.sheet_one' : 'kiosk.compose.sheets', { copies, sheets: info.sheets }) : '';
 
   return (
     <SessionFrame title={t('kiosk.compose.title')}>

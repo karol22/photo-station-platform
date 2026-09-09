@@ -23,8 +23,12 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 
 /* Atracción */
 .kiosk-attract { position: relative; min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
-.kiosk-attract__bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.22; filter: blur(3px) saturate(1.15); transform: scale(1.05); transition: opacity 0.8s ease; z-index: 0; }
-.kiosk-attract__bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 0%, var(--psp-color-bg, #F6F7FB) 100%); }
+.kiosk-attract__promo { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0 16px; }
+.kiosk-attract__promo-img { max-height: 34vh; max-width: min(88vw, 520px); width: auto; border-radius: 20px; box-shadow: 0 12px 32px rgba(11, 27, 63, 0.18); animation: kiosk-attract-fade 0.6s ease; }
+.kiosk-attract__dots { display: flex; gap: 8px; }
+.kiosk-attract__dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--psp-color-muted, #94a3b8); opacity: 0.4; }
+.kiosk-attract__dots span.is-active { opacity: 1; background: var(--psp-color-primary, #1E5EFF); }
+@keyframes kiosk-attract-fade { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: none; } }
 .kiosk-attract__hero { position: relative; z-index: 1; text-align: center; padding: 32px 16px 0; }
 .kiosk-attract__hero h1 { font-size: clamp(2.2rem, 6vw, 4rem); margin: 0 0 12px; }
 .kiosk-attract__cta { position: relative; z-index: 1; display: flex; justify-content: center; padding: 8px 16px; }
