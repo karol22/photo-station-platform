@@ -35,3 +35,4 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 29 | Marca Una de Todos en el dataset demo | hecho | `pnpm psp bundle` muestra publicName Una de Todos, paleta propia y retención `none`; 26 activos | 2026-09-09 |
 | 30 | La tira social es imprimible en la máquina por defecto | hecho | las tiras 2x6 se cortan de una hoja 4x6; `prd_tira_amigos` disponible en `mch_demo_doc_01` | 2026-09-09 |
 | 31 | Las siluetas de pose no llevan texto | hecho | la vista de cámara va en espejo y el texto salía invertido; la instrucción vive en la interfaz | 2026-09-09 |
+| 32 | La compuerta de texto de negocio vigila la marca real y no el copy del producto | hecho | `FORBIDDEN_BUSINESS_TEXT` en `tools/gates/src/gates.ts` busca `Una de Todos`/`unadetodos`/`org_una_de_todos`; `pnpm --filter @psp/gates test` → 4 pruebas en verde; el paso 4 del recorrido vuelve a decir «¡Qué buena una de todos!» | 2026-09-09 |
