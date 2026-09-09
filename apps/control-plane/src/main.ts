@@ -1,12 +1,13 @@
+import { fileURLToPath } from 'node:url';
 /**
- * Arranque del servidor. Variables: `PSP_VAR_DIR` (por defecto `var/control-plane`),
+ * Arranque del servidor. Variables: `PSP_VAR_DIR` (raíz de estado, por defecto `var/` del repo; el control-plane usa `<PSP_VAR_DIR>/control-plane`),
  * `PORT` (4000), `HOST` (127.0.0.1), `PSP_SIMULATOR=1` para arrancar el simulador de flota.
  */
 import { join } from 'node:path';
 import { openControlPlaneDb } from './store';
 import { createApp } from './app';
 
-const varDir = process.env['PSP_VAR_DIR'] ?? join(process.cwd(), 'var', 'control-plane');
+const varDir = join(process.env['PSP_VAR_DIR'] ?? fileURLToPath(new URL('../../../var', import.meta.url)), 'control-plane');
 const port = Number(process.env['PORT'] ?? 4000);
 const host = process.env['HOST'] ?? '127.0.0.1';
 

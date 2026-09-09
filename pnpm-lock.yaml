@@ -203,6 +203,9 @@ importers:
       '@fastify/static':
         specifier: 8.3.0
         version: 8.3.0
+      '@psp/bundler':
+        specifier: workspace:*
+        version: link:../../packages/bundler
       '@psp/config-engine':
         specifier: workspace:*
         version: link:../../packages/config-engine
