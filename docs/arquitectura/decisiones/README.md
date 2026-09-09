@@ -14,3 +14,4 @@ Cada decisión relevante se registra como un ADR corto: contexto, decisión, con
 | [008](ADR-008-contratos-zod.md) | Contratos zod compartidos y aditivos | vigente |
 | [009](ADR-009-react-pwa.md) | React + Vite como PWA, migrable a WebView Android | vigente |
 | [010](ADR-010-repo-evolutivo-con-agentes.md) | Repo evolutivo con agentes: entrada única, estado en disco, compuertas | vigente |
+| [011](ADR-011-identidad-efimera-de-cliente.md) | Identidad efímera de cliente: sin cuentas, sin contraseñas, sin teclear | vigente |

@@ -12,6 +12,7 @@ import {
   AdvanceStageRequest,
   AiJobRequest,
   CancelSessionRequest,
+  CreateHandoffRequest,
   CreatePaymentIntentRequest,
   CreateSessionRequest,
   DeliveryRequest,
@@ -25,6 +26,7 @@ import {
   SaveEditsRequest,
   SetSelectionRequest,
   SimulateFaultRequest,
+  SimulateHandoffRequest,
   SimulatePaymentRequest,
   TechLoginRequest,
   UploadCaptureRequest,
@@ -250,6 +252,26 @@ export function buildServer(agent: StationAgent, opts: ServerOptions = {}): Fast
   });
   app.post(`${API_PREFIX}/delivery`, async (request, reply) =>
     reply.status(201).send(await agent.delivery.submit(parse(DeliveryRequest, request.body))),
+  );
+
+  /* ---------- enlace efímero de cliente (ADR-011): sin cuentas ni contraseñas ---------- */
+
+  app.post(`${API_PREFIX}/handoff`, async (request, reply) =>
+    reply.status(201).send(agent.handoff.create(parse(CreateHandoffRequest, request.body))),
+  );
+  app.get(`${API_PREFIX}/handoff/:id`, async (request: Params<'id'>) => {
+    const handoff = agent.handoff.get(request.params.id);
+    if (!handoff) throw new AgentError(404, 'not_found', `handoff not found: ${request.params.id}`);
+    return handoff;
+  });
+  app.post(`${API_PREFIX}/handoff/:id/cancel`, async (request: Params<'id'>) => {
+    const handoff = agent.handoff.cancel(request.params.id);
+    if (!handoff) throw new AgentError(404, 'not_found', `handoff not found: ${request.params.id}`);
+    return handoff;
+  });
+  /** Simula lo que hace el cliente con su teléfono o su cupón: no hay proveedor externo. */
+  app.post(`${API_PREFIX}/handoff/simulate`, async (request) =>
+    agent.handoff.simulate(parse(SimulateHandoffRequest, request.body)),
   );
 
   /* ---------- panel técnico ---------- */

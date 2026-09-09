@@ -41,7 +41,7 @@ export { EDIT_OPS, EDIT_OP_KEYS, isEditOpKey, validateEditOps, expandEditOps, ap
 export type { EditOpKey, EditOpSpec, ParamSpec, EditProblem, EditValidation, EditResources } from './edit-ops';
 
 // Composición
-export { resolveLocalizedText, fitRect, cutMarkBoxes, cutMarkThickness, qrPlaceholderModules, qrLayout, fnv1a } from './primitives';
+export { resolveLocalizedText, fitRect, cutMarkBoxes, cutMarkThickness, qrPlaceholderModules, qrModules, qrLayout, QR_QUIET_ZONE, fnv1a } from './primitives';
 export type {
   Primitive,
   RenderPlan,
@@ -69,6 +69,25 @@ export type { PngEncodeOptions, PngDecodeOptions } from './png';
 export { crc32, adler32 } from './zlib/checksums';
 export { zlibStored } from './zlib/deflate-stored';
 export { zlibInflate, inflateRaw } from './zlib/inflate';
+
+// QR real (ISO/IEC 18004)
+export {
+  encodeQr,
+  decodeQr,
+  capacityFor,
+  chooseMode,
+  fitVersion,
+  penaltyScore,
+  versionSize,
+  versionFromSize,
+  dataCodewords,
+  alignmentPositions,
+  QR_MIN_VERSION,
+  QR_MAX_VERSION,
+  QR_ECC_LEVELS,
+  QR_MASK_COUNT,
+} from './qr';
+export type { QrCode, EncodeQrOptions, QrDecoded, QrEcc, QrMode } from './qr';
 
 // Catálogo
 export { CATALOG } from './catalog';

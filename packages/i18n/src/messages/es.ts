@@ -478,6 +478,7 @@ export const es = {
   'features.payments.terminal': 'Pago con terminal',
   'features.payments.qr': 'Pago con QR',
   'features.delivery.digital': 'Entrega digital',
+  'features.customer.handoff': 'Enlace efímero de cliente',
   'features.franchise.mode': 'Modo franquicia',
   'features.support.remote': 'Soporte remoto',
   'features.kiosk.accessibility': 'Accesibilidad',

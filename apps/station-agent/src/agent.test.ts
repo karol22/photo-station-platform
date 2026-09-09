@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import type { JsonValue, StationSession } from '@psp/contracts';
 import {
+  CustomerHandoff,
   KioskBundle,
   SessionRecord,
   StationStatus,
@@ -36,6 +37,7 @@ async function harness(
     dir?: string;
     initialPaper?: number;
     idStart?: number;
+    featureModes?: Record<string, 'enabled' | 'hidden' | 'locked' | 'coming_soon'>;
   } = {},
 ): Promise<Harness> {
   const dir = opts.dir ?? mkdtempSync(join(tmpdir(), 'psp-agent-'));
@@ -53,6 +55,7 @@ async function harness(
         now,
         assetUrlBase: '/station/v1/assets',
         ...(opts.values ? { values: opts.values } : {}),
+        ...(opts.featureModes ? { featureModes: opts.featureModes } : {}),
       }),
   });
   await agent.init();
@@ -88,6 +91,11 @@ async function post(
     status: response.statusCode,
     body: response.json() as Record<string, unknown> & { stage?: string },
   };
+}
+
+async function get(app: FastifyInstance, url: string, headers: Record<string, string> = {}) {
+  const response = await app.inject({ method: 'GET', url, headers });
+  return { status: response.statusCode, body: response.json() as Record<string, unknown> };
 }
 
 async function createSession(
@@ -418,5 +426,65 @@ describe('recuperación', () => {
       (await second.app.inject({ method: 'GET', url: '/station/v1/sessions/active' })).statusCode,
     ).toBe(204);
     cleanups.push(async () => rmSync(dir, { recursive: true, force: true }));
+  });
+});
+
+describe('enlace efímero de cliente (ADR-011)', () => {
+  it('no se ofrece cuando la función está apagada: el recorrido sigue anónimo', async () => {
+    const { app } = await harness();
+    const session = await createSession(app);
+    const res = await post(app, '/station/v1/handoff', { sessionId: session.id, purpose: 'delivery' });
+    expect(res.status).toBe(201);
+    expect(res.body.state).toBe('unavailable');
+    expect(res.body.token).toBeUndefined();
+  });
+
+  it('ofrece un QR de un solo uso, rota el token y caduca solo', async () => {
+    const { app, agent, clock } = await harness({
+      featureModes: { 'customer.handoff': 'enabled' },
+      values: { 'customer.handoffTtlSec': 180, 'customer.handoffRotateSec': 30 },
+    });
+    const session = await createSession(app);
+    const created = await post(app, '/station/v1/handoff', { sessionId: session.id, purpose: 'delivery' });
+    expect(created.status).toBe(201);
+    const handoff = CustomerHandoff.parse(created.body);
+    expect(handoff.state).toBe('offered');
+    expect(handoff.method).toBe('display_qr');
+    expect(handoff.url).toContain('/e/');
+    expect(handoff.code).toHaveLength(6);
+
+    // El código rota mientras está en pantalla: una foto ajena queda inservible.
+    clock.advance(31_000);
+    agent.handoff.tick(clock());
+    const rotated = CustomerHandoff.parse((await get(app, `/station/v1/handoff/${handoff.id}`)).body);
+    expect(rotated.token).not.toBe(handoff.token);
+    expect(rotated.state).toBe('offered');
+
+    // Y caduca por su cuenta sin que nadie lo toque.
+    clock.advance(200_000);
+    agent.handoff.tick(clock());
+    const dead = CustomerHandoff.parse((await get(app, `/station/v1/handoff/${handoff.id}`)).body);
+    expect(dead.state).toBe('expired');
+    expect(dead.token).toBeUndefined();
+  });
+
+  it('al enlazarse se consume y el registro que viaja a la nube no lo menciona', async () => {
+    const { app, agent } = await harness({ featureModes: { 'customer.handoff': 'enabled' } });
+    const session = await createSession(app);
+    const handoff = CustomerHandoff.parse(
+      (await post(app, '/station/v1/handoff', { sessionId: session.id, purpose: 'delivery' })).body,
+    );
+    const linked = CustomerHandoff.parse(
+      (await post(app, '/station/v1/handoff/simulate', { handoffId: handoff.id, outcome: 'link', reference: 'ref_opaca' })).body,
+    );
+    expect(linked.state).toBe('linked');
+    expect(linked.reference).toBe('ref_opaca');
+    expect(linked.token).toBeUndefined();
+
+    // Lo que viaja a la nube es el outbox: la referencia opaca no aparece por ningún lado.
+    await post(app, `/station/v1/sessions/${session.id}/cancel`, { reason: 'fin de prueba' });
+    const pending = JSON.stringify(agent.store.pendingOutbox(100));
+    expect(pending).not.toContain('ref_opaca');
+    expect(pending).not.toContain(handoff.url ?? 'psp.local');
   });
 });

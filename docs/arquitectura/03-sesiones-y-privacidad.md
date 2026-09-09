@@ -88,3 +88,16 @@ Ninguna ruta de `admin.v1` ni de `station.v1` sirve una fotografía de cliente (
 ## 8. Estados comerciales y `realMoney: false`
 
 `CommercialState` (`free`, `demo`, `paid_simulated`, `courtesy`, `promotion`, `voided`, `failed`, `paid`) lo calcula `commercialStateFor` a partir de `payment.businessMode`, el `PaymentState` del intento y si la sesión es demo — nunca lo elige el kiosco directamente. Sin un procesador real conectado (ADR-006, requisito 51), un pago aprobado por el terminal mock se registra como `paid_simulated`, no como `paid`: `paid` queda reservado para cuando exista un adaptador real (`docs/arquitectura/05-evolucion-y-nube.md` §3). `CommercialMetrics.realMoney` es literalmente el tipo `false` en el contrato (`z.literal(false)`, `packages/contracts/src/metrics.ts`) — no una bandera que alguien pueda olvidar poner en `true`: es estructuralmente imposible que un reporte de métricas de esta versión afirme haber cobrado dinero real.
+
+## Identidad efímera del cliente
+
+El recorrido normal es anónimo: nadie escribe un correo ni una contraseña en una pantalla compartida. Cuando el cliente necesita quedar enlazado a algo (llevarse la foto en el teléfono, canjear un cupón del anfitrión), la cabina crea un `CustomerHandoff` (ADR-011): un vínculo temporal que muestra un QR de un solo uso o lee lo que el cliente acerca a la cámara.
+
+Lo que protege la privacidad de la persona que entra después:
+
+- El token rota cada pocos segundos mientras está en pantalla, así que fotografiarla no sirve de nada.
+- El enlace caduca solo y, en todo caso, muere con la sesión.
+- Se consume una sola vez: al enlazarse, el token deja de existir.
+- Transporta un identificador opaco, nunca datos personales.
+- `SessionRecord` no tiene el campo, así que el enlace nunca sale de la máquina.
+- No es una cuenta: no hay registro, perfil ni contraseña que recuperar.

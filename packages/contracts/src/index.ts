@@ -13,6 +13,7 @@ export * from './experiences';
 export * from './campaigns';
 export * from './releases';
 export * from './sessions';
+export * from './customer';
 export * from './ops';
 export * from './metrics';
 export * from './bundle';

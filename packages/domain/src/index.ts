@@ -12,5 +12,6 @@ export * from './capabilities';
 export * from './features';
 export * from './pricing';
 export * from './sessions';
+export * from './handoff';
 export * from './audit';
 export * from './catalog';

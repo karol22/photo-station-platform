@@ -7,7 +7,7 @@ import type { Id } from '@psp/contracts';
 import { FONT_GLYPH_HEIGHT, drawTextInto, measureText } from './font';
 import { blendInto, fillRectInto } from './ops/composite';
 import { crop, resize, rotate90 } from './ops/geometry';
-import { cutMarkBoxes, cutMarkThickness, fitRect, qrLayout, qrPlaceholderModules } from './primitives';
+import { cutMarkBoxes, cutMarkThickness, fitRect, qrLayout, qrModules } from './primitives';
 import type { LogoRole, Primitive, RenderPlan } from './primitives';
 import { BLACK, TRANSPARENT, WHITE, createRaster, intersectRect, parseColor } from './raster';
 import type { Fit, RGBA, Raster, Rect } from './raster';
@@ -114,7 +114,8 @@ function drawQr(out: Raster, p: Extract<Primitive, { kind: 'qr' }>, dpi: number)
   if (p.rect.w <= 0 || p.rect.h <= 0) return;
   fillRectInto(out, p.rect, WHITE);
   strokeRect(out, p.rect, cutMarkThickness(dpi), BLACK);
-  const modules = qrPlaceholderModules(p.payload);
+  // Matriz real; `qrModules` cae al patrón de sustitución si el payload no cabe en la versión máxima.
+  const modules = qrModules(p.payload);
   const { modulePx, originX, originY } = qrLayout(p.rect, modules.length);
   modules.forEach((row, y) => {
     row.forEach((on, x) => {

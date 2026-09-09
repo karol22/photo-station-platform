@@ -5,10 +5,11 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { FinishSessionResponse } from '@psp/contracts';
+import type { CustomerHandoff, FinishSessionResponse } from '@psp/contracts';
 import { featureMode } from '@psp/domain';
 import { BigButton, Countdown, Icon, StatusPill } from '@psp/ui';
 import { stationApi } from '../api/station';
+import { HandoffPanel } from '../components/HandoffPanel';
 import { Shell } from '../components/Shell';
 import { useT } from '../i18n';
 import { productViews } from '../lib/products';
@@ -59,6 +60,23 @@ export function FinishScreen() {
 
   const promo = useMemo(() => productViews(bundle).find((v) => v.availability.available && v.product.id !== session?.product.id && v.product.kind !== 'document'), [bundle, session?.product.id]);
   const delivery = featureMode(bundle?.features ?? [], 'delivery.digital');
+  const handoffMode = featureMode(bundle?.features ?? [], 'customer.handoff');
+  const [handoff, setHandoff] = useState<CustomerHandoff | undefined>(undefined);
+  const status = useKioskStore((s) => s.status);
+  const canSimulate = Boolean(status?.demoMode || session?.isDemo || import.meta.env.DEV);
+  const requested = useRef(false);
+
+  // El enlace nace al llegar aquí y muere con la sesión: la persona siguiente nunca lo hereda.
+  useEffect(() => {
+    if (handoffMode !== 'enabled' || !session || requested.current) return;
+    requested.current = true;
+    void stationApi.createHandoff(session.id, 'delivery').then(setHandoff).catch(() => undefined);
+  }, [handoffMode, session]);
+
+  const simulate = async (outcome: 'link' | 'expire'): Promise<void> => {
+    if (!handoff) return;
+    setHandoff(await stationApi.simulateHandoff(handoff.id, outcome).catch(() => handoff));
+  };
   const completion = configString(bundle, 'branding.completionMessage');
   const printed = session?.printJobs.filter((j) => j.status === 'completed').reduce((n, j) => n + j.copies, 0) ?? 0;
 
@@ -87,7 +105,11 @@ export function FinishScreen() {
           </ul>
         ) : null}
         <p className="kiosk-small">{result ? tl(result.retentionNotice) : session ? tl(session.retention.customerText) : ''}</p>
-        {delivery === 'coming_soon' ? <StatusPill tone="info" icon={<Icon name="clock" />}>{t('kiosk.delivery.coming_soon')}</StatusPill> : null}
+        {/* Enlace efímero: sólo aparece donde la marca lo habilitó; el recorrido normal es anónimo. */}
+        {handoffMode === 'enabled' ? (
+          <HandoffPanel handoff={handoff} canSimulate={canSimulate} onSimulate={(outcome) => void simulate(outcome)} />
+        ) : null}
+        {handoffMode !== 'enabled' && delivery === 'coming_soon' ? <StatusPill tone="info" icon={<Icon name="clock" />}>{t('kiosk.delivery.coming_soon')}</StatusPill> : null}
         {delivery === 'locked' ? <StatusPill tone="neutral" icon={<Icon name="lock" />}>{t('kiosk.delivery.locked')}</StatusPill> : null}
         {promo ? <p className="kiosk-muted">{t('kiosk.done.promo')}: {tl(promo.product.displayName)}</p> : null}
         <Countdown seconds={Math.max(0, seconds)} total={BACK_SECONDS} size={96} label={t('kiosk.done.back_in', { seconds: Math.max(0, seconds) })} />

@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import type {
   Capture,
   ConsentRecord,
+  CustomerHandoff,
   CreateSessionRequest,
   MachineCapabilityState,
   MachineStatus,
@@ -210,6 +211,7 @@ export class SessionService {
       consents: [],
       aiJobs: [],
       deliveries: [],
+      handoffs: [],
       timers: computeTimers(values, product, request.accessible),
       retention: { policyId: policy.id, customerText: policy.customerText },
       errors: [],
@@ -514,6 +516,25 @@ export class SessionService {
   }
 
   /* ---------- pago ---------- */
+
+  /** Sesiones abiertas: las que pueden tener enlaces vivos. */
+  all(): StationSession[] {
+    return this.#o.store.openSessions();
+  }
+
+  /**
+   * Guarda un enlace efímero en su sesión. No toca `updatedAt` de la sesión: la rotación del token
+   * es automática y no debe contar como actividad del cliente para el temporizador de inactividad.
+   */
+  attachHandoff(handoff: CustomerHandoff): StationSession | undefined {
+    const session = this.get(handoff.sessionId);
+    if (!session || TERMINAL_STAGES.includes(session.stage)) return session;
+    const index = session.handoffs.findIndex((h) => h.id === handoff.id);
+    if (index >= 0) session.handoffs[index] = handoff;
+    else session.handoffs.push(handoff);
+    this.#save(session);
+    return session;
+  }
 
   attachPayment(sessionId: string, intent: PaymentIntent): StationSession | undefined {
     const session = this.get(sessionId);

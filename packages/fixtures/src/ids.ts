@@ -134,6 +134,7 @@ export const DEMO_IDS = {
     aiLuminaHidden: 'fov_ai_lumina_hidden',
     aiNorte: 'fov_ai_norte',
     deliveryLumina: 'fov_delivery_lumina',
+    handoffNorte: 'fov_handoff_norte',
     demoUnit: 'fov_demo_unit',
   },
   release: { v010: 'rel_0_1_0', v020: 'rel_0_2_0', v030pilot: 'rel_0_3_0_pilot' },

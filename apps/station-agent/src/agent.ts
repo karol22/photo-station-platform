@@ -35,6 +35,7 @@ import { standaloneBundle } from './bundle/standalone';
 import { loadConfig, type AgentConfig } from './config';
 import { Hardware } from './hardware/hardware';
 import { AiService, DeliveryService, PaymentService } from './sessions/commerce';
+import { HandoffService } from './sessions/handoff';
 import { SessionService } from './sessions/session-service';
 import { Store, type TestResult } from './store/store';
 import { CloudClient, type FetchLike } from './sync/cloud-client';
@@ -122,6 +123,7 @@ export class StationAgent {
   readonly outbox: Outbox;
   readonly sessions: SessionService;
   readonly payments: PaymentService;
+  readonly handoff: HandoffService;
   readonly ai: AiService;
   readonly delivery: DeliveryService;
   readonly heartbeat: Heartbeat;
@@ -218,6 +220,16 @@ export class StationAgent {
     this.payments = new PaymentService(commerce);
     this.ai = new AiService(commerce);
     this.delivery = new DeliveryService(commerce);
+    this.handoff = new HandoffService({
+      bus: this.bus,
+      clock: this.clock,
+      ids: this.ids,
+      bundles: this.bundles,
+      hardware: this.hardware,
+      sessions: this.sessions,
+      outbox: this.outbox,
+      machineId: this.config.machineId,
+    });
     this.heartbeat = new Heartbeat({
       store: this.store,
       clock: this.clock,
@@ -249,7 +261,7 @@ export class StationAgent {
     return this;
   }
 
-  /** Temporizadores de operación: expiración (5 s), reaper (30 s), pagos (1 s), heartbeat. */
+  /** Temporizadores: expiración (5 s), reaper (30 s), pagos y enlaces (1 s), heartbeat. */
   start(): void {
     const every = (ms: number, fn: () => void): void => {
       const timer = setInterval(() => {
@@ -265,6 +277,8 @@ export class StationAgent {
     every(5_000, () => this.sessions.expireIdle());
     every(30_000, () => this.sessions.reap());
     every(1_000, () => this.payments.tick(this.clock()));
+    // Rotación y caducidad del enlace efímero de cliente (ADR-011).
+    every(1_000, () => this.handoff.tick(this.clock()));
     this.#scheduleHeartbeat(0);
   }
 

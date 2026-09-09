@@ -12,6 +12,8 @@ export interface StandaloneBundleOptions {
   assetUrlBase: string;
   /** Sobrescribe valores efectivos (p. ej. `payment.businessMode`). */
   values?: Record<string, JsonValue>;
+  /** Sobrescribe el modo de funciones concretas (p. ej. `customer.handoff`). */
+  featureModes?: Record<string, 'enabled' | 'hidden' | 'locked' | 'coming_soon'>;
 }
 
 export function standaloneBundle(machineId: string, opts: StandaloneBundleOptions): ConfigBundle {
@@ -168,7 +170,11 @@ export function standaloneBundle(machineId: string, opts: StandaloneBundleOption
         mode: 'coming_soon' as const,
         source: 'default' as const,
       },
-    ],
+      { key: 'customer.handoff' as const, mode: 'hidden' as const, source: 'default' as const },
+    ].map((feature) => {
+      const override = opts.featureModes?.[feature.key];
+      return override ? { ...feature, mode: override } : feature;
+    }),
     retentionPolicies: [
       {
         id: 'ret_delete_on_finish',

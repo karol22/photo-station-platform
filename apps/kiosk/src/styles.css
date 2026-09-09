@@ -72,3 +72,11 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .kiosk-number-field { display: flex; align-items: center; gap: 8px; }
 .kiosk-number-field input { font-size: 1.4rem; width: 6em; min-height: 64px; border-radius: 12px; border: 2px solid var(--psp-color-border, #ccd); text-align: center; }
 .kiosk-textarea { width: 100%; min-height: 96px; font: inherit; font-size: 1.1rem; border-radius: 12px; border: 2px solid var(--psp-color-border, #ccd); padding: 12px; }
+
+/* Enlace efímero de cliente (ADR-011) */
+.kiosk-handoff { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px; border: 2px dashed var(--psp-color-muted, #94a3b8); border-radius: 20px; width: 100%; }
+.kiosk-handoff--done { border-style: solid; border-color: var(--psp-color-ok, #16a34a); }
+.kiosk-handoff__qr { border-radius: 12px; background: #fff; padding: 4px; box-shadow: 0 6px 18px rgba(11, 27, 63, 0.12); }
+.kiosk-handoff__code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 2rem; letter-spacing: 0.32em; margin: 0; }
+.kiosk-handoff__scan { display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 120px; justify-content: center; }
+.kiosk-handoff__sim { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }

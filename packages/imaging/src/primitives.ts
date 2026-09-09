@@ -4,6 +4,8 @@
  * del lienzo para que ambos dibujen exactamente la misma geometría. Aquí viven también las utilidades
  * compartidas por ambos: ajuste cover/contain, marcas de corte, QR de sustitución y conversión mm ↔ px.
  */
+import { encodeQr } from './qr';
+import type { EncodeQrOptions } from './qr';
 import type { LocaleCode, LocalizedText, PrintTemplate, TemplateElement, TemplateVariant, LogoRole as LogoRoleSchema, TemplateVariantSelector as TemplateVariantSelectorSchema } from '@psp/contracts';
 import type { Fit, Rect } from './raster';
 
@@ -260,9 +262,28 @@ export function qrPlaceholderModules(payload: string): boolean[][] {
   return rows;
 }
 
-/** Tamaño de módulo y origen para centrar `size` módulos dentro del rect dejando una zona de silencio de un módulo. */
-export function qrLayout(rect: Rect, size: number): { modulePx: number; originX: number; originY: number } {
-  const modulePx = Math.max(1, Math.floor(Math.min(rect.w, rect.h) / (size + 2)));
+/** Zona de silencio que exige ISO/IEC 18004 alrededor del símbolo, en módulos. */
+export const QR_QUIET_ZONE = 4;
+
+/**
+ * Tamaño de módulo y origen para centrar `size` módulos dentro del rect dejando la zona de silencio.
+ * El módulo es un entero de píxeles y el origen está redondeado: así los bordes caen en píxel entero y el símbolo sale nítido.
+ */
+export function qrLayout(rect: Rect, size: number, quietZone: number = QR_QUIET_ZONE): { modulePx: number; originX: number; originY: number } {
+  const modulePx = Math.max(1, Math.floor(Math.min(rect.w, rect.h) / (size + 2 * quietZone)));
   const total = modulePx * size;
   return { modulePx, originX: Math.round(rect.x + (rect.w - total) / 2), originY: Math.round(rect.y + (rect.h - total) / 2) };
+}
+
+/**
+ * Matriz de módulos real y decodificable para un payload (`modules[y][x]`, `true` = oscuro).
+ * Si el texto no cabe en la versión máxima, cae al patrón de sustitución `qrPlaceholderModules`,
+ * que se ve como un QR pero no se puede leer: el renderizador nunca lanza por un payload largo.
+ */
+export function qrModules(payload: string, opts?: EncodeQrOptions): boolean[][] {
+  try {
+    return encodeQr(payload, opts).modules;
+  } catch {
+    return qrPlaceholderModules(payload);
+  }
 }

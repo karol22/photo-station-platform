@@ -144,6 +144,10 @@ Fuente: `packages/contracts/src/config.ts`. `fromOrg` = `organization, franchise
 | `session.maxRetakesDefault` | number [0–10] | session | `3` | all |
 | `sync.heartbeatIntervalSec` | number [5–600] | sync | `30` | platform, organization |
 | `sync.eventBatchSize` | number [1–1000] | sync | `100` | platform, organization |
+| `customer.handoffMethods` | stringList | customer | `["display_qr"]` | todos |
+| `customer.handoffTtlSec` | number | customer | `180` | todos |
+| `customer.handoffRotateSec` | number | customer | `30` | todos |
+| `customer.handoffBaseUrl` | string | customer | `https://psp.local/e` | organización, franquicia |
 | `techPanel.pinHash` | string (`sensitive`) | techPanel | `""` | organization, franchise, machine |
 
 `sensitive: true` en `techPanel.pinHash` marca que la consola no debe mostrar su valor en claro (aparece como `[oculto]` o similar en cualquier vista, incluida `EffectiveConfigView`).

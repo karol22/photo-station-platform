@@ -476,6 +476,7 @@ export const en: Record<MessageKey, string> = {
   'features.payments.terminal': 'Terminal payments',
   'features.payments.qr': 'QR payments',
   'features.delivery.digital': 'Digital delivery',
+  'features.customer.handoff': 'Ephemeral customer link',
   'features.franchise.mode': 'Franchise mode',
   'features.support.remote': 'Remote support',
   'features.kiosk.accessibility': 'Accessibility',

@@ -625,3 +625,35 @@ Transiciones desde un intento activo (`PAYMENT_TRANSITIONS`):
 | `error` | Fallo no recuperable | "No se pudo procesar tu foto" con salida a la revisión normal |
 | `rejected` | El proveedor rechazó la imagen (contenido, formato) | Mensaje específico, sin reintento automático |
 | `disabled` | Un administrador apagó la feature explícitamente | Igual que `unavailable` |
+
+## Enlace efímero de cliente
+
+El cliente es anónimo por defecto. Cuando la función `customer.handoff` está habilitada para la máquina, la cabina puede ofrecer un enlace temporal para que el cliente se lleve su foto en el teléfono o presente un cupón, **sin crear cuenta y sin escribir contraseñas** (ADR-011).
+
+| Ruta | Cuerpo | Respuesta |
+|---|---|---|
+| `POST /station/v1/handoff` | `CreateHandoffRequest` | `CustomerHandoff` (201) |
+| `GET /station/v1/handoff/:id` | — | `CustomerHandoff` |
+| `POST /station/v1/handoff/:id/cancel` | — | `CustomerHandoff` |
+| `POST /station/v1/handoff/simulate` | `SimulateHandoffRequest` | `CustomerHandoff` |
+
+Métodos (`HandoffMethod`), en orden de preferencia configurable en `customer.handoffMethods`:
+
+| Método | Qué ve el cliente | Qué teclea en la cabina |
+|---|---|---|
+| `display_qr` | Un QR de un solo uso en pantalla | Nada |
+| `scan_qr` | Acerca su cupón o tarjeta a la cámara | Nada |
+| `nfc_tap` | Acerca tarjeta o teléfono al lector | Nada |
+| `short_code` | Un código de seis caracteres para su propio teléfono | Nada |
+| `none` | Nada: recorrido anónimo | Nada |
+
+Reglas que aplica el agente:
+
+- El token se regenera cada `customer.handoffRotateSec` mientras está en pantalla; el enlace caduca a `customer.handoffTtlSec` o al terminar la sesión, lo que ocurra antes.
+- Al consumirse (`linked`) o morir (`expired`, `cancelled`) el token, la URL y el código desaparecen del objeto: es de un solo uso.
+- `reference` es un identificador opaco. El enlace nunca transporta nombre, correo ni teléfono.
+- El enlace vive dentro de `StationSession.handoffs` y se borra con la sesión. `SessionRecord`, que es lo único que viaja a la nube, no tiene ese campo: la nube nunca lo ve.
+- `POST /handoff/simulate` representa lo que hace el cliente con su teléfono o su cupón; no hay proveedor externo en esta fase.
+
+El evento `StationEvent` de tipo `handoff` notifica al kiosco cada cambio, incluida la rotación del token.
+

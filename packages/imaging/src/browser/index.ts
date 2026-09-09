@@ -4,7 +4,7 @@
  * geometría (cover/contain, marcas de corte, QR de sustitución) que el renderizador puro.
  */
 import type { Id } from '@psp/contracts';
-import { cutMarkBoxes, cutMarkThickness, fitRect, qrLayout, qrPlaceholderModules } from '../primitives';
+import { cutMarkBoxes, cutMarkThickness, fitRect, qrLayout, qrModules } from '../primitives';
 import type { LogoRole, Primitive, RenderPlan } from '../primitives';
 import type { Raster, Rect } from '../raster';
 
@@ -175,7 +175,8 @@ function drawText(ctx: CanvasRenderingContext2D, p: Extract<Primitive, { kind: '
 }
 
 function drawQr(ctx: CanvasRenderingContext2D, p: Extract<Primitive, { kind: 'qr' }>): void {
-  const modules = qrPlaceholderModules(p.payload);
+  // Matriz real; `qrModules` cae al patrón de sustitución si el payload no cabe en la versión máxima.
+  const modules = qrModules(p.payload);
   const { modulePx, originX, originY } = qrLayout(p.rect, modules.length);
   ctx.save();
   ctx.fillStyle = '#FFFFFF';
@@ -184,9 +185,10 @@ function drawQr(ctx: CanvasRenderingContext2D, p: Extract<Primitive, { kind: 'qr
   ctx.lineWidth = 1;
   ctx.strokeRect(p.rect.x + 0.5, p.rect.y + 0.5, p.rect.w - 1, p.rect.h - 1);
   ctx.fillStyle = '#000000';
+  // Coordenadas y tamaños enteros: sin medios píxeles el símbolo sale nítido y el teléfono lo lee.
   modules.forEach((row: boolean[], y: number) => {
     row.forEach((on: boolean, x: number) => {
-      if (on) ctx.fillRect(originX + x * modulePx, originY + y * modulePx, modulePx, modulePx);
+      if (on) ctx.fillRect(Math.round(originX + x * modulePx), Math.round(originY + y * modulePx), modulePx, modulePx);
     });
   });
   ctx.restore();

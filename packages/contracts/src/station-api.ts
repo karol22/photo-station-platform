@@ -7,6 +7,7 @@ import { EditingTool, Product } from './catalog';
 import { DocumentPresetVersion } from './presets';
 import { ConsentRecord, PaymentState, SessionCommercial, SessionError, SessionRecord, SessionStage } from './sessions';
 import { AiExperienceKey, AiJobState } from './experiences';
+import { CustomerHandoff } from './customer';
 import { MachineEvent, PrintJob } from './ops';
 import { MachineReleaseState } from './releases';
 
@@ -156,6 +157,8 @@ export const StationSession = z.object({
   consents: z.array(ConsentRecord),
   aiJobs: z.array(AiJob).default([]),
   deliveries: z.array(DeliveryRequestRecord).default([]),
+  /** Enlaces efímeros de esta sesión (ADR-011). Se borran con ella. */
+  handoffs: z.array(CustomerHandoff).default([]),
   timers: SessionTimers,
   retention: z.object({ policyId: Id, customerText: LocalizedText, deleteAt: Timestamp.optional(), deletedAt: Timestamp.optional() }),
   errors: z.array(SessionError),
@@ -226,6 +229,7 @@ export const StationEvent = z.discriminatedUnion('type', [
   z.object({ type: z.literal('session'), session: StationSession }),
   z.object({ type: z.literal('maintenance'), on: z.boolean(), message: z.string().optional() }),
   z.object({ type: z.literal('ai_job'), job: AiJob }),
+  z.object({ type: z.literal('handoff'), handoff: CustomerHandoff }),
   z.object({ type: z.literal('command'), command: z.string() }),
   z.object({ type: z.literal('machine_event'), event: MachineEvent }),
 ]);

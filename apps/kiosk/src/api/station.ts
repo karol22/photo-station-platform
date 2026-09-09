@@ -7,6 +7,7 @@ import { z } from 'zod';
 import {
   AiJob,
   ApiError,
+  CustomerHandoff,
   DeliveryRequestRecord,
   FinishSessionResponse,
   KioskBundle,
@@ -138,6 +139,10 @@ export const stationApi = {
   finish: (id: string) => request(FinishSessionResponse, 'POST', `/sessions/${encodeURIComponent(id)}/finish`),
   cancel: (id: string, reason?: string) => requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/cancel`, { ...(reason ? { reason } : {}) }),
   extend: (id: string, extraSec: number) => requestSession(id, 'POST', `/sessions/${encodeURIComponent(id)}/extend`, { extraSec }),
+  createHandoff: (sessionId: string, purpose: 'delivery' | 'loyalty' | 'coupon' | 'campaign') =>
+    request(CustomerHandoff, 'POST', '/handoff', { sessionId, purpose }),
+  simulateHandoff: (handoffId: string, outcome: 'scan' | 'link' | 'expire' | 'cancel' | 'fail') =>
+    request(CustomerHandoff, 'POST', '/handoff/simulate', { handoffId, outcome }),
   createPaymentIntent: (sessionId: string) => request(PaymentIntent, 'POST', '/payments/intents', { sessionId }),
   cancelPaymentIntent: (intentId: string) => request(PaymentIntent, 'POST', `/payments/intents/${encodeURIComponent(intentId)}/cancel`),
   simulatePayment: (intentId: string, outcome: 'approve' | 'decline' | 'cancel' | 'expire' | 'review' | 'device_out' | 'recover') =>

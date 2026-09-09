@@ -87,6 +87,7 @@ export const ConfigGroup = z.enum([
   'printing',
   'payment',
   'session',
+  'customer',
   'sync',
   'techPanel',
   'accessibility',
@@ -159,6 +160,10 @@ export const CONFIG_KEYS: ConfigKeyDefinition[] = [
   { key: 'session.maxRetakesDefault', type: 'number', group: 'session', name: L('Retakes por defecto', 'Default retakes'), default: 3, editableAt: all, min: 0, max: 10, sensitive: false },
   { key: 'sync.heartbeatIntervalSec', type: 'number', group: 'sync', name: L('Intervalo de heartbeat (s)', 'Heartbeat interval (s)'), default: 30, editableAt: ['platform', 'organization'], min: 5, max: 600, sensitive: false },
   { key: 'sync.eventBatchSize', type: 'number', group: 'sync', name: L('Tamaño de lote de eventos', 'Event batch size'), default: 100, editableAt: ['platform', 'organization'], min: 1, max: 1000, sensitive: false },
+  { key: 'customer.handoffMethods', type: 'stringList', group: 'customer', name: L('Métodos de enlace', 'Link methods'), description: L('Formas de enlazar al cliente sin cuenta, en orden de preferencia.', 'Ways to link the customer without an account, in order of preference.'), default: ['display_qr'], editableAt: all, sensitive: false },
+  { key: 'customer.handoffTtlSec', type: 'number', group: 'customer', name: L('Vigencia del enlace (s)', 'Link lifetime (s)'), description: L('El enlace caduca solo; la sesión siguiente nunca lo hereda.', 'The link expires on its own; the next session never inherits it.'), default: 180, editableAt: all, min: 30, max: 900, sensitive: false },
+  { key: 'customer.handoffRotateSec', type: 'number', group: 'customer', name: L('Rotación del enlace (s)', 'Link rotation (s)'), description: L('Cada cuánto se regenera el token mostrado en pantalla.', 'How often the on-screen token regenerates.'), default: 30, editableAt: all, min: 10, max: 300, sensitive: false },
+  { key: 'customer.handoffBaseUrl', type: 'string', group: 'customer', name: L('URL base del enlace', 'Link base URL'), description: L('Dirección corta que codifica el QR de pantalla.', 'Short address encoded by the on-screen QR.'), default: 'https://psp.local/e', editableAt: ['organization', 'franchise'], sensitive: false },
   { key: 'techPanel.pinHash', type: 'string', group: 'techPanel', name: L('PIN del panel técnico (hash)', 'Tech panel PIN (hash)'), default: '', editableAt: ['organization', 'franchise', 'machine'], sensitive: true },
 ];
 

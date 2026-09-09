@@ -96,6 +96,8 @@ export function buildFeatureOverrides(): FeatureOverride[] {
     FeatureOverride.parse({ id: ID.featureOverride.aiLuminaHidden, key: 'ai.experiences', scope: { level: 'organization', id: ID.org.lumina }, mode: 'hidden', reason: 'Proveedor de IA pendiente de contrato; oculto salvo en el piloto Norte.', setBy: ID.user.adminLumina, setAt: '2026-08-01T12:00:00Z' }),
     FeatureOverride.parse({ id: ID.featureOverride.aiNorte, key: 'ai.experiences', scope: { level: 'franchise', id: ID.franchise.norte }, mode: 'enabled', reason: 'Piloto de IA en franquicia Norte.', setBy: ID.user.adminLumina, setAt: '2026-08-15T12:00:00Z' }),
     FeatureOverride.parse({ id: ID.featureOverride.deliveryLumina, key: 'delivery.digital', scope: { level: 'organization', id: ID.org.lumina }, mode: 'coming_soon', reason: 'Entrega digital anunciada para 2027.', setBy: ID.user.adminLumina, setAt: '2026-08-01T12:00:00Z' }),
+    // El enlace efímero se prueba sólo en la franquicia Norte: el resto de la red sigue anónima.
+    FeatureOverride.parse({ id: ID.featureOverride.handoffNorte, key: 'customer.handoff', scope: { level: 'franchise', id: ID.franchise.norte }, mode: 'enabled', reason: 'Piloto de entrega por QR en Norte; sin cuentas ni contraseñas.', setBy: ID.user.adminLumina, setAt: '2026-09-01T12:00:00Z' }),
     FeatureOverride.parse({ id: ID.featureOverride.demoUnit, key: 'kiosk.demoMode', scope: { level: 'machine', id: ID.machine.demo }, mode: 'enabled', reason: 'Unidad demo itinerante.', setBy: ID.user.owner, setAt: '2026-08-01T12:00:00Z' }),
   ];
 }

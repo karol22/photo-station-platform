@@ -36,6 +36,15 @@ export const CATALOG: CatalogEntry[] = [
     status: 'stable',
     docs: 'packages/imaging/README.md',
   },
+  {
+    kind: 'capability',
+    key: 'qr',
+    name: 'Códigos QR',
+    description: 'Codificador QR propio (ISO/IEC 18004): modos numérico, alfanumérico y byte UTF-8, versiones 1 a 20, niveles L/M/Q/H y elección automática de máscara. Los renderizadores pintan la matriz real con zona de silencio de 4 módulos.',
+    package: PACKAGE,
+    status: 'stable',
+    docs: 'packages/imaging/README.md',
+  },
   ...EDIT_OP_KEYS.map((key): CatalogEntry => {
     const spec = EDIT_OPS[key];
     const meta = OP_NAMES[key];
