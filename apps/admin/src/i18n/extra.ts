@@ -719,3 +719,6 @@ export function createTranslator(locale: Locale): Translator {
     formatTime: (iso, timezone) => baseFormatTime(iso, locale, timezone),
   };
 }
+
+// Exportes planos para la compuerta de paridad i18n (`tools/gates`: i18n-parity).
+export { es, en };

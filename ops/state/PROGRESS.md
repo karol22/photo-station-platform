@@ -17,8 +17,10 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 11 | i18n, ui, sqlite, fixtures, catalog | hecho | i18n 44, sqlite 20, fixtures 54 pruebas; `pnpm psp bundle --machine mch_demo_doc_01` imprime procedencia; catalog registra gates y comandos | 2026-09-09 |
 | 12 | control-plane con seed y simulación de flota | hecho | `pnpm --filter @psp/control-plane test` → 12 pruebas; `pnpm seed` siembra 608 sesiones en `var/control-plane` | 2026-09-09 |
 | 13 | station-agent con sync, outbox y hardware mock | hecho | `pnpm --filter @psp/station-agent test` → 11 pruebas; `curl localhost:4100/station/v1/bundle` devuelve 9 productos del dataset demo sin nube | 2026-09-09 |
-| 14 | kiosk: flujos documental, entretenimiento, pago, panel técnico | en curso | agente relanzado 07:20 (kiosk); sólo existían vite.config e i18n extra | 2026-09-09 |
-| 15 | admin: consola completa y portal de franquicia | en curso | agente relanzado 07:20 (admin); existían api client y lib con 28 pruebas | 2026-09-09 |
+| 14 | kiosk: flujos documental, entretenimiento, pago, panel técnico | hecho | `pnpm --filter @psp/kiosk test` → 19 pruebas; `build` 663 kB; recorrido documental completo verificado en navegador con cámara sintética hasta "Impresión terminada" y retorno a atracción | 2026-09-09 |
+| 15 | admin: consola completa y portal de franquicia | hecho | `pnpm --filter @psp/admin test` → 34 pruebas; `build`; dashboard, inventario y pestaña de configuración con procedencia verificados en navegador | 2026-09-09 |
 | 16 | CLI y compuertas | hecho | `pnpm gate:quick` ejecuta 12 compuertas; `pnpm psp catalog` imprime el catálogo | 2026-09-09 |
-| 17 | Trazabilidad de requisitos | en curso | agente de documentación relanzado 07:20 escribe `docs/trazabilidad.md` | 2026-09-09 |
+| 17 | Trazabilidad de requisitos | hecho | `docs/trazabilidad.md` → 124 completo · 2 parcial · 2 pendiente; compuerta `traceability` verde | 2026-09-09 |
 | 18 | Corte por límite de uso 03:30–07:10; relanzamiento de 7 agentes | hecho | esta fila; `git status` muestra el trabajo previo en disco | 2026-09-09 |
+| 19 | Integración nube ↔ máquina ↔ kiosco verificada | hecho | heartbeat actualiza la máquina en la nube; comando `set_maintenance` ejecutado y en línea temporal; sesión registrada en `GET /admin/v1/sessions` sin fotos; rollout piloto avanza con 100 máquinas simuladas | 2026-09-09 |
+| 20 | Compuertas | hecho | `pnpm gate:quick` → 12/12 en verde (ver commit) | 2026-09-09 |
