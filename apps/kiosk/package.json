@@ -1,0 +1,37 @@
+{
+  "name": "@psp/kiosk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "UI táctil del cliente y panel técnico. PWA React que sólo habla con el agente local.",
+  "scripts": {
+    "dev": "vite --port 5173 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --port 5173",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "0.10.35",
+    "@psp/contracts": "workspace:*",
+    "@psp/domain": "workspace:*",
+    "@psp/i18n": "workspace:*",
+    "@psp/imaging": "workspace:*",
+    "@psp/ui": "workspace:*",
+    "@psp/vision": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-router-dom": "7.18.3",
+    "zod": "4.5.4",
+    "zustand": "5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "26.5.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@vitejs/plugin-react": "5.2.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.6",
+    "vitest": "3.2.7"
+  }
+}

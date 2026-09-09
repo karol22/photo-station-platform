@@ -1,0 +1,11 @@
+{
+  "name": "@psp/gates",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Compuertas sobre hechos: bloquean si un hecho verificable no se cumple.",
+  "main": "./src/index.ts",
+  "scripts": { "test": "vitest run --passWithNoTests", "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": { "@psp/catalog": "workspace:*", "@psp/contracts": "workspace:*", "@psp/i18n": "workspace:*" },
+  "devDependencies": { "@types/node": "26.5.0", "tsx": "4.23.13", "typescript": "5.9.3", "vitest": "3.2.7" }
+}

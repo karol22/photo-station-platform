@@ -1,0 +1,23 @@
+{
+  "name": "@psp/catalog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Registro descubrible de capacidades: agrega las entradas de todos los paquetes y las estáticas de apps, comandos y gates.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "test": "vitest run", "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": {
+    "@psp/contracts": "workspace:*",
+    "@psp/domain": "workspace:*",
+    "@psp/config-engine": "workspace:*",
+    "@psp/vision": "workspace:*",
+    "@psp/imaging": "workspace:*",
+    "@psp/integrations": "workspace:*",
+    "@psp/i18n": "workspace:*",
+    "@psp/sqlite": "workspace:*",
+    "@psp/fixtures": "workspace:*"
+  },
+  "devDependencies": { "typescript": "5.9.3", "vitest": "3.2.7" }
+}

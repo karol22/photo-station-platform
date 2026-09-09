@@ -1,0 +1,33 @@
+{
+  "name": "photo-station-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Plataforma multi-tenant para estaciones fotográficas de autoservicio: plano de control, agente de estación, kiosco y administración.",
+  "type": "module",
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "turbo run dev --concurrency=12",
+    "build": "turbo run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "gate:quick": "tsx tools/gates/run.ts quick",
+    "gate:full": "tsx tools/gates/run.ts full",
+    "psp": "tsx tools/cli/src/main.ts",
+    "seed": "tsx tools/cli/src/main.ts seed",
+    "catalog": "tsx tools/cli/src/main.ts catalog"
+  },
+  "devDependencies": {
+    "@types/node": "26.5.0",
+    "prettier": "3.9.6",
+    "tsx": "4.23.13",
+    "turbo": "2.10.12",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@psp/vision",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Análisis facial local (puertos + MediaPipe + mock), métricas de frame, evaluador de cumplimiento documental, guía de poses y auto-captura.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": "./src/index.ts", "./mediapipe": "./src/adapters/mediapipe.ts" },
+  "scripts": { "test": "vitest run", "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": { "@psp/contracts": "workspace:*", "@mediapipe/tasks-vision": "0.10.35" },
+  "devDependencies": { "typescript": "5.9.3", "vitest": "3.2.7" }
+}
