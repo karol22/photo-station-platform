@@ -7,7 +7,8 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import type { EditOp } from '@psp/contracts';
-import { COLOR_FILTERS, applyEditOps, resize, type Raster } from '@psp/imaging';
+import type { EditingTool } from '@psp/contracts';
+import { COLOR_FILTERS, applyEditOps, resize, validateEditOps, type Raster } from '@psp/imaging';
 import { rasterToDataUrl } from '@psp/imaging/browser';
 import { useT } from '../i18n';
 
@@ -19,12 +20,16 @@ export interface FilterOption {
   ops: EditOp[];
 }
 
-/** El primero es "sin filtro": siempre hay forma de volver al original. */
-export function filterOptions(allowed: string[]): FilterOption[] {
+/**
+ * Un filtro con nombre no es una herramienta aparte: es una combinación de ajustes que el producto
+ * ya permite. Por eso sólo se ofrece el filtro cuyas operaciones pasan la misma validación que
+ * cualquier edición manual. El primero es "sin filtro": siempre hay forma de volver al original.
+ */
+export function filterOptions(allowedTools: EditingTool[]): FilterOption[] {
   const named = Object.entries(COLOR_FILTERS)
-    .filter(([key]) => allowed.length === 0 || allowed.includes(key))
-    .map(([key, ops]) => ({ key, ops: ops as EditOp[] }));
-  return [{ key: 'none', ops: [] }, ...named];
+    .map(([key, ops]) => ({ key, ops: ops as EditOp[] }))
+    .filter((option) => validateEditOps(option.ops, allowedTools).ok);
+  return named.length > 0 ? [{ key: 'none', ops: [] }, ...named] : [];
 }
 
 export function FilterStrip({ source, options, activeKey, onPick }: {
@@ -43,7 +48,9 @@ export function FilterStrip({ source, options, activeKey, onPick }: {
     const height = Math.max(1, Math.round((source.height / source.width) * THUMB_WIDTH));
     const small = resize(source, THUMB_WIDTH, height);
     let cancelled = false;
-    // Una miniatura por cuadro de animación: la interfaz no se congela mientras se calculan.
+    // Una miniatura por turno del temporizador: la interfaz no se congela mientras se calculan.
+    // No se usa el ciclo de animación porque se detiene cuando la pantalla no está visible, y las
+    // miniaturas se quedarían a medias.
     const pending = [...options];
     const step = (): void => {
       if (cancelled || id !== jobId.current) return;
@@ -56,11 +63,12 @@ export function FilterStrip({ source, options, activeKey, onPick }: {
       } catch {
         // Un filtro que falla simplemente no ofrece miniatura; el resto sigue.
       }
-      requestAnimationFrame(step);
+      timer = setTimeout(step, 0);
     };
-    requestAnimationFrame(step);
+    let timer = setTimeout(step, 0);
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [source, options]);
 

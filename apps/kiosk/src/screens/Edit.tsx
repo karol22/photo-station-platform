@@ -52,6 +52,11 @@ export function EditScreen() {
   const capture = captures[captureIndex];
   const ops = history[cursor] ?? [];
   const allowed: EditingTool[] = product?.editing.allowedTools ?? [];
+
+  // No hay una operación "filtro": un filtro es la cola de operaciones que agrega, así que el
+  // filtro activo se deduce de las operaciones reales y sobrevive a deshacer y rehacer sin estado
+  // paralelo que se pueda desincronizar. Sólo se ofrecen los que el producto permite aplicar.
+  const filters = useMemo(() => filterOptions(allowed), [allowed]);
   const isDocument = product?.kind === 'document';
   const presets = useMemo(
     () => (bundle?.editingPresets ?? []).filter((p) => (product?.editing.allowedPresetIds.length ? product.editing.allowedPresetIds.includes(p.id) : true) && (!isDocument || p.documentSafe)),
@@ -161,11 +166,6 @@ export function EditScreen() {
 
   const has = (tool: EditingTool) => allowed.includes(tool);
 
-  // Los filtros con nombre son una combinación de ajustes ya existentes; se ofrecen sólo si el
-  // producto permite la herramienta que los agrupa. No hay una operación "filtro": un filtro es la
-  // cola de operaciones que agrega, así que el filtro activo se deduce de las operaciones reales y
-  // sobrevive a deshacer y rehacer sin estado paralelo que se pueda desincronizar.
-  const filters = useMemo(() => (has('filterIntensity') ? filterOptions([]) : []), [allowed]);
 
   const endsWith = (list: EditOp[], tail: EditOp[]): boolean =>
     tail.length > 0 &&

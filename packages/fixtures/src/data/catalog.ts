@@ -16,12 +16,12 @@ const T = ID.template;
 const docEditing: EditingPolicy = { enabled: true, allowedTools: DOCUMENT_SAFE_TOOLS, allowedPresetIds: [ID.editingPreset.docNeutral] };
 const creativeEditing: EditingPolicy = {
   enabled: true,
-  allowedTools: ['crop', 'brightness', 'contrast', 'saturation', 'temperature', 'grayscale', 'vignette', 'presets', 'frames', 'stickers', 'text', 'date', 'locationName'],
+  allowedTools: ['crop', 'brightness', 'contrast', 'saturation', 'temperature', 'grayscale', 'sharpen', 'vignette', 'filterIntensity', 'presets', 'frames', 'stickers', 'text', 'date', 'locationName'],
   allowedPresetIds: [ID.editingPreset.vivid, ID.editingPreset.retro, ID.editingPreset.bwSoft],
 };
 const portraitEditing: EditingPolicy = {
   enabled: true,
-  allowedTools: ['crop', 'levelRotation', 'brightness', 'contrast', 'exposure', 'temperature', 'grayscale', 'sharpen', 'presets'],
+  allowedTools: ['crop', 'levelRotation', 'brightness', 'contrast', 'exposure', 'saturation', 'temperature', 'grayscale', 'sharpen', 'vignette', 'filterIntensity', 'presets'],
   allowedPresetIds: [ID.editingPreset.vivid, ID.editingPreset.bwSoft],
 };
 const noEditing: EditingPolicy = { enabled: false, allowedTools: [], allowedPresetIds: [] };
