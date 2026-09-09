@@ -21,7 +21,7 @@ Salida: una línea por compuerta con ✅/❌ y mensajes; código de salida 1 si 
 | `traceability` | `docs/trazabilidad.md` apunta a secciones reales con estados válidos |
 | `progress-evidence` | filas `hecho` de `ops/state/PROGRESS.md` con evidencia |
 | `validation-at-edges` | `safeParse` presente en control-plane, station-agent y clientes de kiosk/admin |
-| `docs-present-tense` | sin "antes era", "anteriormente", "previously", "used to" en docs |
+| `docs-present-tense` | los documentos no contienen frases de bitácora (la lista vive en `src/gates.ts`) |
 | `catalog-complete` | features, capacidades, permisos, claves de config, apps, paquetes y compuertas registrados |
 | `typecheck` | paquetes (quick) o todo (full) |
 | `unit-tests` | packages y tools (quick) o todo (full) |
