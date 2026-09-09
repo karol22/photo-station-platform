@@ -32,3 +32,6 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 26 | Cuenta regresiva con la familia de formas | hecho | `apps/kiosk/src/screens/Capture.tsx` usa `BlobFace` en el conteo del recorrido social | 2026-09-09 |
 | 28 | La cabina no pregunta cuántas personas son | hecho | principio escrito en `docs/producto/00-que-es.md`; el paso se retiró del kiosco | 2026-09-09 |
 | 27 | Pendiente: paleta y familia de formas de Una de Todos en el dataset y el kiosco | pendiente | `docs/producto/00-que-es.md` fija los seis colores y los seis personajes | |
+| 29 | Marca Una de Todos en el dataset demo | hecho | `pnpm psp bundle` muestra publicName Una de Todos, paleta propia y retención `none`; 26 activos | 2026-09-09 |
+| 30 | La tira social es imprimible en la máquina por defecto | hecho | las tiras 2x6 se cortan de una hoja 4x6; `prd_tira_amigos` disponible en `mch_demo_doc_01` | 2026-09-09 |
+| 31 | Las siluetas de pose no llevan texto | hecho | la vista de cámara va en espejo y el texto salía invertido; la instrucción vive en la interfaz | 2026-09-09 |

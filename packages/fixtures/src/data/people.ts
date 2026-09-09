@@ -13,10 +13,10 @@ interface Seed { id: string; email: string; name: string; roleKey: RoleKey; scop
 
 const seeds: Seed[] = [
   { id: ID.user.owner, email: 'owner@platform.demo', name: 'Propietario de plataforma', roleKey: 'platform_owner', scope: { level: 'platform' }, locale: 'es' },
-  { id: ID.user.adminLumina, email: 'admin@lumina.demo', name: 'Andrea Solís', roleKey: 'brand_admin', scope: { level: 'organization', id: ID.org.lumina }, locale: 'es' },
+  { id: ID.user.adminUnaDeTodos, email: 'admin@unadetodos.demo', name: 'Andrea Solís', roleKey: 'brand_admin', scope: { level: 'organization', id: ID.org.unaDeTodos }, locale: 'es' },
   { id: ID.user.franqNorte, email: 'franq@norte.demo', name: 'Rodrigo Treviño', roleKey: 'franchise_owner', scope: { level: 'franchise', id: ID.franchise.norte }, locale: 'es' },
   { id: ID.user.tecnicoNorte, email: 'tecnico@norte.demo', name: 'Luis Garza', roleKey: 'technician', scope: { level: 'franchise', id: ID.franchise.norte }, locale: 'es' },
-  { id: ID.user.analistaLumina, email: 'analista@lumina.demo', name: 'Mariana Campos', roleKey: 'analyst', scope: { level: 'organization', id: ID.org.lumina }, locale: 'en' },
+  { id: ID.user.analistaUnaDeTodos, email: 'analista@unadetodos.demo', name: 'Mariana Campos', roleKey: 'analyst', scope: { level: 'organization', id: ID.org.unaDeTodos }, locale: 'en' },
   { id: ID.user.adminFotorapida, email: 'admin@fotorapida.demo', name: 'Camila Restrepo', roleKey: 'brand_admin', scope: { level: 'organization', id: ID.org.fotorapida }, locale: 'es' },
   { id: ID.user.soporte, email: 'soporte@platform.demo', name: 'Soporte temporal', roleKey: 'temp_support', scope: { level: 'machine', id: ID.machine.cinema }, locale: 'es' },
 ];
@@ -54,7 +54,7 @@ export function buildSupportAccesses(): SupportAccess[] {
       scope: { level: 'machine', id: ID.machine.cinema },
       permissions: ['machines.view', 'machines.commands', 'machines.maintenance', 'incidents.manage', 'sessions.view'],
       reason: 'Diagnóstico remoto de la cámara de mch_cine_01 (incidencia inc_cine_camera)',
-      grantedBy: ID.user.adminLumina,
+      grantedBy: ID.user.adminUnaDeTodos,
       startsAt: daysAgo(1),
       expiresAt: daysFromNow(7),
     }),

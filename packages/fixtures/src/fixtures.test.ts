@@ -240,7 +240,7 @@ describe('escenarios', () => {
   });
   it('usuarios prometidos en como-correr.md con contraseña demo', () => {
     const emails = DEMO_USERS.map((u) => u.email);
-    for (const e of ['owner@platform.demo', 'admin@lumina.demo', 'franq@norte.demo', 'tecnico@norte.demo', 'analista@lumina.demo', 'admin@fotorapida.demo', 'soporte@platform.demo']) expect(emails).toContain(e);
+    for (const e of ['owner@platform.demo', 'admin@unadetodos.demo', 'franq@norte.demo', 'tecnico@norte.demo', 'analista@unadetodos.demo', 'admin@fotorapida.demo', 'soporte@platform.demo']) expect(emails).toContain(e);
     for (const u of DEMO_USERS) { expect(u.password).toBe('demo'); expect(u.passwordHash).toBe(sha256Hex('demo')); expect(userIds.has(u.id)).toBe(true); expect(data.roleAssignments.some((ra) => ra.userId === u.id && ra.roleKey === u.roleKey)).toBe(true); }
     const support = data.supportAccesses.find((s) => s.userId === ID.user.soporte);
     expect(support?.scope).toEqual({ level: 'machine', id: ID.machine.cinema });
@@ -257,7 +257,7 @@ describe('escenarios', () => {
     expect(rules.find((r) => r.id === ID.priceRule.portraitProPremium)?.scope).toEqual({ level: 'machine', id: ID.machine.premium });
   });
   it('capa de franquicia intenta un color bloqueado por la organización', () => {
-    const org = data.configLayers.find((l) => l.id === ID.configLayer.orgLumina);
+    const org = data.configLayers.find((l) => l.id === ID.configLayer.orgUnaDeTodos);
     const norte = data.configLayers.find((l) => l.id === ID.configLayer.frNorte);
     expect(org?.locks.some((l) => l.key === 'branding.palette.primary' && l.policy === 'mandatory')).toBe(true);
     expect(norte?.values['branding.palette.primary']).toBeDefined();

@@ -21,10 +21,10 @@ pnpm dev         # control-plane :4000, station-agent :4100, kiosk :5173, admin 
 | Usuario | Rol | Alcance |
 |---|---|---|
 | `owner@platform.demo` | propietario de plataforma | toda la plataforma |
-| `admin@lumina.demo` | administrador de marca | organización Lumina |
-| `franq@norte.demo` | propietario de franquicia | franquicia Norte (Lumina) |
+| `admin@unadetodos.demo` | administrador de marca | organización Una de Todos |
+| `franq@norte.demo` | propietario de franquicia | franquicia Norte (Una de Todos) |
 | `tecnico@norte.demo` | técnico | franquicia Norte |
-| `analista@lumina.demo` | analista, sólo lectura | organización Lumina |
+| `analista@unadetodos.demo` | analista, sólo lectura | organización Una de Todos |
 | `admin@fotorapida.demo` | administrador de marca | organización FotoRápida |
 
 La contraseña de todos es `demo`. Son datos ficticios de `packages/fixtures`.

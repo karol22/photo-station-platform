@@ -40,7 +40,7 @@ import {
 } from './store';
 
 export const DEMO_PROVISIONING_TOKEN = 'demo-provisioning-token';
-const DEMO_ORGANIZATION = 'org_lumina';
+const DEMO_ORGANIZATION = 'org_una_de_todos';
 
 function parse<S extends z.ZodTypeAny>(schema: S, input: unknown): z.output<S> {
   const result = schema.safeParse(input);

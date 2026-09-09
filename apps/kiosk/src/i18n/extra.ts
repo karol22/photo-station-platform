@@ -264,7 +264,7 @@ export const EXTRA_TABLE: Record<string, Pair> = {
 
   /* ---------- revisión ---------- */
   'kiosk.review.title': ['¿Te gusta esta foto?', 'Do you like this photo?'],
-  'kiosk.review.title_set': ['¡Qué buena una de todos!', 'What a great one of everyone!'],
+  'kiosk.review.title_set': ['¡Quedaron muy bien!', 'These came out great!'],
   'kiosk.review.approved': ['Criterios cumplidos', 'Checks passed'],
   'kiosk.review.warnings': ['Advertencias', 'Warnings'],
   'kiosk.review.no_warnings': ['Sin advertencias', 'No warnings'],

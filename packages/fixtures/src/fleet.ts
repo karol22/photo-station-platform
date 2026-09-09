@@ -30,9 +30,9 @@ const STREETS = ['Av. Reforma', 'Blvd. Constitución', 'Calle Hidalgo', 'Av. Ju�
 
 export function generateFleet(base: FleetBase, count: number, seed: string): FleetResult {
   const rng = new Rng(`fleet/${seed}`);
-  const profiles = base.hardwareProfiles.filter((p): p is HardwareProfile => p.organizationId === undefined || p.organizationId === DEMO_IDS.org.lumina);
+  const profiles = base.hardwareProfiles.filter((p): p is HardwareProfile => p.organizationId === undefined || p.organizationId === DEMO_IDS.org.unaDeTodos);
   if (profiles.length === 0) throw new Error('generateFleet: sin perfiles de hardware');
-  const blueprintFor = (profileId: string): string | undefined => base.blueprints.find((b) => b.hardwareProfileId === profileId && b.organizationId === DEMO_IDS.org.lumina)?.id;
+  const blueprintFor = (profileId: string): string | undefined => base.blueprints.find((b) => b.hardwareProfileId === profileId && b.organizationId === DEMO_IDS.org.unaDeTodos)?.id;
   const regionIds = new Set(base.regions.map((r) => r.id));
   const cities = CITIES.filter((c) => regionIds.has(c.regionId));
   const machines: Machine[] = [];
@@ -46,7 +46,7 @@ export function generateFleet(base: FleetBase, count: number, seed: string): Fle
     const n = String(i + 1).padStart(4, '0');
     locations.push(
       Location.parse({
-        id: `loc_sim_${n}`, organizationId: DEMO_IDS.org.lumina, franchiseId: city.franchiseId, regionId: city.regionId,
+        id: `loc_sim_${n}`, organizationId: DEMO_IDS.org.unaDeTodos, franchiseId: city.franchiseId, regionId: city.regionId,
         internalName: `SIM-${city.city.slice(0, 3).toUpperCase()}-${n}`, publicName: `${type === 'mall' ? 'Plaza' : type === 'cinema' ? 'Cinema' : type === 'cafe' ? 'Café' : type === 'university' ? 'Universidad' : type === 'hotel' ? 'Hotel' : type === 'transport_terminal' ? 'Terminal' : 'Tienda'} ${city.city} ${n}`,
         type, address: { line1: `${rng.pick(STREETS)} ${rng.int(10, 999)}`, city: city.city, state: city.state, country: 'MX' }, timezone: city.timezone,
         openingHours: [{ days: [0, 1, 2, 3, 4, 5, 6], from: '10:00', to: '21:00' }], status: 'active', installedAt: daysAgo(rng.int(10, 200)), tags: ['simulada'], createdAt: DEMO_NOW,
@@ -65,7 +65,7 @@ export function generateFleet(base: FleetBase, count: number, seed: string): Fle
     const online = status !== 'disconnected';
     machines.push(
       Machine.parse({
-        id: `mch_sim_${n}`, code: `SIM-${n}`, name: `Simulada ${n} · ${location.publicName}`, organizationId: DEMO_IDS.org.lumina, franchiseId: location.franchiseId, regionId: location.regionId, locationId: location.id,
+        id: `mch_sim_${n}`, code: `SIM-${n}`, name: `Simulada ${n} · ${location.publicName}`, organizationId: DEMO_IDS.org.unaDeTodos, franchiseId: location.franchiseId, regionId: location.regionId, locationId: location.id,
         hardwareProfileId: profile.id, blueprintId: blueprintFor(profile.id), status,
         capabilities: profile.expectedCapabilities.map((key) => ({ key, present: true, operational: status !== 'out_of_service', updatedAt: hoursAgo(1) })),
         printers: profile.printers, softwareVersion: version, releaseChannel: version === SOFTWARE_VERSIONS.v030pilot1 ? 'pilot' : 'stable', online,

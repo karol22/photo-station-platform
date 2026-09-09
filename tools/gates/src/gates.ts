@@ -116,7 +116,7 @@ export const noHardcodedBusinessText: Gate = {
   description: 'apps/kiosk/src y apps/admin/src no contienen nombres de marcas, ciudades ni precios del dataset demo.',
   modes: ['quick', 'full'],
   async run({ root }) {
-    const forbidden = [/Lumina/, /FotoR[aá]pida/i, /Monterrey/, /Quer[eé]taro/, /Bogot[aá]/, /Ciudad de M[eé]xico/, /\bLe[oó]n\b/, /\$\s?\d{2,}(\.\d{2})?\b/];
+    const forbidden = [/Una de Todos/i, /FotoR[aá]pida/i, /Monterrey/, /Quer[eé]taro/, /Bogot[aá]/, /Ciudad de M[eé]xico/, /\bLe[oó]n\b/, /\$\s?\d{2,}(\.\d{2})?\b/];
     const problems: string[] = [];
     for (const app of ['apps/kiosk/src', 'apps/admin/src']) {
       for (const file of walk(root, app, (p) => /\.(tsx?|css|html)$/.test(p) && !/\.test\.tsx?$/.test(p))) {

@@ -19,7 +19,7 @@ export function buildRollouts(): Rollout[] {
   return [
     Rollout.parse({
       id: ID.rollout.v010all, releaseId: ID.release.v010, name: 'Producción 0.1.0 en toda la flota',
-      targets: [{ kind: 'organization', organizationId: ID.org.lumina }, { kind: 'organization', organizationId: ID.org.fotorapida }],
+      targets: [{ kind: 'organization', organizationId: ID.org.unaDeTodos }, { kind: 'organization', organizationId: ID.org.fotorapida }],
       schedule: { startsAt: '2026-05-01T12:00:00Z', windowStartLocal: '02:00', windowEndLocal: '06:00' }, status: 'completed', isRollback: false,
       stats: { total: 10, pending: 0, downloading: 0, ready: 0, installing: 0, completed: 10, failed: 0, rolledBack: 0, paused: 0 },
       ...audit(ID.user.owner), createdAt: '2026-05-01T12:00:00Z',
