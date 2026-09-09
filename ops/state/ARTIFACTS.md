@@ -7,4 +7,6 @@
 | Contratos | v1 | `packages/contracts` | | Aditivo dentro de v1 |
 | Migraciones control-plane | 0001 | `apps/control-plane/migrations` | | |
 | Migraciones station-agent | 0001 | `apps/station-agent/migrations` | | |
-| Dataset demo | 1 | `packages/fixtures` | | Determinista, ids fijos |
+| Dataset demo | 1 | `packages/fixtures` | `DEMO_NOW = 2026-09-09T12:00:00Z` | Determinista, ids fijos |
+| Materializador de bundles | 1 | `packages/bundler` | 12 pruebas | Usado por control-plane y station-agent |
+| Compuertas | 13 | `tools/gates/src/gates.ts` | `pnpm gate:quick` → 12 en modo quick | Registradas en `packages/catalog` |

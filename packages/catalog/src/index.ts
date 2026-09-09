@@ -62,11 +62,11 @@ export const GATE_CATALOG: CatalogEntry[] = [
 ];
 
 export const COMMAND_CATALOG: CatalogEntry[] = [
-  { kind: 'command', key: 'catalog', name: 'pnpm psp catalog', description: 'Imprime el catálogo de capacidades.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
-  { kind: 'command', key: 'seed', name: 'pnpm psp seed', description: 'Siembra el dataset demo en var/control-plane.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
-  { kind: 'command', key: 'bundle', name: 'pnpm psp bundle', description: 'Materializa e imprime el bundle efectivo de una máquina con procedencia.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
-  { kind: 'command', key: 'simulate-fleet', name: 'pnpm psp simulate-fleet', description: 'Crea N máquinas virtuales que envían heartbeats.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
-  { kind: 'command', key: 'demo', name: 'pnpm psp demo', description: 'Arranque guiado de la demo local.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
+  { kind: 'command', key: 'psp catalog', name: 'pnpm psp catalog', description: 'Imprime el catálogo de capacidades.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
+  { kind: 'command', key: 'psp seed', name: 'pnpm psp seed', description: 'Siembra el dataset demo en var/control-plane.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
+  { kind: 'command', key: 'psp bundle', name: 'pnpm psp bundle', description: 'Materializa e imprime el bundle efectivo de una máquina con procedencia.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
+  { kind: 'command', key: 'psp simulate-fleet', name: 'pnpm psp simulate-fleet', description: 'Crea N máquinas virtuales que envían heartbeats.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
+  { kind: 'command', key: 'psp demo', name: 'pnpm psp demo', description: 'Arranque guiado de la demo local.', package: '@psp/cli', status: 'stable', docs: 'tools/cli/README.md' },
 ];
 
 export function contractsCatalog(): CatalogEntry[] {

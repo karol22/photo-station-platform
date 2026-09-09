@@ -1,45 +1,37 @@
 # Photo Station Platform
 
-Plataforma de software para estaciones fotográficas de autoservicio: desde una sola máquina hasta una red de marcas, franquicias, ubicaciones y máquinas con hardware distinto. Este repositorio contiene el plano de control (nube), lo que vive dentro de cada máquina (agente + kiosco), la consola de administración y los paquetes puros que comparten.
+Plataforma multi-tenant para estaciones fotográficas físicas de autoservicio: fotos para documentos con guía visual y auto-captura, experiencias de entretenimiento, edición local, impresión, administración centralizada de una flota que crece de una máquina a miles, franquicias, campañas, versiones y despliegues.
 
-- **Requisitos de producto:** `docs/requisitos-producto.md`
-- **Arquitectura:** `docs/arquitectura/00-vision-general.md` (empieza aquí) y `docs/README.md` (índice)
-- **Cómo correr:** `docs/operacion/como-correr.md`
-- **Agentes de IA:** `AGENTS.md` es el único punto de entrada
+Todo lo que necesita una sesión corre dentro de la máquina; la nube aporta configuración, contenido, versiones y visibilidad. Ningún proveedor externo (pagos, IA, mensajería, fiscal, CRM) está conectado: cada uno es un puerto con un adaptador simulado que la UI ya sabe representar.
 
 ## Arranque rápido
 
 ```bash
-pnpm install
-pnpm seed
-pnpm dev
+pnpm install     # hermético: Node ≥ 22.13, sin compilación nativa
+pnpm seed        # dataset demo en var/control-plane
+pnpm dev         # control-plane :4000 · station-agent :4100 · kiosk :5173 · admin :5174
 ```
 
-| Servicio | URL |
-|---|---|
-| Kiosco (cliente + panel técnico) | http://localhost:5173 |
-| Administración / portal de franquicia | http://localhost:5174 |
-| Control-plane API | http://localhost:4000 |
-| Station-agent API (local de la máquina) | http://localhost:4100 |
+- Kiosco: http://localhost:5173 (webcam real o cámara sintética; panel técnico con PIN `2468` tocando cinco veces la esquina superior izquierda).
+- Administración: http://localhost:5174 (usuarios demo en `docs/operacion/como-correr.md`, contraseña `demo`).
+- Prueba hermética: `pnpm gate:quick`. Catálogo de capacidades: `pnpm catalog`.
 
 ## Mapa
 
-```
-apps/control-plane   API central (/admin/v1, /fleet/v1), SQLite, seed, simulación de flota
-apps/station-agent   servicio local de la máquina (/station/v1, SSE, sync, hardware mock)
-apps/kiosk           UI táctil del cliente + panel técnico (React PWA)
-apps/admin           consola de administración y portal de franquicia (React)
-packages/*           contracts, domain, config-engine, bundler, vision, imaging, integrations, i18n, ui, sqlite, fixtures, catalog
-tools/*              cli (pnpm psp) y gates (pnpm gate:quick)
-docs/                requisitos, arquitectura, protocolos, operación, trazabilidad
-ops/                 estado en disco para agentes (progreso, artefactos, libro mayor, evaluaciones)
-```
+| Ruta | Qué es |
+|---|---|
+| `apps/control-plane` | API central: administración (`/admin/v1`) y flota (`/fleet/v1`), SQLite, seed, simulación de flota y despliegues |
+| `apps/station-agent` | Servicio local de cada máquina: API de estación, SSE, bundle cacheado, sesiones y fotos efímeras, impresión y pagos simulados, sync con la nube |
+| `apps/kiosk` | UI táctil del cliente y panel técnico (React PWA); visión y edición en el dispositivo |
+| `apps/admin` | Consola de administración y portal de franquicia |
+| `packages/contracts` | Esquemas zod: única fuente de verdad de entidades, APIs y protocolos |
+| `packages/domain` · `config-engine` · `bundler` | Lógica pura: alcance y RBAC, precios, features, sesiones; herencia de configuración con procedencia; materialización de bundles |
+| `packages/vision` · `imaging` | Análisis facial local, cumplimiento documental, auto-captura; edición, composición y layout de impresión |
+| `packages/integrations` | Puertos y mocks de pagos, IA, entrega digital, fiscal y CRM |
+| `packages/i18n` · `ui` · `sqlite` · `fixtures` · `catalog` | Localización es/en, design system, SQLite embebido, dataset demo, catálogo descubrible |
+| `tools/cli` · `tools/gates` | `pnpm psp <comando>` y compuertas de hechos |
+| `docs/` | Requisitos, arquitectura, ADRs, protocolos, operación y trazabilidad |
+| `ops/` | Estado en disco para agentes: progreso, artefactos, libro mayor, evaluaciones |
 
-## Principios en una línea
-La máquina es autónoma; la nube manda configuración y contenido; lo externo es un puerto con mock; la configuración es inmutable y versionada; los contratos son la única fuente de verdad; la lógica pura vive en paquetes; las fotos nunca salen de la máquina.
-
-## Calidad
-```bash
-pnpm gate:quick   # prueba hermética en segundos
-pnpm gate:full    # todo, incluido build de apps
-```
+## Cómo evoluciona
+El repositorio está diseñado para desarrollarse con agentes de IA: `AGENTS.md` es el único punto de entrada, el estado vive en `ops/`, las compuertas (`pnpm gate:quick`) comprueban hechos, y la documentación se mantiene en presente. Ver `docs/README.md` y `docs/arquitectura/00-vision-general.md`.

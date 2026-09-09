@@ -51,13 +51,14 @@ Regla de oro: **el kiosco sólo habla con el agente local**. Una sesión complet
 
 | Ruta | Paquete | Rol | Depende de |
 |---|---|---|---|
-| `apps/control-plane` | `@psp/control-plane` | API central (`/admin/v1`, `/fleet/v1`), SQLite, migraciones, seed, simulación de flota y despliegues | contracts, domain, config-engine, fixtures, sqlite |
-| `apps/station-agent` | `@psp/station-agent` | Servicio local de la máquina: `/station/v1`, SSE, DB local, sync, hardware, retención | contracts, domain, config-engine, integrations, imaging, fixtures, sqlite |
+| `apps/control-plane` | `@psp/control-plane` | API central (`/admin/v1`, `/fleet/v1`), SQLite, migraciones, seed, simulación de flota y despliegues | contracts, domain, config-engine, bundler, fixtures, sqlite |
+| `apps/station-agent` | `@psp/station-agent` | Servicio local de la máquina: `/station/v1`, SSE, DB local, sync, hardware, retención | contracts, domain, config-engine, bundler, integrations, imaging, fixtures, sqlite |
 | `apps/kiosk` | `@psp/kiosk` | UI del cliente y panel técnico (React, táctil, PWA) | contracts, domain, vision, imaging, i18n, ui |
 | `apps/admin` | `@psp/admin` | Consola de administración y portal de franquicia (React) | contracts, domain, i18n, ui |
 | `packages/contracts` | `@psp/contracts` | Esquemas zod: entidades, APIs, protocolo, eventos | zod |
 | `packages/domain` | `@psp/domain` | Lógica pura: jerarquía y alcance, RBAC, precios y promociones, capacidades, features, sesiones, pagos (máquina de estados), retención, releases | contracts |
 | `packages/config-engine` | `@psp/config-engine` | Capas de configuración, procedencia, bloqueos, overlays de campaña, bundles con hash | contracts |
+| `packages/bundler` | `@psp/bundler` | Materializa el `ConfigBundle` de una máquina desde las colecciones de negocio (cadena de alcance, capas, campañas, features, productos, precios, presets, plantillas, activos) y calcula la disponibilidad para el kiosco | contracts, domain, config-engine |
 | `packages/vision` | `@psp/vision` | Puertos de análisis facial, adaptador MediaPipe y mock, métricas de frame, evaluador de cumplimiento documental, controlador de auto-captura | contracts |
 | `packages/imaging` | `@psp/imaging` | Operaciones de píxel puras (ImageData), pipeline de edición, motor de composición de plantillas, layout de hoja documental | contracts |
 | `packages/integrations` | `@psp/integrations` | Puertos y mocks: terminal de pago, proveedor de IA, entrega digital, fiscal, CRM | contracts, domain |
@@ -69,7 +70,7 @@ Regla de oro: **el kiosco sólo habla con el agente local**. Una sesión complet
 | `tools/cli` | `@psp/cli` | `pnpm psp <cmd>`: catalog, seed, demo, simulate-fleet, bundle, gates | todo |
 | `tools/gates` | `@psp/gates` | Compuertas sobre hechos (ver `AGENTS.md`) | — |
 
-Las dependencias van siempre hacia abajo: apps → packages; packages → contracts. `contracts` no depende de nadie salvo zod. Ningún paquete importa de una app.
+Las dependencias van siempre hacia abajo: tools → apps → packages; packages → contracts. `contracts` no depende de nadie salvo zod. Ningún paquete importa de una app; el CLI puede importar apps (por ejemplo el seed del control-plane).
 
 ## 4. Plano de estación
 

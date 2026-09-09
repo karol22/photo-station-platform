@@ -228,3 +228,14 @@ materializeBundle(source: BundleSource, machineId: Id, opts: { now: Date; assetU
 // Pasos: cadena de alcance → capas (platform, org, blueprint de la máquina como capa 'blueprint', franquicia, región, ubicación, máquina) → campañas cuyo target incluya la cadena o los tags → resolveEffectiveConfig → features (resolveFeatures) → productos de la organización filtrados por disponibilidad de alcance y estado → precios (resolvePrice por producto) → presets (versión actual) y plantillas referenciadas → experiencias y presets de edición referenciados → activos referenciados por todo lo anterior (manifiesto con url = assetUrlBase + '/' + hash) → buildBundle.
 computeKioskAvailability(bundle: ConfigBundle, runtime: { machine: Machine; printers: PrinterRuntime[]; maintenance: boolean; now: Date }): ProductAvailabilityState[]   // envoltura de domain.computeAvailability con los datos del bundle
 ```
+
+## @psp/bundler
+
+```ts
+type BundleSource = Pick<DemoDataset, /* las 24 colecciones que participan; ver src/materialize.ts */>
+materializeBundle(source: BundleSource, machineId: Id, opts: { now: Date; assetUrlBase: string; catalogRevision?: string; generatedAt?: string }): ConfigBundle
+// cadena de alcance → capas (+ blueprint) → campañas aplicables → config efectiva → features → productos → precios → presets/plantillas/experiencias/presets de edición → políticas y checklists → activos referenciados → buildBundle (version = hash)
+computeKioskAvailability(bundle: ConfigBundle, runtime: { machine: Machine; printers: PrinterRuntime[]; maintenance: boolean; now: Date }): ProductAvailabilityState[]
+bundleChain(source: BundleSource, machineId: Id): Scope[]
+bundleTimezone(source: BundleSource, machineId: Id): string
+```
