@@ -27,6 +27,13 @@ const SLIDERS: Array<{ key: SliderKey; param: string; min: number; max: number; 
 ];
 
 const PREVIEW_MAX = 900;
+/**
+ * La vista previa se recalcula en cada cambio y `applyEditOps` es síncrono. A 900 px un cambio
+ * cuesta lo bastante como para que arrastrar un deslizador se vea a tirones, así que mientras la
+ * mano está encima se trabaja en pequeño y sólo al soltar se sube a la resolución de vista previa.
+ */
+const PREVIEW_LIVE = 360;
+const SETTLE_MS = 220;
 
 export function EditScreen() {
   const { t, tl } = useT();
@@ -87,6 +94,15 @@ export function EditScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [capture?.id]);
 
+  // Un cambio recién hecho se dibuja en pequeño; si no llega otro en `SETTLE_MS`, se redibuja
+  // grande. Así el dedo ve movimiento inmediato y el resultado final no pierde calidad.
+  const [settled, setSettled] = useState(true);
+  useEffect(() => {
+    setSettled(false);
+    const timer = setTimeout(() => setSettled(true), SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [ops]);
+
   useEffect(() => {
     if (!original) return;
     let active = true;
@@ -102,15 +118,16 @@ export function EditScreen() {
         }
       }
       if (!active) return;
-      const scale = Math.min(1, PREVIEW_MAX / Math.max(original.width, original.height));
+      const target = settled ? PREVIEW_MAX : PREVIEW_LIVE;
+      const scale = Math.min(1, target / Math.max(original.width, original.height));
       const base = scale < 1 ? downscale(original, scale) : original;
       const result = applyEditOps(base, scaleOps(ops, scale), { assets: assets.current, presets: presetMap });
-      if (active) setPreview(rasterToDataUrl(result, 'image/jpeg', 0.9));
+      if (active) setPreview(rasterToDataUrl(result, 'image/jpeg', settled ? 0.9 : 0.7));
     })().catch(() => undefined);
     return () => {
       active = false;
     };
-  }, [original, ops, frames, stickers, bundle, presetMap]);
+  }, [original, ops, frames, stickers, bundle, presetMap, settled]);
 
   if (!session || !product) return null;
 

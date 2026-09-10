@@ -81,3 +81,27 @@ describe('retención del temporizador de inactividad', () => {
     expect(next).not.toBe(state);
   });
 });
+
+describe('eventos de otra sesión', () => {
+  const otra = { ...session, id: 'ses_otra', stage: 'capturing' } as StationSession;
+
+  it('se ignoran mientras la sesión de esta persona sigue viva', () => {
+    const state = { ...INITIAL_DATA, session: { ...session, stage: 'editing' } as StationSession };
+    expect(applyStationEvent(state, { type: 'session', session: otra })).toBe(state);
+  });
+
+  it('se aceptan cuando la sesión anterior ya terminó', () => {
+    const state = { ...INITIAL_DATA, session: { ...session, stage: 'cancelled' } as StationSession };
+    expect(applyStationEvent(state, { type: 'session', session: otra }).session?.id).toBe('ses_otra');
+  });
+
+  it('se aceptan cuando no hay ninguna sesión local', () => {
+    expect(applyStationEvent(INITIAL_DATA, { type: 'session', session: otra }).session?.id).toBe('ses_otra');
+  });
+
+  it('la actualización de la propia sesión siempre entra', () => {
+    const state = { ...INITIAL_DATA, session: { ...session, stage: 'capturing' } as StationSession };
+    const avanzada = { ...session, stage: 'reviewing' } as StationSession;
+    expect(applyStationEvent(state, { type: 'session', session: avanzada }).session?.stage).toBe('reviewing');
+  });
+});

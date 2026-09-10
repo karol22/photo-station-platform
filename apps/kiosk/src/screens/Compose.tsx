@@ -117,6 +117,9 @@ export function ComposeScreen() {
     if (!sources || !composed) return;
     setSaving(true);
     try {
+      // Componer a resolución de impresión bloquea el hilo. Ceder un cuadro antes deja que el
+      // botón pinte su estado de carga; si no, el toque parece perdido y la gente toca otra vez.
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       const canvas = renderPlanToCanvas(composed.plan, sources);
       const updated = await stationApi.saveComposition(session.id, { imageBase64: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height, copies: product.printCount > 0 ? copies : 0 });
       setSession(updated);
@@ -130,7 +133,7 @@ export function ComposeScreen() {
   const sheetsLabel = info ? t(info.sheets === 1 ? 'kiosk.compose.sheet_one' : 'kiosk.compose.sheets', { copies, sheets: info.sheets }) : '';
 
   return (
-    <SessionFrame title={t('kiosk.compose.title')}>
+    <SessionFrame title={t('kiosk.compose.title')} onAutoAdvance={() => void confirm()}>
       <div className="kiosk-edit">
         <div className="kiosk-stack">
           <div className="kiosk-preview" style={{ position: 'relative' }}>

@@ -15,6 +15,9 @@ export function ReviewScreen() {
   const navigate = useNavigate();
   const { session, product, advance, goToStage } = useSession();
   const [compare, setCompare] = useState(false);
+  // Confirmar y repetir hablan con el agente. Sin cerrojo, un doble toque —el gesto natural de
+  // quien no está seguro de que la pantalla registró— manda dos avances de etapa.
+  const [busy, setBusy] = useState<'confirm' | 'retake' | undefined>();
 
   const latest = useMemo(() => {
     if (!session) return [];
@@ -36,13 +39,14 @@ export function ReviewScreen() {
   ];
 
   const retakePhoto = async () => {
-    if (!current) return;
+    if (!current || busy) return;
+    setBusy('retake');
     await goToStage('capturing', 'retake');
     navigate(ROUTES.capture, { replace: true, state: isDocument ? { retakeOf: current.id } : { retakeOf: current.id, index: current.index } });
   };
 
   return (
-    <SessionFrame title={isDocument ? t('kiosk.review.title') : t('kiosk.review.title_set')} timeoutSec={session.timers.reviewTimeoutSec}>
+    <SessionFrame title={isDocument ? t('kiosk.review.title') : t('kiosk.review.title_set')} timeoutSec={session.timers.reviewTimeoutSec} onAutoAdvance={() => void advance('review_auto_confirmed')}>
       {!current ? (
         <div className="kiosk-card">
           <p className="kiosk-lead">{t('kiosk.review.empty')}</p>
@@ -82,10 +86,24 @@ export function ReviewScreen() {
                 <p className="kiosk-small kiosk-muted">{t('kiosk.review.frame_guide')}</p>
               </div>
             ) : null}
-            <BigButton variant="primary" size="xl" block icon={<Icon name="check" />} onClick={() => void advance('review_confirmed')} data-testid="review-confirm">
+            <BigButton
+              variant="primary"
+              size="xl"
+              block
+              icon={<Icon name="check" />}
+              loading={busy === 'confirm'}
+              loadingLabel={t('kiosk.common.loading')}
+              disabled={!!busy}
+              onClick={() => {
+                if (busy) return;
+                setBusy('confirm');
+                void advance('review_confirmed');
+              }}
+              data-testid="review-confirm"
+            >
               {t('kiosk.review.confirm')}
             </BigButton>
-            <BigButton variant="secondary" block icon={<Icon name="retry" />} disabled={left === 0} onClick={() => void retakePhoto()} data-testid="review-retake">
+            <BigButton variant="secondary" block icon={<Icon name="retry" />} loading={busy === 'retake'} loadingLabel={t('kiosk.common.loading')} disabled={left === 0 || !!busy} onClick={() => void retakePhoto()} data-testid="review-retake">
               {t('kiosk.review.retake')}
             </BigButton>
             <p className="kiosk-small kiosk-muted">{left === 0 ? t('kiosk.capture.no_retakes') : left === 1 ? t('kiosk.capture.retake_one_left') : t('kiosk.capture.retakes_left', { n: left })}</p>

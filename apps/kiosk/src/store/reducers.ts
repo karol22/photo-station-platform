@@ -59,10 +59,11 @@ export function applyStationEvent(state: KioskData, event: StationEvent): KioskD
     case 'status':
       return { ...state, status: event.status };
     case 'session': {
-      if (state.session && state.session.id !== event.session.id && !isTerminal(state.session.stage)) {
-        // Otra sesión activa (p. ej. iniciada por el técnico): la nueva manda.
-        return { ...state, session: event.session };
-      }
+      // Un evento de OTRA sesión mientras la de esta persona sigue viva se ignora: aceptarlo
+      // cambiaría la pantalla debajo de sus pies con las fotos de alguien más. La única excepción
+      // es un relevo del técnico, y ése empieza cancelando la sesión anterior, así que para cuando
+      // llega su evento la de aquí ya está en etapa terminal.
+      if (state.session && state.session.id !== event.session.id && !isTerminal(state.session.stage)) return state;
       return { ...state, session: event.session };
     }
     case 'printer': {
