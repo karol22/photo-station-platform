@@ -141,6 +141,11 @@ export const CONFIG_KEYS: ConfigKeyDefinition[] = [
   { key: 'kiosk.screenBrightness', type: 'number', group: 'kiosk', name: L('Brillo de pantalla', 'Screen brightness'), default: 80, editableAt: ['machine'], min: 10, max: 100, sensitive: false },
   { key: 'kiosk.volume', type: 'number', group: 'kiosk', name: L('Volumen', 'Volume'), default: 50, editableAt: ['machine'], min: 0, max: 100, sensitive: false },
   { key: 'kiosk.orientation', type: 'enum', group: 'kiosk', name: L('Orientación de pantalla', 'Screen orientation'), default: 'portrait', editableAt: ['machine'], enumValues: ['portrait', 'landscape'], sensitive: false },
+  // Dónde está el lente en el vidrio, en porcentaje de la pantalla. La interfaz dibuja ahí los
+  // ojos que dirigen la mirada, y el sitio del lente cambia con el modelo de aparato: por eso es
+  // configuración de máquina y no una constante del código.
+  { key: 'kiosk.lens.offsetX', type: 'number', group: 'kiosk', name: L('Posición horizontal del lente', 'Lens horizontal position'), default: 50, editableAt: ['machine'], min: 0, max: 100, sensitive: false },
+  { key: 'kiosk.lens.offsetY', type: 'number', group: 'kiosk', name: L('Posición vertical del lente', 'Lens vertical position'), default: 6, editableAt: ['machine'], min: 0, max: 100, sensitive: false },
   { key: 'timing.idleTimeoutSec', type: 'number', group: 'timing', name: L('Tiempo de inactividad (s)', 'Idle timeout (s)'), default: 60, editableAt: all, min: 15, max: 600, sensitive: false },
   { key: 'timing.warningBeforeCancelSec', type: 'number', group: 'timing', name: L('Aviso antes de cancelar (s)', 'Warning before cancel (s)'), default: 15, editableAt: all, min: 5, max: 60, sensitive: false },
   { key: 'timing.captureCountdownSec', type: 'number', group: 'timing', name: L('Cuenta regresiva de captura (s)', 'Capture countdown (s)'), default: 3, editableAt: all, min: 1, max: 10, sensitive: false },

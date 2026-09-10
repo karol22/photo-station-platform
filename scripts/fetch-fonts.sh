@@ -16,8 +16,11 @@ python3 - <<'PY' || { echo "falta fontTools o brotli: pip3 install 'fonttools[wo
 import fontTools, brotli  # noqa: F401
 PY
 
-sub() { python3 -m fontTools.subset "$@"; }
-inst() { python3 -m fontTools.varLib.instancer "$@" >/dev/null; }
+# fontTools habla mucho por stderr (y se recupera solo de los OTLOffsetOverflowError de
+# Bricolage). Se guarda el ruido y sólo se enseña si algo falla de verdad.
+run() { "$@" >"$TMP/ft.log" 2>&1 || { cat "$TMP/ft.log"; exit 1; }; }
+sub()  { run python3 -m fontTools.subset "$@"; }
+inst() { run python3 -m fontTools.varLib.instancer "$@"; }
 
 # Repertorio del kiosco: ASCII + Latin-1 (ahí viven á é í ó ú ü ñ ¿ ¡ « ») + Latin Extended-A
 # (nombres de marca de terceros) + comillas, rayas, flechas, € y ™.
