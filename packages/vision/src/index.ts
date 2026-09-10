@@ -19,6 +19,17 @@ export type { FaceMeasurements, Vec2 } from './face-model';
 
 export { DEFAULT_SYNTHETIC_FACE, syntheticFace } from './synthetic';
 
+export {
+  PROP_GEOMETRY,
+  PROP_KINDS,
+  anchorFor,
+  anchorToPixels,
+  anchorsFor,
+  anchorsForFace,
+  propConfidence,
+} from './face-anchors';
+export type { PropAnchor, PropAnchorOptions, PropGeometry, PropKind, PropReference } from './face-anchors';
+
 export { IDEAL_FRAME_METRICS, autoSampleStep, computeFrameMetrics } from './metrics';
 export type { FrameMetricsOptions } from './metrics';
 

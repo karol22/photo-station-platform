@@ -22,8 +22,15 @@ export interface PlacedSticker {
   /** Centro, en píxeles de la imagen original. */
   x: number;
   y: number;
-  /** Lado, en píxeles de la imagen original. */
+  /** Ancho, en píxeles de la imagen original. */
   size: number;
+  /**
+   * Alto/ancho del elemento. Sin él vale 1 y todo es cuadrado, que es lo que hacían las pegatinas.
+   * Un accesorio anclado al rostro no lo es —un sombrero es ancho y bajo, un arete alto y angosto—
+   * así que quien construya la lista debe traerlo y escribirlo de vuelta como `h` en la op; el
+   * dibujo ya respetaba la proporción del activo, era la op la que la perdía.
+   */
+  aspect?: number;
   /** Giro en grados. */
   angle: number;
 }
@@ -136,12 +143,15 @@ export function StickerLayer({ stickers, onChange, imageWidth, imageHeight, remo
         const left = `${(sticker.x / imageWidth) * 100}%`;
         const top = `${(sticker.y / imageHeight) * 100}%`;
         const size = `${(sticker.size / imageWidth) * 100}%`;
+        // El alto lo pone el activo salvo que se declare una proporción: así un sombrero no se
+        // vuelve cuadrado al arrastrarlo.
+        const height = sticker.aspect === undefined ? undefined : `${((sticker.size * sticker.aspect) / imageHeight) * 100}%`;
         return (
           <div
             key={sticker.key}
             className="kiosk-sticker"
             data-active={dragging === sticker.key ? 'true' : undefined}
-            style={{ left, top, width: size, transform: `translate(-50%, -50%) rotate(${sticker.angle}deg)` }}
+            style={{ left, top, width: size, ...(height === undefined ? {} : { height }), transform: `translate(-50%, -50%) rotate(${sticker.angle}deg)` }}
             onPointerDown={(event) => down(event, sticker)}
             onPointerMove={(event) => move(event, sticker)}
             onPointerUp={(event) => up(event, sticker)}

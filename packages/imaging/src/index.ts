@@ -34,12 +34,12 @@ export {
 export type { EllipseSpec } from './ops';
 
 // Fuente bitmap
-export { drawText, drawTextInto, measureText, glyphFor, FONT_GLYPH_WIDTH, FONT_GLYPH_HEIGHT, FONT_ADVANCE, FONT_LINE_HEIGHT } from './font';
+export { drawText, drawTextInto, measureText, lineWidth, renderTextRaster, glyphFor, FONT_GLYPH_WIDTH, FONT_GLYPH_HEIGHT, FONT_ADVANCE, FONT_LINE_HEIGHT } from './font';
 export type { DrawTextOptions } from './font';
 
 // Pipeline de edición
-export { EDIT_OPS, EDIT_OP_KEYS, isEditOpKey, validateEditOps, expandEditOps, applyEditOps, editingPresetToOps } from './edit-ops';
-export type { EditOpKey, EditOpSpec, ParamSpec, EditProblem, EditValidation, EditResources } from './edit-ops';
+export { EDIT_OPS, EDIT_OP_KEYS, TEXT_MAX_SIZE_PX, isEditOpKey, validateEditOps, expandEditOps, applyEditOps, editingPresetToOps } from './edit-ops';
+export type { EditOpKey, EditOpSpec, ParamSpec, EditProblem, EditValidation, EditResources, TextRasterizer, TextRenderSpec } from './edit-ops';
 
 // Composición
 export { resolveLocalizedText, fitRect, cutMarkBoxes, cutMarkThickness, qrPlaceholderModules, qrModules, qrLayout, QR_QUIET_ZONE, fnv1a } from './primitives';
@@ -100,6 +100,8 @@ export type { BackgroundOptions, ReplaceBackgroundOptions, BlurBackgroundOptions
 
 // Elementos pegados a la cara
 export { anchorProp, drawProp, drawPropInto } from './props';
+export { anchorToStickerOp, captionLayout, captionOp } from './decor-ops';
+export type { CaptionLayout, CaptionLayoutOptions, CaptionStyle, NormalizedAnchor } from './decor-ops';
 export type { Point2, FaceLandmarks, PropAnchor, PropSpec, PropPlacement, DrawPropOptions, RasterSize } from './props';
 
 // Retoque

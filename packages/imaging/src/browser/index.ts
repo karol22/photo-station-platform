@@ -4,6 +4,7 @@
  * geometría (cover/contain, marcas de corte, QR de sustitución) que el renderizador puro.
  */
 import type { Id } from '@psp/contracts';
+import type { TextRasterizer } from '../edit-ops';
 import { cutMarkBoxes, cutMarkThickness, fitRect, qrLayout, qrModules } from '../primitives';
 import type { LogoRole, Primitive, RenderPlan } from '../primitives';
 import type { Raster, Rect } from '../raster';
@@ -255,4 +256,65 @@ export function renderPlanToCanvas(plan: RenderPlan, sources: CanvasSources, can
     }
   }
   return target;
+}
+
+
+/** Separación entre líneas del texto de la foto, en múltiplos del alto de letra. */
+const TEXT_LINE_HEIGHT = 1.22;
+
+/**
+ * Rasterizador de texto con tipografías reales, para inyectar en `EditResources.textRasterizer`.
+ *
+ * La fuente bitmap interna avanza cinco columnas por letra: a doscientos píxeles de alto un nombre
+ * sale como un mosaico, y una cabina no puede entregar eso. Aquí el mismo texto se dibuja con la
+ * tipografía que la marca ya cargó, y el resto del pipeline lo trata como cualquier otro elemento
+ * pegado: se coloca, se gira y se compone igual.
+ *
+ * Fuera del navegador no existe: en Node el pipeline cae solo a la fuente bitmap y sigue siendo
+ * determinista, que es lo que las pruebas y la compuerta necesitan.
+ */
+export function canvasTextRasterizer(opts: { fontFallback?: string } = {}): TextRasterizer {
+  const fallback = opts.fontFallback ?? 'sans-serif';
+  return (spec) => {
+    const lines = spec.text.split(/\r?\n/);
+    if (lines.every((l) => l.length === 0)) return undefined;
+    const family = spec.font !== undefined && spec.font.length > 0 ? `"${spec.font}", ${fallback}` : fallback;
+    const font = `${spec.bold ? 'bold ' : ''}${Math.max(1, Math.round(spec.sizePx))}px ${family}`;
+
+    const probe = scratchContext(1, 1);
+    probe.font = font;
+    probe.textBaseline = 'alphabetic';
+    let widest = 0;
+    for (const line of lines) widest = Math.max(widest, probe.measureText(line).width);
+
+    const stroke = spec.outline ? Math.max(0, spec.outline.width) : 0;
+    const lineStep = spec.sizePx * TEXT_LINE_HEIGHT;
+    // Margen generoso: las tildes y las colas de la j suben y bajan de la caja nominal.
+    const pad = Math.ceil(stroke + spec.sizePx * 0.3);
+    const width = Math.ceil(widest) + pad * 2;
+    const height = Math.ceil(lineStep * (lines.length - 1) + spec.sizePx) + pad * 2;
+    if (width <= 0 || height <= 0) return undefined;
+
+    const ctx = scratchContext(width, height);
+    ctx.font = font;
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = spec.align === 'center' ? 'center' : spec.align === 'right' ? 'right' : 'left';
+    ctx.lineJoin = 'round';
+    ctx.miterLimit = 2;
+    const anchorX = spec.align === 'center' ? width / 2 : spec.align === 'right' ? width - pad : pad;
+    lines.forEach((line, index) => {
+      const y = pad + spec.sizePx * 0.82 + index * lineStep;
+      if (stroke > 0 && spec.outline) {
+        ctx.strokeStyle = spec.outline.color;
+        // `strokeText` reparte el grosor a los dos lados: se pide el doble para que por fuera quede
+        // el contorno pedido y por dentro lo tape el relleno.
+        ctx.lineWidth = stroke * 2;
+        ctx.strokeText(line, anchorX, y);
+      }
+      ctx.fillStyle = spec.color;
+      ctx.fillText(line, anchorX, y);
+    });
+    const img = ctx.getImageData(0, 0, width, height);
+    return { width, height, data: new Uint8ClampedArray(img.data) };
+  };
 }
