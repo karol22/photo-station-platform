@@ -25,7 +25,7 @@ export function FinishScreen() {
   const navigate = useNavigate();
   const session = useKioskStore((s) => s.session);
   const bundle = useKioskStore((s) => s.bundle);
-  const resetSession = useKioskStore((s) => s.resetSession);
+  const releaseSession = useKioskStore((s) => s.releaseSession);
   const [result, setResult] = useState<Finished | undefined>();
   const [settled, setSettled] = useState(false);
   const [seconds, setSeconds] = useState(BACK_SECONDS);
@@ -38,12 +38,22 @@ export function FinishScreen() {
       setSettled(true);
       return;
     }
-    stationApi
-      .finish(session.id)
-      .then(setResult)
-      .catch(() => undefined)
-      .finally(() => setSettled(true));
-  }, [session]);
+    // Cerrar puede fallar. La pantalla igual celebra —la persona ya tiene sus fotos— pero la
+    // sesión no puede quedarse viva en el aparato: si el cierre no responde, se reintenta y, si
+    // sigue sin responder, `releaseSession` la cancela. La máquina queda libre pase lo que pase.
+    const close = async (attempt = 0): Promise<void> => {
+      try {
+        setResult(await stationApi.finish(session.id));
+      } catch {
+        if (attempt < 2) {
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+          return close(attempt + 1);
+        }
+        await releaseSession('finish_failed');
+      }
+    };
+    void close().finally(() => setSettled(true));
+  }, [session, releaseSession]);
 
   useEffect(() => {
     if (session && !settled) return;
@@ -52,11 +62,8 @@ export function FinishScreen() {
   }, [settled, session]);
 
   useEffect(() => {
-    if (seconds <= 0) {
-      resetSession();
-      navigate(ROUTES.attract, { replace: true });
-    }
-  }, [seconds, resetSession, navigate]);
+    if (seconds <= 0) navigate(ROUTES.attract, { replace: true });
+  }, [seconds, navigate]);
 
   const promo = useMemo(() => productViews(bundle).find((v) => v.availability.available && v.product.id !== session?.product.id && v.product.kind !== 'document'), [bundle, session?.product.id]);
   const delivery = featureMode(bundle?.features ?? [], 'delivery.digital');

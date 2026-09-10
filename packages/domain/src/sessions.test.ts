@@ -5,6 +5,7 @@ import {
   InvalidTransitionError,
   SESSION_TRANSITIONS,
   canReleaseTransition,
+  bestCaptures,
   canTransition,
   idleExpiryAction,
   commercialStateFor,
@@ -247,5 +248,67 @@ describe('idleExpiryAction', () => {
 
   it('cancela en etapa terminal aunque haya pago y capturas', () => {
     expect(idleExpiryAction({ stage: 'done', payment: { state: 'approved' }, captures: [{}] })).toBe('cancel');
+  });
+});
+
+describe('bestCaptures', () => {
+  const capture = (id: string, index: number, over: Partial<{ faces: number; passed: string[]; warnings: string[]; blocked: string[]; sharpness: number; brightness: number }> = {}) => ({
+    id,
+    index,
+    analysis: { faces: 1, passed: [], warnings: [], blocked: [], sharpness: 0.5, brightness: 0.55, ...over },
+  });
+
+  it('devuelve las mejores en orden cronológico, no por puntaje', () => {
+    const captures = [
+      capture('c0', 0, { sharpness: 0.1, brightness: 0.1 }),
+      capture('c1', 1, { sharpness: 0.9 }),
+      capture('c2', 2, { sharpness: 0.2, faces: 0 }),
+      capture('c3', 3, { sharpness: 0.8 }),
+    ];
+    expect(bestCaptures(captures, 2)).toEqual(['c1', 'c3']);
+  });
+
+  it('descarta las bloqueadas antes que las que sólo tienen avisos', () => {
+    const captures = [
+      capture('bloqueada', 0, { blocked: ['face_too_small'] }),
+      capture('avisada', 1, { warnings: ['off_center'] }),
+    ];
+    expect(bestCaptures(captures, 1)).toEqual(['avisada']);
+  });
+
+  it('prefiere una foto con rostro sobre una vacía aunque sea más nítida', () => {
+    const captures = [capture('vacia', 0, { faces: 0, sharpness: 1 }), capture('conRostro', 1, { faces: 1, sharpness: 0.3 })];
+    expect(bestCaptures(captures, 1)).toEqual(['conRostro']);
+  });
+
+  it('castiga tanto la foto quemada como la oscura', () => {
+    const captures = [capture('quemada', 0, { brightness: 1 }), capture('justa', 1, { brightness: 0.55 }), capture('oscura', 2, { brightness: 0 })];
+    expect(bestCaptures(captures, 1)).toEqual(['justa']);
+  });
+
+  it('con menos capturas que huecos devuelve todas', () => {
+    expect(bestCaptures([capture('a', 0), capture('b', 1)], 4)).toEqual(['a', 'b']);
+  });
+
+  it('con cero huecos no devuelve nada', () => {
+    expect(bestCaptures([capture('a', 0)], 0)).toEqual([]);
+  });
+
+  it('una captura sin análisis no rompe el orden', () => {
+    const sin = { id: 'sin', index: 0, analysis: undefined };
+    expect(bestCaptures([sin, capture('con', 1)], 1)).toEqual(['con']);
+  });
+
+  it('es determinista: dos llamadas dan el mismo resultado', () => {
+    const captures = [capture('a', 0), capture('b', 1), capture('c', 2)];
+    expect(bestCaptures(captures, 2)).toEqual(bestCaptures(captures, 2));
+  });
+});
+
+describe('orden del recorrido creativo', () => {
+  it('elegir va antes que editar, para no editar fotos que se van a descartar', () => {
+    const strip = product('prd_tira', { captureCount: 6, kind: 'entertainment', category: 'photo_strip', editing: { enabled: true, allowedTools: ['brightness'] } });
+    const stages = stagesForProduct(strip, { paymentRequired: true, consentRequired: false });
+    expect(stages.indexOf('selecting')).toBeLessThan(stages.indexOf('editing'));
   });
 });

@@ -3,6 +3,7 @@
  * `experience.selection`. Guarda con `POST /sessions/:id/selection`.
  */
 import { useMemo, useState } from 'react';
+import { bestCaptures } from '@psp/domain';
 import { BigButton, CompareView, Icon, ThumbGrid } from '@psp/ui';
 import { stationApi } from '../api/station';
 import { SessionFrame } from '../components/SessionFrame';
@@ -14,7 +15,6 @@ export function SelectScreen() {
   const { t } = useT();
   const { session, product, experience, template, advance, fail } = useSession();
   const setSession = useKioskStore((s) => s.setSession);
-  const [selected, setSelected] = useState<string[]>(session?.selection ?? []);
   const [saving, setSaving] = useState(false);
   const [compare, setCompare] = useState(false);
 
@@ -25,10 +25,22 @@ export function SelectScreen() {
     return [...byIndex.values()].sort((a, b) => a.index - b.index);
   }, [session]);
 
-  if (!session || !product) return null;
-  const slots = template?.photoSlots ?? product.captureCount;
-  const min = experience?.selection.min ?? Math.min(slots, captures.length);
+  const slots = template?.photoSlots ?? product?.captureCount ?? 0;
   const max = experience?.selection.max ?? slots;
+  /**
+   * La cabina llega con una propuesta hecha, no con una rejilla vacía: las mejores ya vienen
+   * marcadas. Quien esté conforme toca continuar y se va; quien quiera cambiarlas, toca.
+   */
+  const initial = useMemo(
+    () => (session?.selection.length ? session.selection : bestCaptures(captures, max)),
+    [session?.selection, captures, max],
+  );
+  const [chosen, setChosen] = useState<string[] | undefined>();
+  const selected = chosen ?? initial;
+  const setSelected = setChosen;
+
+  if (!session || !product) return null;
+  const min = experience?.selection.min ?? Math.min(slots, captures.length);
   const allowReorder = experience?.selection.allowReorder ?? true;
   const allowCompare = experience?.selection.allowCompare ?? true;
   const valid = selected.length >= min && selected.length <= max;
@@ -43,10 +55,10 @@ export function SelectScreen() {
     setSelected(next);
   };
 
-  const confirm = async () => {
+  const confirm = async (ids: string[] = selected) => {
     setSaving(true);
     try {
-      const updated = await stationApi.setSelection(session.id, selected);
+      const updated = await stationApi.setSelection(session.id, ids);
       setSession(updated);
       await advance('selection_done');
     } catch (error) {
@@ -55,11 +67,21 @@ export function SelectScreen() {
     }
   };
 
+  /**
+   * Si se acaba el tiempo, la cabina elige por su cuenta las mejores y continúa. Quedarse
+   * congelada aquí sería lo peor: la persona ya pagó y sus fotos ya existen.
+   */
+  const autoSelect = () => {
+    if (saving) return;
+    const ids = selected.length >= min ? selected : bestCaptures(captures, max);
+    void confirm(ids);
+  };
+
   const first = captures.find((c) => c.id === selected[0]);
   const second = captures.find((c) => c.id === selected[1]);
 
   return (
-    <SessionFrame title={t('kiosk.select.title')}>
+    <SessionFrame title={t('kiosk.select.title')} onAutoAdvance={autoSelect}>
       <p className="kiosk-lead">{min === max ? t('kiosk.select.hint_exact', { n: max }) : t('kiosk.select.hint', { min, max })}</p>
       {compare && first && second ? (
         <CompareView left={{ src: first.editedUrl ?? first.url, label: '1' }} right={{ src: second.editedUrl ?? second.url, label: '2' }} />
@@ -71,7 +93,7 @@ export function SelectScreen() {
           max={max}
           showOrder={allowReorder}
           label={t('kiosk.select.title')}
-          selectedLabel={t('kiosk.select.selected')}
+          selectedLabel={t('kiosk.select.is_selected')}
           size="lg"
           data-testid="select-grid"
         />

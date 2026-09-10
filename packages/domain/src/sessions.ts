@@ -76,8 +76,10 @@ export function stagesForProduct(product: Product, opts: { paymentRequired: bool
   if (opts.consentRequired) stages.push('consent');
   if (opts.paymentRequired) stages.push('awaiting_payment');
   stages.push('capturing', 'reviewing');
-  if (product.editing.enabled && product.editing.allowedTools.length > 0) stages.push('editing');
+  // Primero se elige y después se edita. Al revés, quien dispara seis tomas edita seis fotos para
+  // acabar tirando dos: trabajo que se paga con el tiempo de la persona y con el de la fila.
   if (product.kind !== 'document' && product.captureCount > 1) stages.push('selecting');
+  if (product.editing.enabled && product.editing.allowedTools.length > 0) stages.push('editing');
   stages.push('composing', 'confirming');
   if (product.printCount > 0) stages.push('printing');
   stages.push('delivering', 'finishing', 'done');
@@ -158,6 +160,51 @@ export function idleExpiryAction(session: {
   const paid = session.payment ? COMMITTED_PAYMENT_STATES.includes(session.payment.state) : false;
   const hasWork = (session.captures?.length ?? 0) > 0;
   return paid || hasWork ? 'auto_advance' : 'cancel';
+}
+
+/**
+ * Puntúa una captura para poder ordenarlas de mejor a peor sin que nadie las mire.
+ *
+ * No pretende juzgar si una foto es bonita: eso lo decide la persona. Sirve para el caso en que
+ * la persona NO decide —se distrajo, se fue, se acabó el tiempo— y la cabina tiene que entregar
+ * algo. Ahí vale más una foto nítida, bien iluminada y con caras que una borrosa y a oscuras.
+ *
+ * La escala es arbitraria y sólo importa el orden relativo. Es pura: mismas capturas, mismo orden.
+ */
+export function captureScore(capture: {
+  analysis?: { faces: number; passed: string[]; warnings: string[]; blocked: string[]; sharpness?: number; brightness?: number } | undefined;
+}): number {
+  const a = capture.analysis;
+  if (!a) return 0;
+  // Que haya alguien en el cuadro pesa más que cualquier otra cosa; a partir de dos rostros el
+  // extra no aporta, porque una foto de grupo no es mejor por tener más gente.
+  const faces = Math.min(a.faces, 2) * 30;
+  const criteria = a.passed.length * 6 - a.warnings.length * 4 - a.blocked.length * 20;
+  const sharpness = (a.sharpness ?? 0.5) * 25;
+  // El brillo se premia por cercanía a un valor cómodo, no por ser alto: quemada es tan mala
+  // como oscura.
+  const brightness = (1 - Math.min(1, Math.abs((a.brightness ?? 0.5) - 0.55) / 0.45)) * 20;
+  return faces + criteria + sharpness + brightness;
+}
+
+/**
+ * Las `count` mejores capturas, en el orden en que se tomaron.
+ *
+ * El orden final es el cronológico y no el de puntaje: una tira cuenta una historia y saltarse el
+ * tiempo la rompe. El puntaje sólo decide cuáles entran.
+ */
+export function bestCaptures<T extends { id: Id; index: number; analysis?: { faces: number; passed: string[]; warnings: string[]; blocked: string[]; sharpness?: number; brightness?: number } | undefined }>(
+  captures: readonly T[],
+  count: number,
+): Id[] {
+  if (count <= 0) return [];
+  return [...captures]
+    // Empate: gana la primera, así el resultado no depende del orden de llegada del arreglo.
+    .map((capture, position) => ({ capture, position, score: captureScore(capture) }))
+    .sort((a, b) => b.score - a.score || a.position - b.position)
+    .slice(0, count)
+    .sort((a, b) => a.capture.index - b.capture.index || a.position - b.position)
+    .map((entry) => entry.capture.id);
 }
 
 /** Política de respaldo cuando no hay ninguna configurada: retención mínima (requisito 23.4). */

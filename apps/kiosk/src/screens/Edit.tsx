@@ -40,6 +40,8 @@ export function EditScreen() {
   const [preview, setPreview] = useState<string | undefined>();
   const [showBefore, setShowBefore] = useState(false);
   const [saving, setSaving] = useState(false);
+  /** Cuántas fotos del lote llevan aplicado el estilo. Se usa para el progreso real. */
+  const [savedCount, setSavedCount] = useState(0);
   const assets = useRef<Record<string, Raster>>({});
 
   const captures = useMemo(() => {
@@ -139,20 +141,33 @@ export function EditScreen() {
     push(assetId ? [...others, { op: key, params: key === 'frame' ? { assetId } : { assetId, x: Math.round((original?.width ?? 0) * 0.65), y: Math.round((original?.height ?? 0) * 0.65) } }] : others);
   };
 
+  /**
+   * En el recorrido social el estilo es del conjunto, no de cada foto: se elige una vez y se
+   * aplica a las cuatro. Ajustar seis fotos una por una es el paso que la propia industria está
+   * recortando, y aquí sería el más caro: cada foto es un toque más con alguien esperando detrás.
+   *
+   * En el documental sigue siendo foto por foto, porque ahí cada imagen es un trámite distinto.
+   */
+  const applyToWholeSet = !isDocument && captures.length > 1;
+
   const save = async () => {
     if (!capture || !original) return;
     setSaving(true);
+    setSavedCount(0);
+    const toolsUsed = [...new Set(ops.map((o) => (o.op in EDIT_OPS ? EDIT_OPS[o.op as EditOpKey].tool : undefined)).filter((x): x is EditingTool => !!x))];
     try {
-      const result = applyEditOps(original, ops, { assets: assets.current, presets: presetMap });
-      const toolsUsed = [...new Set(ops.map((o) => (o.op in EDIT_OPS ? EDIT_OPS[o.op as EditOpKey].tool : undefined)).filter((x): x is EditingTool => !!x))];
-      const updated = await stationApi.saveEdits(session.id, { captureId: capture.id, ops, toolsUsed, resultBase64: rasterToDataUrl(result, 'image/png') });
-      setSession(updated);
-      if (captureIndex + 1 < captures.length) {
-        setCaptureIndex(captureIndex + 1);
-        setSaving(false);
-      } else {
-        await advance('edit_done');
+      const targets = applyToWholeSet ? captures : [capture];
+      for (const target of targets) {
+        // Cada foto cede el hilo antes de trabajar: sin esto el progreso nunca llega a pintarse
+        // y la pantalla se queda congelada durante todo el lote.
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        const raster = target.id === capture.id ? original : await loadRaster(target.url);
+        const result = applyEditOps(raster, ops, { assets: assets.current, presets: presetMap });
+        const updated = await stationApi.saveEdits(session.id, { captureId: target.id, ops, toolsUsed, resultBase64: rasterToDataUrl(result, 'image/png') });
+        setSession(updated);
+        setSavedCount((n) => n + 1);
       }
+      await advance('edit_done');
     } catch (error) {
       setSaving(false);
       fail(error, 'edit_failed');
@@ -160,11 +175,19 @@ export function EditScreen() {
   };
 
   const skip = async () => {
-    if (captureIndex + 1 < captures.length) setCaptureIndex(captureIndex + 1);
-    else await advance('edit_skipped');
+    if (applyToWholeSet || captureIndex + 1 >= captures.length) {
+      await advance('edit_skipped');
+      return;
+    }
+    setCaptureIndex(captureIndex + 1);
   };
 
-  const has = (tool: EditingTool) => allowed.includes(tool);
+  /**
+   * En el recorrido social la interfaz es la tira de estilos y nada más: cada deslizador es una
+   * decisión que no cambia el resultado lo suficiente para pagarla con el tiempo de la fila.
+   * Los ajustes finos siguen existiendo donde importan, que es el trámite documental.
+   */
+  const has = (tool: EditingTool) => isDocument && allowed.includes(tool);
 
 
   const endsWith = (list: EditOp[], tail: EditOp[]): boolean =>
@@ -183,8 +206,12 @@ export function EditScreen() {
   const canRedo = cursor < history.length - 1;
 
   return (
-    <SessionFrame title={t('kiosk.edit.title')}>
-      {captures.length > 1 ? <p className="kiosk-lead">{t('kiosk.common.photo_n_of_m', { n: captureIndex + 1, m: captures.length })}</p> : null}
+    <SessionFrame title={t('kiosk.edit.title')} onAutoAdvance={() => void skip()}>
+      {applyToWholeSet ? (
+        <p className="kiosk-lead">{t('kiosk.edit.applies_to_all', { n: captures.length })}</p>
+      ) : captures.length > 1 ? (
+        <p className="kiosk-lead">{t('kiosk.common.photo_n_of_m', { n: captureIndex + 1, m: captures.length })}</p>
+      ) : null}
       <div className="kiosk-edit">
         <div className="kiosk-stack">
           <div className="kiosk-preview" style={{ position: 'relative' }}>
@@ -203,7 +230,7 @@ export function EditScreen() {
         <div className="kiosk-stack">
           <div className="kiosk-edit__tools">
             {allowed.length === 0 ? <p>{t('kiosk.edit.no_tools')}</p> : null}
-            {SLIDERS.filter((s) => has(s.key)).map((s) => (
+            {(isDocument ? SLIDERS.filter((s) => has(s.key)) : []).map((s) => (
               <TouchSlider key={s.key} label={t(`kiosk.edit.tool.${s.key}`)} min={s.min} max={s.max} step={s.step} value={valueOf(s.key, s.param)} onChange={(v) => setParam(s.key, s.param, Math.round(v * 100) / 100)} centerMark formatValue={(v) => `${v > 0 ? '+' : ''}${Math.round(v * 100)}`} decreaseLabel={t('kiosk.common.previous')} increaseLabel={t('kiosk.common.next')} />
             ))}
             {has('levelRotation') ? <TouchSlider label={t('kiosk.edit.tool.rotate')} min={-15} max={15} step={0.5} value={valueOf('levelRotation', 'degrees')} onChange={(v) => setParam('levelRotation', 'degrees', v)} centerMark formatValue={(v) => `${v}°`} decreaseLabel={t('kiosk.edit.rotate_left')} increaseLabel={t('kiosk.edit.rotate_right')} /> : null}
@@ -257,7 +284,7 @@ export function EditScreen() {
               </div>
             ) : null}
           </div>
-          <BigButton variant="primary" size="xl" block icon={<Icon name="check" />} disabled={!original} loading={saving} loadingLabel={t('kiosk.edit.applying')} onClick={() => void save()} data-testid="edit-apply">
+          <BigButton variant="primary" size="xl" block icon={<Icon name="check" />} disabled={!original} loading={saving} loadingLabel={applyToWholeSet ? t('kiosk.edit.applying_n', { n: savedCount + 1, m: captures.length }) : t('kiosk.edit.applying')} onClick={() => void save()} data-testid="edit-apply">
             {t('kiosk.edit.apply')}
           </BigButton>
           <BigButton variant="ghost" block onClick={() => void skip()}>
