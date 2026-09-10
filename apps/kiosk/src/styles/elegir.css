@@ -1,1 +1,270 @@
 /* Pantalla: elegir. Sólo clases con prefijo `.kiosk-elegir`. Lo común vive en `../styles.css`. */
+
+/* ==========================================================================
+   ELEGIR
+   Una habitación grande arriba y un riel de seis fichas abajo. Las mismas cinco
+   bandas que el resto del recorrido social: se mira arriba, se toca abajo, y
+   nada táctil queda a la altura de la cara. Cero scroll, cero tarjetas.
+   ========================================================================== */
+.kiosk-elegir {
+  display: grid;
+  /* CARTEL 1060 · REPISA 300 · ALCANCE 300 · ZÓCALO 140, sobre 1920 menos la marquesina.
+     La columna va acotada a propósito: sin `minmax(0, …)` una foto de ejemplo grande dimensiona
+     la rejilla a su tamaño natural y se lleva la pantalla entera fuera del vidrio. */
+  grid-template-rows: minmax(0, 1060fr) minmax(0, 300fr) minmax(0, 300fr) minmax(0, 140fr);
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  /* Alto definido, no heredado: con un alto de porcentaje sobre una fila que se dimensiona por su
+     contenido, una foto de ejemplo grande estira la pantalla y las bandas de abajo se van fuera
+     del vidrio. Aquí las cinco bandas reparten exactamente lo que hay bajo la marquesina. */
+  height: calc(100dvh - var(--psp-marquee-height, 120px));
+  overflow: hidden;
+  color: var(--psp-color-text);
+  text-align: center;
+  background: var(--psp-field);
+}
+
+/* Cada habitación fija su propio campo, y la luz y la profundidad se derivan de él: el relieve y
+   el halo pertenecen siempre al color que se está viendo. Tocar otra ficha cambia la pantalla
+   entera, que es lo que se percibe desde lejos antes que cualquier contenido. */
+.kiosk-elegir[data-room] {
+  --psp-rincon: color-mix(in srgb, var(--psp-field) 72%, var(--psp-color-text));
+  --psp-aro: color-mix(in srgb, var(--psp-field) 38%, var(--psp-flash));
+  --psp-lift: 12px 12px 0 var(--psp-rincon);
+}
+.kiosk-elegir[data-room='1'] { --psp-field: var(--psp-color-accent-1); }
+.kiosk-elegir[data-room='2'] { --psp-field: var(--psp-color-accent-2); }
+.kiosk-elegir[data-room='3'] { --psp-field: var(--psp-color-accent-3); }
+.kiosk-elegir[data-room='4'] { --psp-field: var(--psp-color-accent-4); }
+.kiosk-elegir[data-room='5'] { --psp-field: var(--psp-color-accent-5); }
+.kiosk-elegir[data-room='6'] { --psp-field: var(--psp-color-accent-6); }
+
+.kiosk-elegir--vacia { display: grid; place-content: center; padding: 6vmin; min-height: 100%; }
+
+/* CARTEL: el titular y la habitación. Ni un objetivo táctil. */
+.kiosk-elegir__cartel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.4vh;
+  padding: 3vh 4vw 1vh;
+  min-height: 0;
+  overflow: hidden;
+}
+.kiosk-elegir__titulo {
+  margin: 0;
+  font-size: clamp(28px, min(6.6vw, 6vh), 72px);
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+/* La habitación: un contenedor de curva completa, no un rectángulo redondeado. */
+.kiosk-elegir__habitacion {
+  position: relative;
+  display: grid;
+  /* Una sola celda declarada, no `place-items`: una celda de alto automático hace que el alto en
+     porcentaje del contenido se mida contra sí mismo y deje de acotar. Con la fila declarada, la
+     habitación reparte exactamente el alto que la banda le da. */
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+  animation: kiosk-elegir-entra 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.kiosk-elegir__blob { position: absolute; inset: 0; width: 100%; height: 100%; }
+.kiosk-elegir__blob path { fill: var(--psp-aro); }
+/* El relieve es un desplazamiento duro, no una sombra difuminada: `--psp-lift` es una sombra de
+   caja y una curva no tiene caja, así que el mismo gesto se hace con una copia desplazada. */
+.kiosk-elegir__blob--sombra { transform: translate(12px, 12px); }
+.kiosk-elegir__blob--sombra path { fill: var(--psp-rincon); }
+
+.kiosk-elegir__contenido {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: 1vh;
+  width: 100%;
+  height: 100%;
+  padding: 6% 12%;
+}
+
+/* La foto es el producto: uno de los tres rectángulos con nombre que existen en el sistema.
+   Va en una caja flexible y no en una rejilla: dentro de una celda de rejilla de alto automático,
+   el `max-height` en porcentaje de la imagen se mide contra sí misma y deja de acotar, así que un
+   ejemplo grande se come la habitación entera y empuja el precio fuera de la banda. */
+.kiosk-elegir__ejemplo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.kiosk-elegir__ejemplo img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border: 4px solid var(--psp-color-text);
+}
+.kiosk-elegir__ejemplo .psp-blob { width: auto; height: 100%; max-width: 100%; }
+
+.kiosk-elegir__nombre {
+  font-size: clamp(18px, min(3.6vw, 3.2vh), 40px);
+  font-weight: 700;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+/* El precio es el titular de esta pantalla: se lee desde el pasillo o no sirve de nada. */
+.kiosk-elegir__precio {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4em;
+  font-size: clamp(44px, min(22vw, 19vh), 300px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.82;
+  font-variant-numeric: tabular-nums;
+}
+.kiosk-elegir__antes { font-size: 0.24em; font-weight: 700; opacity: 0.7; }
+/* Sin precio no hay hueco vacío: el motivo ocupa su sitio, que es lo que hay que leer. */
+.kiosk-elegir__estado {
+  font-size: clamp(18px, min(3.6vw, 3.2vh), 40px);
+  font-weight: 700;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+/* REPISA: el riel. Hasta seis, a la vez, sin scroll y a la altura de la mano. */
+.kiosk-elegir__repisa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vw;
+  padding: 0 3vw;
+  min-height: 0;
+}
+.kiosk-elegir__ficha {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* Las seis reparten el ancho por igual y el alto sale de ahí: si se fija el alto, la línea no
+     cabe, cada ficha se estrecha por su cuenta y las curvas salen deformadas. */
+  flex: 1 1 0;
+  aspect-ratio: 1;
+  max-width: 150px;
+  max-height: 100%;
+  min-width: 64px;
+  min-height: 64px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.kiosk-elegir__ficha-blob { position: absolute; inset: 0; width: 100%; height: 100%; }
+.kiosk-elegir__ficha[data-accent='1'] .kiosk-elegir__ficha-campo { fill: var(--psp-color-accent-1); }
+.kiosk-elegir__ficha[data-accent='2'] .kiosk-elegir__ficha-campo { fill: var(--psp-color-accent-2); }
+.kiosk-elegir__ficha[data-accent='3'] .kiosk-elegir__ficha-campo { fill: var(--psp-color-accent-3); }
+.kiosk-elegir__ficha[data-accent='4'] .kiosk-elegir__ficha-campo { fill: var(--psp-color-accent-4); }
+.kiosk-elegir__ficha[data-accent='5'] .kiosk-elegir__ficha-campo { fill: var(--psp-color-accent-5); }
+.kiosk-elegir__ficha[data-accent='6'] .kiosk-elegir__ficha-campo { fill: var(--psp-color-accent-6); }
+/* El canto de tinta es lo que separa una ficha del campo cuando comparten color. Sin él, la que
+   coincide con la habitación desaparece y el riel queda cojo. */
+.kiosk-elegir__ficha-canto {
+  fill: none;
+  stroke: var(--psp-color-text);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+.kiosk-elegir__ficha[data-active] { transform: scale(1.06); }
+.kiosk-elegir__ficha[data-active] .kiosk-elegir__ficha-canto { stroke-width: 8; }
+.kiosk-elegir__ficha[data-state='off'] { opacity: 0.5; }
+.kiosk-elegir__ficha[data-state='off'] .kiosk-elegir__ficha-canto { stroke-dasharray: 6 6; }
+.kiosk-elegir__ficha-cara { position: relative; width: 62%; height: auto; }
+
+/* ALCANCE: exactamente una acción primaria y, debajo, lo opcional en letra de a pie. */
+.kiosk-elegir__alcance {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-content: center;
+  justify-items: center;
+  gap: 1vh;
+  padding: 0 4vw 1vh;
+  min-height: 0;
+}
+.kiosk-elegir__cta {
+  width: 100%;
+  min-height: clamp(64px, 8.4vh, 160px);
+  padding: 0.2em 0.8em;
+  border: 0;
+  background: var(--psp-color-text);
+  color: var(--psp-aro);
+  font: inherit;
+  font-size: clamp(22px, min(5.6vw, 5vh), 96px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  box-shadow: var(--psp-lift);
+  animation: kiosk-elegir-pulso 2.4s ease-in-out infinite;
+}
+.kiosk-elegir__cta:disabled { opacity: 0.45; animation: none; box-shadow: none; }
+.kiosk-elegir__secundarias { display: flex; align-items: center; justify-content: center; gap: 3vw; }
+/* Lo opcional no compite: sin campo, sin relieve, subrayado, y con los 64 px de área táctil que
+   hacen falta para tocarlo de pie. */
+.kiosk-elegir__enlace {
+  min-height: 64px;
+  padding: 0 1em;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: clamp(16px, min(2.4vw, 2.2vh), 26px);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.28em;
+}
+.kiosk-elegir__enlace[aria-pressed='true'] { font-weight: 900; text-decoration-thickness: 0.14em; }
+
+/* ZÓCALO: lo que la operación obliga a decir, en tinta plena y fuera del camino. */
+.kiosk-elegir__zocalo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vw;
+  padding: 0 4vw;
+  font-size: clamp(12px, min(1.9vw, 1.6vh), 22px);
+  font-weight: 600;
+}
+
+/* La ficha completa, dentro de la hoja: texto largo, sin tarjetas ni sombras. */
+.kiosk-elegir__ficha-larga { display: grid; gap: 12px; text-align: left; }
+.kiosk-elegir__ficha-larga h2 { margin: 16px 0 0; font-size: clamp(20px, 2.6vw, 32px); }
+.kiosk-elegir__ficha-larga p { margin: 0; }
+
+@keyframes kiosk-elegir-entra {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes kiosk-elegir-pulso {
+  0%, 100% { transform: none; }
+  50% { transform: scale(1.02); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kiosk-elegir__cta { animation: none; }
+  .kiosk-elegir__habitacion { animation: kiosk-elegir-funde 120ms linear both; }
+  .kiosk-elegir__ficha { transition: none; }
+}
+@keyframes kiosk-elegir-funde {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
