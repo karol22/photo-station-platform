@@ -62,3 +62,40 @@ describe('colores de acento de la marca', () => {
     expect(applied['--psp-color-accent-6']).toBe('#222222');
   });
 });
+
+describe('la familia en movimiento', () => {
+  const html = (node: Parameters<typeof renderToStaticMarkup>[0]) => renderToStaticMarkup(node);
+
+  it('sin gesto declarado se queda quieta, para no mover nada por accidente', () => {
+    expect(html(<BlobFace variant={1} />)).toContain('data-mood="still"');
+  });
+
+  it('`animated` sigue significando el gesto en reposo', () => {
+    expect(html(<BlobFace variant={1} animated />)).toContain('data-mood="idle"');
+  });
+
+  it('el gesto declarado manda sobre `animated`', () => {
+    expect(html(<BlobFace variant={2} animated mood="excited" />)).toContain('data-mood="excited"');
+  });
+
+  it('la mirada desplaza la cara, no la silueta', () => {
+    const markup = html(<BlobFace variant={3} gaze={{ x: 1, y: -1 }} />);
+    expect(markup).toContain('psp-blob__face');
+    expect(markup).toMatch(/translate\(3\.20 -3\.20\)/);
+  });
+
+  it('una mirada fuera de rango se recorta en vez de sacar los ojos de la cara', () => {
+    expect(html(<BlobFace variant={3} gaze={{ x: 9, y: -9 }} />)).toMatch(/translate\(3\.20 -3\.20\)/);
+  });
+
+  it('sin mirada no se emite transformación alguna', () => {
+    expect(html(<BlobFace variant={4} />)).not.toContain('translate(');
+  });
+
+  it('cada variante entra desfasada, para que seis juntas parezcan una bandada', () => {
+    const a = html(<BlobFace variant={1} animated />);
+    const f = html(<BlobFace variant={6} animated />);
+    expect(a).toContain('animation-delay:0s');
+    expect(f).not.toContain('animation-delay:0s');
+  });
+});

@@ -169,9 +169,17 @@ export function AttractScreen() {
             <div className="kiosk-attract__price">
               <span className="kiosk-attract__numeral" data-testid="attract-price">{money(from)}</span>
               {shortest ? <span className="kiosk-attract__aside">{t('kiosk.common.minutes_approx', { minutes: Math.round(shortest / 60) })}</span> : null}
+              {/* Seis formas mirando hacia el precio dicen «mira el precio» en cualquier idioma. */}
               <div className="kiosk-attract__flock" aria-hidden="true">
-                {BLOB_VARIANTS.map((variant) => (
-                  <BlobFace key={variant} variant={variant} size={120} expression="curious" animated />
+                {BLOB_VARIANTS.map((variant, i) => (
+                  <BlobFace
+                    key={variant}
+                    variant={variant}
+                    size={120}
+                    expression="curious"
+                    mood="curious"
+                    gaze={{ x: (i - 2.5) / 2.5, y: -1 }}
+                  />
                 ))}
               </div>
             </div>
@@ -184,7 +192,14 @@ export function AttractScreen() {
               {/* Tres formas actuando los tres pasos. Sin una palabra: se entiende mirando. */}
               {([1, 3, 5] as BlobVariant[]).map((variant, i) => (
                 <div key={variant} className="kiosk-attract__step" style={{ animationDelay: `${i * 0.4}s` }}>
-                  <BlobFace variant={variant} size={200} expression={i === 2 ? 'grin' : 'happy'} animated />
+                  {/* Tres gestos distintos cuentan los tres pasos: uno explica, otro se asoma,
+                      el último celebra. Es el tutorial entero, sin una palabra que traducir. */}
+                  <BlobFace
+                    variant={variant}
+                    size={200}
+                    expression={i === 2 ? 'grin' : 'happy'}
+                    mood={i === 0 ? 'talk' : i === 1 ? 'curious' : 'excited'}
+                  />
                 </div>
               ))}
             </div>
@@ -194,8 +209,8 @@ export function AttractScreen() {
             <div className="kiosk-attract__invite">
               <span className="kiosk-attract__rotulo">{publicName}</span>
               <div className="kiosk-attract__flock" aria-hidden="true">
-                {BLOB_VARIANTS.map((variant) => (
-                  <BlobFace key={variant} variant={variant} size={132} animated />
+                {BLOB_VARIANTS.map((variant, i) => (
+                  <BlobFace key={variant} variant={variant} size={132} mood="excited" gaze={{ x: (i - 2.5) / 5, y: 1 }} />
                 ))}
               </div>
             </div>
@@ -262,7 +277,7 @@ function ResultWall({ count }: { count: number }) {
           {/* La forma nunca lleva el color de su propia ficha: sobre sí misma desaparece y sólo
               quedarían los ojos flotando. Se desplaza tres puestos, que es media vuelta a la
               paleta y garantiza contraste venga la marca que venga. */}
-          <BlobFace variant={(((i + 3) % 6) + 1) as BlobVariant} size={140} />
+          <BlobFace variant={(((i + 3) % 6) + 1) as BlobVariant} size={140} mood="idle" />
         </div>
       ))}
     </div>

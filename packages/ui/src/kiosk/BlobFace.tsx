@@ -15,6 +15,27 @@ export type BlobVariant = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type BlobExpression = 'open' | 'happy' | 'calm' | 'grin' | 'curious' | 'wink';
 
+/**
+ * Cómo se comporta la forma, no sólo cómo está dibujada.
+ *
+ * Una cara quieta es un icono; una que parpadea y se mueve es un personaje, y un personaje es lo
+ * que hace que alguien se acerque a mirar. Cada gesto es una animación de `transform` sobre el
+ * SVG entero más un parpadeo sobre los ojos, así que cuesta lo que cuesta componer dos capas.
+ */
+export type BlobMood =
+  /** Respira y parpadea. El estado por omisión de cualquier forma en pantalla. */
+  | 'idle'
+  /** Se inclina y mira: acompaña a algo que la persona debe mirar. */
+  | 'curious'
+  /** Rebota. La celebración. */
+  | 'excited'
+  /** Se encoge. Para lo que todavía no está disponible. */
+  | 'shy'
+  /** Se aplasta y estira, como quien habla. Para una instrucción. */
+  | 'talk'
+  /** Quieta del todo. Para el recorrido documental, donde nada debe distraer. */
+  | 'still';
+
 export interface BlobFaceProps extends BaseProps {
   variant: BlobVariant;
   /** Color de relleno. Si falta, usa el token de acento correspondiente a la variante. */
@@ -22,8 +43,15 @@ export interface BlobFaceProps extends BaseProps {
   size?: number;
   /** Expresión; por defecto la propia de cada silueta. */
   expression?: BlobExpression;
-  /** Balanceo suave, para pantallas en reposo. */
+  /** Balanceo suave, para pantallas en reposo. Equivale a `mood="idle"`. */
   animated?: boolean;
+  /** Cómo se comporta la forma. Manda sobre `animated`. */
+  mood?: BlobMood;
+  /**
+   * Hacia dónde mira, de -1 a 1 en cada eje. Sirve para dirigir la atención sin escribir una
+   * palabra: seis formas mirando el precio dicen «mira el precio» en cualquier idioma.
+   */
+  gaze?: { x: number; y: number };
   title?: string;
 }
 
@@ -158,9 +186,18 @@ function face(expression: BlobExpression, eyes: Shape['eyes']): ReactElement {
   }
 }
 
-export function BlobFace({ variant, color, size = 96, expression, animated, title, className, ...rest }: BlobFaceProps): ReactElement {
+/** Cuánto se desplaza la mirada dentro de la cara, en unidades de lienzo. */
+const GAZE_RANGE = 3.2;
+
+export function BlobFace({ variant, color, size = 96, expression, animated, mood, gaze, title, className, ...rest }: BlobFaceProps): ReactElement {
   const shape = SHAPES[variant];
+  const behaviour: BlobMood = mood ?? (animated ? 'idle' : 'still');
+  // El retraso por variante desincroniza una fila de seis: seis formas moviéndose al unísono
+  // parecen un banner; desfasadas, parecen una bandada.
   const style: CSSProperties = { animationDelay: `${(variant - 1) * 0.18}s` };
+  const look = gaze
+    ? { x: Math.max(-1, Math.min(1, gaze.x)) * GAZE_RANGE, y: Math.max(-1, Math.min(1, gaze.y)) * GAZE_RANGE }
+    : { x: 0, y: 0 };
   return (
     <svg
       viewBox="0 0 100 100"
@@ -168,13 +205,16 @@ export function BlobFace({ variant, color, size = 96, expression, animated, titl
       height={size}
       role={title ? 'img' : 'presentation'}
       aria-hidden={title ? undefined : true}
-      className={cx('psp-blob', animated && 'psp-blob--animated', className)}
+      className={cx('psp-blob', className)}
+      data-mood={behaviour}
       style={style}
       {...rest}
     >
       {title ? <title>{title}</title> : null}
       <path d={blobPath(shape.radii)} fill={color ?? `var(--psp-color-accent-${variant})`} />
-      {face(expression ?? shape.expression, shape.eyes)}
+      <g className="psp-blob__face" transform={look.x || look.y ? `translate(${look.x.toFixed(2)} ${look.y.toFixed(2)})` : undefined}>
+        {face(expression ?? shape.expression, shape.eyes)}
+      </g>
     </svg>
   );
 }
