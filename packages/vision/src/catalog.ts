@@ -138,6 +138,16 @@ export const CATALOG: CatalogEntry[] = [
     status: 'stable',
     docs: 'packages/vision/README.md',
   },
+  {
+    kind: 'capability',
+    key: 'vision.faceProps',
+    name: 'Anclas de accesorios',
+    description:
+      'anchorFor(kind, face) coloca sombrero, lentes, bigote y aretes a partir de la malla facial: centro, tamaño y ángulo en coordenadas normalizadas 0..1, una ancla por rostro y confianza que cae con el giro de cabeza. Es aritmética pura sobre face.landmarks, así que no agrega modelo ni capacidad: su paridad Android es la de esa capacidad.',
+    package: PACKAGE,
+    status: 'stable',
+    docs: 'packages/vision/README.md',
+  },
   ...capabilityReport().map(
     (c): CatalogEntry => ({
       kind: 'capability',

@@ -60,6 +60,23 @@ La composición es siempre **alfa gradual**, nunca umbral: `compositeWithMask` i
 
 **Seguro para documentos.** La regla no se rompe: **lo único de aquí que puede tocar una fotografía de documento es el fondo de color plano**, porque un retrato de pasaporte pide precisamente un fondo uniforme. Por eso `backgroundColor` va por la herramienta `backgroundAdjust`, que sí está en `DOCUMENT_SAFE_TOOLS`; el desenfoque y el reemplazo de fondo van por `backgrounds`, el recorte por `masks`, y el duotono y el suavizado por `filterIntensity`, ninguna de ellas documental. La puerta sigue siendo una sola: `validateEditOps` contra los `allowedTools` del preset. Las ops nuevas del pipeline son `backgroundColor`, `backgroundBlur`, `backgroundReplace`, `cutout`, `duotone` y `smoothSkin`, y las tres primeras más `cutout` leen la máscara de `EditResources.mask`; sin ella se omiten, igual que un overlay sin su activo.
 
+### Texto sobre la foto y accesorios anclados
+```ts
+import { anchorToStickerOp, captionLayout, captionOp, applyEditOps } from '@psp/imaging';
+import { canvasTextRasterizer } from '@psp/imaging/browser';
+
+const ops = [
+  anchorToStickerOp('ast_hat', anchor, photo),                                  // ancla 0..1 → op de pegatina
+  captionOp('SOFÍA', captionLayout(photo), { color: accent, outlineColor: '#000000' }),
+];
+applyEditOps(photo, ops, { assets, textRasterizer: canvasTextRasterizer() });
+```
+- **La operación `text` sirve para una cabina.** `sizePx` llega hasta `TEXT_MAX_SIZE_PX` (512): un nombre en una foto de 1200 px mide cien píxeles, no veinte. Se le agregan `align`, `weight`, `angle`, `anchor` (`topLeft` por omisión, `center` para lo que se arrastra) y `outlineColor`/`outlineWidth`. **El contorno es lo que la hace legible**: sin él, un texto claro desaparece en cuanto cae sobre una camisa clara. Todos los parámetros nuevos tienen valor por defecto, así que una op escrita antes se comporta exactamente igual, y la herramienta `text` sigue fuera de `DOCUMENT_SAFE_TOOLS`.
+- **Dos formas de dibujar el texto.** En Node se usa la fuente bitmap 5×7 interna (`renderTextRaster`), determinista y sin tipografías. En el navegador se inyecta `EditResources.textRasterizer` —igual que `deflate`/`inflate` en el PNG— y el nombre sale con la tipografía que la marca ya cargó: `canvasTextRasterizer({ fontFallback })` en `@psp/imaging/browser`. El pipeline coloca lo que reciba con `drawProp`, así que la única diferencia es el dibujo de las letras. Si el rasterizador devuelve `undefined`, se cae a la fuente interna sin romper nada.
+- **Los overlays giran.** `sticker`, `overlay` y `frame` aceptan `angle` y `anchor`. El giro existía en la capa de arrastre del kiosco y se perdía al componer; ahora un accesorio pegado al rostro se inclina con la cabeza y lo que se ve arrastrando es lo que sale.
+- `anchorToStickerOp(assetId, anchor, frame)` pasa un ancla normalizada 0..1 de `@psp/vision` a la op de pegatina, en píxeles y con `anchor: 'center'`. El ancla llega como **tipo estructural**, así que este paquete sigue sin importar el motor de visión.
+- `captionLayout(frame)` decide dónde va un nombre: abajo (87 % del alto), centrado, con letra al 8.5 % del alto de la foto y contorno al 7 % de la letra. Es la decisión de producto —se lee en la pantalla de la cabina a metro y medio y en un teléfono a un palmo— y por eso vive probada aquí y no en un componente. `captionOp(text, layout, style)` arma la op; un texto vacío no produce ninguna.
+
 ### Composición de plantillas
 ```ts
 import { planTemplate, planDocumentSheet, renderPlan, selectVariant } from '@psp/imaging';
@@ -79,6 +96,8 @@ import { canvasToRaster, loadRaster, rasterToCanvas, rasterToDataUrl, renderPlan
 
 const canvas = renderPlanToCanvas(plan, { photos: [videoOrImage], assets: { ast_1: img }, logos: { brand: img }, fontFallback: 'sans-serif' });
 ```
+`canvasTextRasterizer({ fontFallback })` devuelve el `TextRasterizer` que la operación `text` usa para dibujar con tipografías reales: mide con `measureText`, pinta el contorno con `strokeText` al doble del grosor pedido (el trazo se reparte a los dos lados) y el relleno encima. Fuera del navegador no existe, y el pipeline cae solo a la fuente bitmap.
+
 `renderPlanToCanvas` usa la misma geometría que `renderPlan` pero con fuentes reales y `CanvasImageSource` (imagen, vídeo, `ImageBitmap`, canvas). Antes de renderizar, el kiosco carga las fuentes que nombran las plantillas (`document.fonts.load('bold 32px "Familia"')`) y los activos/logos por URL (`loadRaster` o `Image`); lo que falte se dibuja como marcador gris. `canvasToRaster` captura un frame de vídeo como Raster para el pipeline puro; `rasterToDataUrl` sirve para previsualizar o descargar.
 
 ### Códigos QR
@@ -133,6 +152,8 @@ pnpm --filter @psp/imaging typecheck
 pnpm --filter @psp/imaging test
 ```
 Las pruebas (`src/**/*.test.ts`) cubren operaciones con valores conocidos (`brightness` satura, `grayscale` usa luma 709, `mirrorH`, `crop`, `rotate90`, `resize` 4×4 → 2×2), validación y aplicación de EditOps contra `DOCUMENT_SAFE_TOOLS`, round-trip PNG y decodificación de un PNG comprimido con `node:zlib`, `planTemplate` de una tira 2×6 in (600×1800 px, 4 fotos, token de fecha, variantes por locale y papel), `planDocumentSheet` para 35×45 mm y 51×51 mm en 4×6 in (margen, sin solapes, centrado) y `renderPlan` píxel a píxel (foto, rotación, esquinas, borde, marcadores, texto, QR, marcas de corte). Las plantillas de prueba viven en `src/__tests__/fixtures.ts`.
+
+`src/decor-ops.test.ts` cubre el paso de ancla normalizada a op (píxeles, centro, ángulo a un decimal, lado mínimo 1) y el layout del texto (sitio, tamaño, tope de la operación y recorte del texto vacío). Las pruebas nuevas de `src/edit-ops.test.ts` cubren el rango grande de `sizePx`, que `text` sigue sin ser documental, que el contorno hace visible un texto del mismo color que el fondo, el ancla al centro contra la esquina equivalente, el giro, el rasterizador inyectado y su caída a la fuente interna, y que un sticker sin ángulo compone exactamente igual que antes.
 
 `src/effects.test.ts` cubre los efectos con rasters pequeños y valores verificables: el escalado de una máscara a media resolución (255, 191, 64, 0 en la fila, alineado como `resize`), que el borde afinado deja valores intermedios y no sólo 0 y 255, que la composición no toca a la persona y sí al fondo, que el recorte deja alfa 0 fuera, que el desenfoque de fondo devuelve píxeles idénticos dentro de la persona, `anchorProp` con cabeza inclinada (el elemento gira lo mismo que la línea de los ojos) y con cara más grande (elemento proporcionalmente mayor), el recorte de `drawProp` a los límites del raster, que `smoothSkin` baja el grano a menos de un tercio conservando un escalón de más de 90 niveles, que cada filtro con nombre es determinista y que `validateEditOps` los rechaza todos contra `DOCUMENT_SAFE_TOOLS` mientras acepta `backgroundColor`.
 

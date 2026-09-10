@@ -1,0 +1,956 @@
+[
+  {
+    "file": "Louisa_McLaughlin.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 200,
+    "h": 347,
+    "faceWidthPx": 86,
+    "faceHeightPx": 110.2,
+    "rollDeg": -1.5,
+    "yawDeg": 2.2,
+    "pitchDeg": -1.4,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 107,
+        "y": 41.2,
+        "w": 113.5,
+        "h": 81.7,
+        "angleDeg": -1.5,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 108.4,
+        "y": 121.7,
+        "w": 86,
+        "h": 32.7,
+        "angleDeg": -1.5,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 109.1,
+        "y": 153.6,
+        "w": 41.3,
+        "h": 14,
+        "angleDeg": -1.5,
+        "confidence": 1
+      },
+      "earringLeft": {
+        "x": 60.7,
+        "y": 157.2,
+        "w": 11.2,
+        "h": 20.1,
+        "angleDeg": -1.5,
+        "confidence": 1
+      },
+      "earringRight": {
+        "x": 153.5,
+        "y": 155.5,
+        "w": 11.2,
+        "h": 20.1,
+        "angleDeg": -1.5,
+        "confidence": 1
+      }
+    },
+    "headTopY": 17.5,
+    "hatSeatOverFaceHeight": 0.586,
+    "headWidthAtEyesPx": 170,
+    "glassesOverHeadWidth": 0.506,
+    "earringLeftOutsideOverFaceWidth": -0.613,
+    "earringRightOutsideOverFaceWidth": -0.32,
+    "moustacheLipGapOverFaceHeight": 0.001
+  },
+  {
+    "file": "_ghab_hay_khali__m._harandi001028.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 640,
+    "h": 426,
+    "faceWidthPx": 222.4,
+    "faceHeightPx": 373.7,
+    "rollDeg": 14.4,
+    "yawDeg": 28.1,
+    "pitchDeg": 0.7,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 489.3,
+        "y": -42.2,
+        "w": 293.6,
+        "h": 211.4,
+        "angleDeg": 14.4,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 439.8,
+        "y": 177.9,
+        "w": 222.4,
+        "h": 84.5,
+        "angleDeg": 14.4,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 462.2,
+        "y": 298.5,
+        "w": 106.8,
+        "h": 36.3,
+        "angleDeg": 14.4,
+        "confidence": 0.87
+      },
+      "earringLeft": {
+        "x": 238,
+        "y": 255,
+        "w": 28.9,
+        "h": 52,
+        "angleDeg": 14.4,
+        "confidence": 1
+      },
+      "earringRight": null
+    },
+    "moustacheLipGapOverFaceHeight": 0.019
+  },
+  {
+    "file": "10.18.09MikeMcKoneByLuigiNovi.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 787,
+    "h": 1000,
+    "faceWidthPx": 277.3,
+    "faceHeightPx": 371.8,
+    "rollDeg": -4.7,
+    "yawDeg": -5.6,
+    "pitchDeg": -10,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 289.6,
+        "y": 27,
+        "w": 366.1,
+        "h": 263.6,
+        "angleDeg": -4.7,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 315.3,
+        "y": 290.7,
+        "w": 277.3,
+        "h": 105.4,
+        "angleDeg": -4.7,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 317.8,
+        "y": 398.2,
+        "w": 133.1,
+        "h": 45.3,
+        "angleDeg": -4.7,
+        "confidence": 1
+      },
+      "earringLeft": {
+        "x": 193.1,
+        "y": 411.4,
+        "w": 36.1,
+        "h": 64.9,
+        "angleDeg": -4.7,
+        "confidence": 1
+      },
+      "earringRight": {
+        "x": 491.7,
+        "y": 387.3,
+        "w": 36.1,
+        "h": 64.9,
+        "angleDeg": -4.7,
+        "confidence": 1
+      }
+    },
+    "headWidthAtEyesPx": 328,
+    "glassesOverHeadWidth": 0.845,
+    "earringLeftOutsideOverFaceWidth": 0.01,
+    "earringRightOutsideOverFaceWidth": 0.01,
+    "moustacheLipGapOverFaceHeight": -0.014
+  },
+  {
+    "file": "2012-04_Pilszcz_29.jpg",
+    "face": 0,
+    "faces": 2,
+    "w": 960,
+    "h": 731,
+    "faceWidthPx": 153.1,
+    "faceHeightPx": 188.5,
+    "rollDeg": 1.3,
+    "yawDeg": -7.2,
+    "pitchDeg": -8.5,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 604.5,
+        "y": 188.5,
+        "w": 202,
+        "h": 145.5,
+        "angleDeg": 1.3,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 608.4,
+        "y": 328.8,
+        "w": 153.1,
+        "h": 58.2,
+        "angleDeg": 1.3,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 607.5,
+        "y": 381.6,
+        "w": 73.5,
+        "h": 25,
+        "angleDeg": 1.3,
+        "confidence": 1
+      },
+      "earringLeft": {
+        "x": 531.7,
+        "y": 382.8,
+        "w": 19.9,
+        "h": 35.8,
+        "angleDeg": 1.3,
+        "confidence": 1
+      },
+      "earringRight": {
+        "x": 697,
+        "y": 385,
+        "w": 19.9,
+        "h": 35.8,
+        "angleDeg": 1.3,
+        "confidence": 1
+      }
+    },
+    "moustacheLipGapOverFaceHeight": -0.013
+  },
+  {
+    "file": "2012-04_Pilszcz_29.jpg",
+    "face": 1,
+    "faces": 2,
+    "w": 960,
+    "h": 731,
+    "faceWidthPx": 162.2,
+    "faceHeightPx": 211.8,
+    "rollDeg": 0.3,
+    "yawDeg": 4.7,
+    "pitchDeg": 5.7,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 349.2,
+        "y": 156.3,
+        "w": 214.1,
+        "h": 154.2,
+        "angleDeg": 0.3,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 352.9,
+        "y": 314.1,
+        "w": 162.2,
+        "h": 61.6,
+        "angleDeg": 0.3,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 355.7,
+        "y": 363.6,
+        "w": 77.9,
+        "h": 26.5,
+        "angleDeg": 0.3,
+        "confidence": 1
+      },
+      "earringLeft": {
+        "x": 264.1,
+        "y": 378,
+        "w": 21.1,
+        "h": 38,
+        "angleDeg": 0.3,
+        "confidence": 1
+      },
+      "earringRight": {
+        "x": 439.2,
+        "y": 374.8,
+        "w": 21.1,
+        "h": 38,
+        "angleDeg": 0.3,
+        "confidence": 1
+      }
+    },
+    "moustacheLipGapOverFaceHeight": -0.011
+  },
+  {
+    "file": "Congressman_William_Thomas_clay_portrait_in-progress.jpg",
+    "face": 0,
+    "faces": 2,
+    "w": 960,
+    "h": 757,
+    "faceWidthPx": 167.8,
+    "faceHeightPx": 228.8,
+    "rollDeg": 20.4,
+    "yawDeg": -38.1,
+    "pitchDeg": -16.1,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 636,
+        "y": 89,
+        "w": 221.4,
+        "h": 159.4,
+        "angleDeg": 20.4,
+        "confidence": 0.73
+      },
+      "glasses": {
+        "x": 612.9,
+        "y": 249,
+        "w": 167.8,
+        "h": 63.7,
+        "angleDeg": 20.4,
+        "confidence": 0.68
+      },
+      "moustache": {
+        "x": 581.7,
+        "y": 317.7,
+        "w": 80.5,
+        "h": 27.4,
+        "angleDeg": 20.4,
+        "confidence": 0.48
+      },
+      "earringLeft": null,
+      "earringRight": {
+        "x": 727.3,
+        "y": 342,
+        "w": 21.8,
+        "h": 39.3,
+        "angleDeg": 20.4,
+        "confidence": 1
+      }
+    },
+    "headTopY": 80.5,
+    "hatSeatOverFaceHeight": 0.386,
+    "moustacheLipGapOverFaceHeight": -0.008
+  },
+  {
+    "file": "Congressman_William_Thomas_clay_portrait_in-progress.jpg",
+    "face": 1,
+    "faces": 2,
+    "w": 960,
+    "h": 757,
+    "faceWidthPx": 233.6,
+    "faceHeightPx": 320,
+    "rollDeg": -2.6,
+    "yawDeg": 32.8,
+    "pitchDeg": -1.6,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 252.4,
+        "y": 51.8,
+        "w": 308.4,
+        "h": 222.1,
+        "angleDeg": -2.6,
+        "confidence": 0.91
+      },
+      "glasses": {
+        "x": 258,
+        "y": 265.9,
+        "w": 233.6,
+        "h": 88.8,
+        "angleDeg": -2.6,
+        "confidence": 0.89
+      },
+      "moustache": {
+        "x": 285.8,
+        "y": 354.3,
+        "w": 112.2,
+        "h": 38.1,
+        "angleDeg": -2.6,
+        "confidence": 0.69
+      },
+      "earringLeft": {
+        "x": 81.4,
+        "y": 380.2,
+        "w": 30.4,
+        "h": 54.7,
+        "angleDeg": -2.6,
+        "confidence": 1
+      },
+      "earringRight": null
+    },
+    "headTopY": 68.5,
+    "hatSeatOverFaceHeight": 0.295,
+    "headWidthAtEyesPx": 310,
+    "glassesOverHeadWidth": 0.754,
+    "moustacheLipGapOverFaceHeight": -0.006
+  },
+  {
+    "file": "Bangarang_faces.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 817,
+    "h": 588,
+    "faceWidthPx": 121.2,
+    "faceHeightPx": 167.1,
+    "rollDeg": 4.9,
+    "yawDeg": -21,
+    "pitchDeg": -6.2,
+    "score": 1,
+    "maskInverted": false,
+    "anchors": {
+      "hat": {
+        "x": 281.2,
+        "y": 113.9,
+        "w": 160,
+        "h": 115.2,
+        "angleDeg": 4.9,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 280.8,
+        "y": 223,
+        "w": 121.2,
+        "h": 46.1,
+        "angleDeg": 4.9,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 268.1,
+        "y": 275.3,
+        "w": 58.2,
+        "h": 19.8,
+        "angleDeg": 4.9,
+        "confidence": 1
+      },
+      "earringLeft": null,
+      "earringRight": {
+        "x": 369.8,
+        "y": 274.8,
+        "w": 15.8,
+        "h": 28.4,
+        "angleDeg": 4.9,
+        "confidence": 1
+      }
+    },
+    "moustacheLipGapOverFaceHeight": 0.003
+  },
+  {
+    "file": "A_Child_s_Cry_for_Peace.jpg",
+    "face": 0,
+    "faces": 2,
+    "w": 652,
+    "h": 718,
+    "faceWidthPx": 673.2,
+    "faceHeightPx": 788,
+    "rollDeg": -25.5,
+    "yawDeg": 27,
+    "pitchDeg": -13.1,
+    "score": 0.96,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 225.7,
+        "y": -361.3,
+        "w": 888.6,
+        "h": 639.8,
+        "angleDeg": -25.5,
+        "confidence": 0.96
+      },
+      "glasses": {
+        "x": 359.3,
+        "y": 211.8,
+        "w": 673.2,
+        "h": 255.8,
+        "angleDeg": -25.5,
+        "confidence": 0.96
+      },
+      "moustache": {
+        "x": 527.8,
+        "y": 460.7,
+        "w": 323.1,
+        "h": 109.9,
+        "angleDeg": -25.5,
+        "confidence": 0.88
+      },
+      "earringLeft": {
+        "x": -26.8,
+        "y": 613.1,
+        "w": 87.5,
+        "h": 157.5,
+        "angleDeg": -25.5,
+        "confidence": 0.96
+      },
+      "earringRight": null
+    },
+    "moustacheLipGapOverFaceHeight": -0.011
+  },
+  {
+    "file": "A_Child_s_Cry_for_Peace.jpg",
+    "face": 1,
+    "faces": 2,
+    "w": 652,
+    "h": 718,
+    "faceWidthPx": 406.9,
+    "faceHeightPx": 718,
+    "rollDeg": -9.4,
+    "yawDeg": 42.5,
+    "pitchDeg": 4.7,
+    "score": 0.98,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 247.5,
+        "y": -131.1,
+        "w": 537,
+        "h": 386.7,
+        "angleDeg": -9.4,
+        "confidence": 0.57
+      },
+      "glasses": {
+        "x": 330.8,
+        "y": 279,
+        "w": 406.9,
+        "h": 154.6,
+        "angleDeg": -9.4,
+        "confidence": 0.49
+      },
+      "moustache": null,
+      "earringLeft": {
+        "x": -71.6,
+        "y": 572.7,
+        "w": 52.9,
+        "h": 95.2,
+        "angleDeg": -9.4,
+        "confidence": 0.98
+      },
+      "earringRight": null
+    }
+  },
+  {
+    "file": "2011___.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 640,
+    "h": 480,
+    "faceWidthPx": 246.2,
+    "faceHeightPx": 302.5,
+    "rollDeg": 41.1,
+    "yawDeg": -5.5,
+    "pitchDeg": 2.2,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 555.5,
+        "y": 68.3,
+        "w": 325,
+        "h": 234,
+        "angleDeg": 41.1,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 411,
+        "y": 235.2,
+        "w": 246.2,
+        "h": 93.5,
+        "angleDeg": 41.1,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 346.6,
+        "y": 303.9,
+        "w": 118.2,
+        "h": 40.2,
+        "angleDeg": 41.1,
+        "confidence": 1
+      },
+      "earringLeft": {
+        "x": 250.3,
+        "y": 226.6,
+        "w": 32,
+        "h": 57.6,
+        "angleDeg": 41.1,
+        "confidence": 1
+      },
+      "earringRight": {
+        "x": 449.8,
+        "y": 402.3,
+        "w": 32,
+        "h": 57.6,
+        "angleDeg": 41.1,
+        "confidence": 1
+      }
+    },
+    "headTopY": 82.5,
+    "hatSeatOverFaceHeight": 0.34,
+    "headWidthAtEyesPx": 367,
+    "glassesOverHeadWidth": 0.671,
+    "earringLeftOutsideOverFaceWidth": 0.137,
+    "moustacheLipGapOverFaceHeight": -0.013
+  },
+  {
+    "file": "Blasts_from_the_past__Imagicity_524_.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 960,
+    "h": 643,
+    "faceWidthPx": 348.7,
+    "faceHeightPx": 466.6,
+    "rollDeg": -19.4,
+    "yawDeg": -13,
+    "pitchDeg": -8.8,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 394.5,
+        "y": 30.2,
+        "w": 460.3,
+        "h": 331.4,
+        "angleDeg": -19.4,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 530.2,
+        "y": 341.2,
+        "w": 348.7,
+        "h": 132.5,
+        "angleDeg": -19.4,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 560.1,
+        "y": 477.1,
+        "w": 167.4,
+        "h": 56.9,
+        "angleDeg": -19.4,
+        "confidence": 1
+      },
+      "earringLeft": {
+        "x": 448.1,
+        "y": 514.3,
+        "w": 45.3,
+        "h": 81.6,
+        "angleDeg": -19.4,
+        "confidence": 0.58
+      },
+      "earringRight": {
+        "x": 801.4,
+        "y": 384.1,
+        "w": 45.3,
+        "h": 81.6,
+        "angleDeg": -19.4,
+        "confidence": 1
+      }
+    },
+    "headWidthAtEyesPx": 442,
+    "glassesOverHeadWidth": 0.789,
+    "earringLeftOutsideOverFaceWidth": -0.026,
+    "earringRightOutsideOverFaceWidth": 0.044,
+    "moustacheLipGapOverFaceHeight": -0.008
+  },
+  {
+    "file": "Blasts_from_the_past__1___Imagicity_524_.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 960,
+    "h": 643,
+    "faceWidthPx": 357.7,
+    "faceHeightPx": 432.2,
+    "rollDeg": -1,
+    "yawDeg": -3.3,
+    "pitchDeg": -2.7,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 586.3,
+        "y": 12.8,
+        "w": 472.1,
+        "h": 339.9,
+        "angleDeg": -1,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 593.1,
+        "y": 319,
+        "w": 357.7,
+        "h": 135.9,
+        "angleDeg": -1,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 596.7,
+        "y": 443.1,
+        "w": 171.7,
+        "h": 58.4,
+        "angleDeg": -1,
+        "confidence": 1
+      },
+      "earringLeft": {
+        "x": 409.1,
+        "y": 460.9,
+        "w": 46.5,
+        "h": 83.7,
+        "angleDeg": -1,
+        "confidence": 1
+      },
+      "earringRight": {
+        "x": 795.1,
+        "y": 447.1,
+        "w": 46.5,
+        "h": 83.7,
+        "angleDeg": -1,
+        "confidence": 1
+      }
+    },
+    "headWidthAtEyesPx": 508,
+    "glassesOverHeadWidth": 0.704,
+    "earringLeftOutsideOverFaceWidth": -0.232,
+    "earringRightOutsideOverFaceWidth": -0.232,
+    "moustacheLipGapOverFaceHeight": -0.015
+  },
+  {
+    "file": "Blasts_from_the_past__2___Imagicity_524_.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 960,
+    "h": 643,
+    "faceWidthPx": 340.8,
+    "faceHeightPx": 423.7,
+    "rollDeg": -7.8,
+    "yawDeg": -1.3,
+    "pitchDeg": -3.8,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 432.6,
+        "y": -13.2,
+        "w": 449.8,
+        "h": 323.9,
+        "angleDeg": -7.8,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 481.9,
+        "y": 280.3,
+        "w": 340.8,
+        "h": 129.5,
+        "angleDeg": -7.8,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 499.2,
+        "y": 406.7,
+        "w": 163.6,
+        "h": 55.6,
+        "angleDeg": -7.8,
+        "confidence": 1
+      },
+      "earringLeft": {
+        "x": 328.3,
+        "y": 426.9,
+        "w": 44.3,
+        "h": 79.7,
+        "angleDeg": -7.8,
+        "confidence": 1
+      },
+      "earringRight": {
+        "x": 692.3,
+        "y": 372.4,
+        "w": 44.3,
+        "h": 79.7,
+        "angleDeg": -7.8,
+        "confidence": 1
+      }
+    },
+    "headWidthAtEyesPx": 434,
+    "glassesOverHeadWidth": 0.785,
+    "earringLeftOutsideOverFaceWidth": -0.007,
+    "earringRightOutsideOverFaceWidth": -0.014,
+    "moustacheLipGapOverFaceHeight": -0.021
+  },
+  {
+    "file": "Boy__Imagicity_462_.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 960,
+    "h": 642,
+    "faceWidthPx": 381.8,
+    "faceHeightPx": 505.2,
+    "rollDeg": 0.6,
+    "yawDeg": 3.5,
+    "pitchDeg": -11.8,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 492.8,
+        "y": -25.9,
+        "w": 504,
+        "h": 362.9,
+        "angleDeg": 0.6,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 480.3,
+        "y": 346.2,
+        "w": 381.8,
+        "h": 145.1,
+        "angleDeg": 0.6,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 484.3,
+        "y": 513.1,
+        "w": 183.3,
+        "h": 62.3,
+        "angleDeg": 0.6,
+        "confidence": 1
+      },
+      "earringLeft": {
+        "x": 255.2,
+        "y": 467.7,
+        "w": 49.6,
+        "h": 89.3,
+        "angleDeg": 0.6,
+        "confidence": 1
+      },
+      "earringRight": {
+        "x": 667.5,
+        "y": 472.1,
+        "w": 49.6,
+        "h": 89.3,
+        "angleDeg": 0.6,
+        "confidence": 1
+      }
+    },
+    "headWidthAtEyesPx": 451,
+    "glassesOverHeadWidth": 0.847,
+    "earringLeftOutsideOverFaceWidth": 0.078,
+    "earringRightOutsideOverFaceWidth": 0.064,
+    "moustacheLipGapOverFaceHeight": -0.004
+  },
+  {
+    "file": "retrato-giro-lateral.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 283,
+    "h": 1000,
+    "faceWidthPx": 84.7,
+    "faceHeightPx": 137.4,
+    "rollDeg": 3.3,
+    "yawDeg": 27.1,
+    "pitchDeg": -21.5,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 200.4,
+        "y": 18.4,
+        "w": 111.8,
+        "h": 80.5,
+        "angleDeg": 3.3,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 179.2,
+        "y": 105.2,
+        "w": 84.7,
+        "h": 32.2,
+        "angleDeg": 3.3,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 181.3,
+        "y": 146.3,
+        "w": 40.6,
+        "h": 13.8,
+        "angleDeg": 3.3,
+        "confidence": 0.92
+      },
+      "earringLeft": {
+        "x": 111.2,
+        "y": 128.4,
+        "w": 11,
+        "h": 19.8,
+        "angleDeg": 3.3,
+        "confidence": 1
+      },
+      "earringRight": null
+    },
+    "headTopY": 9.5,
+    "hatSeatOverFaceHeight": 0.358,
+    "headWidthAtEyesPx": 156,
+    "glassesOverHeadWidth": 0.543,
+    "earringLeftOutsideOverFaceWidth": -0.239,
+    "moustacheLipGapOverFaceHeight": -0.009
+  },
+  {
+    "file": "2019_12_15_Annibale_Covini_Gerolamo_dida_001_re_950.jpg",
+    "face": 0,
+    "faces": 1,
+    "w": 960,
+    "h": 965,
+    "faceWidthPx": 227.2,
+    "faceHeightPx": 238.6,
+    "rollDeg": -36.9,
+    "yawDeg": -7.9,
+    "pitchDeg": 15.8,
+    "score": 1,
+    "maskInverted": true,
+    "anchors": {
+      "hat": {
+        "x": 147.3,
+        "y": 471.8,
+        "w": 300,
+        "h": 216,
+        "angleDeg": -36.9,
+        "confidence": 1
+      },
+      "glasses": {
+        "x": 226.2,
+        "y": 629.8,
+        "w": 227.2,
+        "h": 86.4,
+        "angleDeg": -36.9,
+        "confidence": 1
+      },
+      "moustache": {
+        "x": 249.1,
+        "y": 687.2,
+        "w": 109.1,
+        "h": 37.1,
+        "angleDeg": -36.9,
+        "confidence": 1
+      },
+      "earringLeft": {
+        "x": 185.7,
+        "y": 791.5,
+        "w": 29.5,
+        "h": 53.2,
+        "angleDeg": -36.9,
+        "confidence": 1
+      },
+      "earringRight": {
+        "x": 391.1,
+        "y": 657.4,
+        "w": 29.5,
+        "h": 53.2,
+        "angleDeg": -36.9,
+        "confidence": 1
+      }
+    },
+    "moustacheLipGapOverFaceHeight": -0.024
+  }
+]

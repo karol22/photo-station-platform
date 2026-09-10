@@ -28,8 +28,8 @@ const OP_NAMES: Record<EditOpKey, { name: string; description: string }> = {
   duotone: { name: 'Duotono', description: 'Mapea la luminancia entre dos colores.' },
   smoothSkin: { name: 'Suavizado de piel', description: 'Suaviza el grano preservando bordes; con máscara actúa sólo sobre la persona.' },
   frame: { name: 'Marco', description: 'Compone un activo de marco sobre toda la foto.' },
-  sticker: { name: 'Sticker', description: 'Compone un activo en una posición y tamaño.' },
-  text: { name: 'Texto', description: 'Dibuja texto (fuente bitmap en Node; fuentes reales en el navegador).' },
+  sticker: { name: 'Sticker', description: 'Compone un activo en una posición, tamaño y giro; el ancla puede ser su esquina o su centro.' },
+  text: { name: 'Texto', description: 'Dibuja un texto sobre la foto hasta 512 px de alto, con contorno, alineación, giro y ancla al centro; con la fuente bitmap en Node y con tipografías reales si se le inyecta un rasterizador.' },
   overlay: { name: 'Overlay', description: 'Compone un activo con opacidad sobre la foto.' },
 };
 

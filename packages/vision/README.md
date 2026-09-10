@@ -1,7 +1,7 @@
 # @psp/vision
 
 ## Propósito
-Visión en el dispositivo, sin conexión: rostro y malla (`FaceAnalyzer`), recorte de persona (`PersonSegmenter`), gestos de mano (`GestureRecognizer`), detección de rostros (`FaceDetector`), métricas de calidad de frame, cumplimiento contra presets documentales, instrucciones humanas, guía orientativa para entretenimiento, auto-captura y disparo por gesto.
+Visión en el dispositivo, sin conexión: rostro y malla (`FaceAnalyzer`), recorte de persona (`PersonSegmenter`), gestos de mano (`GestureRecognizer`), detección de rostros (`FaceDetector`), métricas de calidad de frame, cumplimiento contra presets documentales, instrucciones humanas, guía orientativa para entretenimiento, auto-captura, disparo por gesto y anclas de accesorios sobre el rostro.
 
 Cada capacidad es un **puerto** con dos implementaciones: un adaptador de MediaPipe y un mock determinista. Todo lo exportado desde `@psp/vision` es puro y corre en Node; los adaptadores (sólo navegador, import dinámico) se importan por su propia entrada:
 
@@ -38,6 +38,24 @@ async function onFrame(frame: ImageDataLike, atMs: number) {
 - `computeFrameMetrics(img, faceBox?)` submuestrea el frame y devuelve brillo, contraste, nitidez (varianza del laplaciano), uniformidad de fondo, reflejos y, con caja, brillo y asimetría del rostro.
 - `evaluatePoseGuidance(analysis, guidance)` sólo sugiere (`hints`) para experiencias de entretenimiento; nunca bloquea.
 - `MockFaceAnalyzer` devuelve el rostro del guion (por defecto uno centrado ideal) y métricas reales si hay píxeles o `IDEAL_FRAME_METRICS` si el frame está vacío. `syntheticFace(opts)` genera los 478 puntos de la malla desde `FACE_MODEL` y alimenta pruebas y la cámara sintética del kiosco. `SAMPLE_DOCUMENT_SPEC` / `sampleDocumentSpec(overrides)` son un spec realista 35×45 mm.
+
+### Anclas de accesorios
+```ts
+import { anchorFor, anchorsFor, anchorToPixels, PROP_KINDS } from '@psp/vision';
+
+const frameAspect = analysis.width / analysis.height;
+const gafas = anchorFor('glasses', face, { frameAspect });          // { x, y, width, height, angleDeg, confidence } | undefined
+const sombreros = anchorsFor('hat', analysis.faces, { frameAspect }); // una por cara
+const px = anchorToPixels(gafas, { width: photo.width, height: photo.height });
+```
+- `anchorFor(kind, face, opts?)` calcula **dónde va cada accesorio**: `hat`, `glasses`, `moustache`, `earringLeft` y `earringRight` (`PROP_KINDS`). Devuelve el **centro** y el tamaño en coordenadas normalizadas 0..1 —`x`/`width` sobre el ancho del cuadro, `y`/`height` sobre el alto— más el giro horario en grados y la confianza. La misma ancla sirve para la vista previa de 360 px y para la foto de 3000 px.
+- Todo se resuelve en un **marco girado con el rostro** (eje `down` de la frente a la barbilla): si la cabeza se ladea, el accesorio se ladea igual y "encima de la cabeza" sigue siendo encima de la cabeza. Los desplazamientos verticales van en altos de rostro proyectados y los anchos en anchos de rostro proyectados, así que el escorzo por giro o cabeceo se aplica solo.
+- La geometría de cada pieza vive en `PROP_GEOMETRY` en proporciones anatómicas: el ala del sombrero se apoya justo por debajo de la coronilla extrapolada, los lentes miden de sien a sien (234↔454), el bigote se centra en el filtro (62 % del camino de la punta de la nariz al labio superior) y el arete cuelga del contorno lateral a la altura de la nariz. `heightOverWidth` es la proporción **esperada del activo** y se sustituye con `assetAspect` cuando se conoce la del dibujo real.
+- **Confianza y giro.** `propConfidence(kind, score, yawDeg)` degrada linealmente entre `yawFullDeg` y `yawLimitDeg`. Las piezas simétricas miran `|yaw|`; los aretes sólo el giro que los **esconde** (`yaw > 0` tapa la oreja derecha de la imagen), así que la oreja que se acerca a la cámara no pierde nada. Por debajo de `minConfidence` (0.35) la función devuelve `undefined`: una pieza que no se sostiene no se pega mal, no se pega.
+- `frameAspect` importa: sin él (por defecto 1) el ángulo y el ancho salen deformados en un cuadro 4:3. Sale de `analysis.width / analysis.height`.
+- Con varias caras, `anchorsFor` devuelve una por cara y omite las que no llegan a confianza; `anchorsForFace` devuelve las cinco piezas de un rostro.
+- **Paridad Android.** No hay capacidad nueva: es aritmética sobre `face.landmarks`, que ya declara `FaceLandmarker` como equivalente en Android. Cualquier técnica que hubiera pedido un modelo extra se habría quedado fuera del recorrido básico.
+- Determinista y sin reloj. `@psp/imaging` convierte el ancla en la op del pipeline con `anchorToStickerOp`.
 
 ### Recorte de persona
 ```ts
@@ -105,5 +123,7 @@ pnpm --filter @psp/vision typecheck
 pnpm --filter @psp/vision test
 ```
 Las pruebas (`src/**/*.test.ts`, datos compartidos en `src/__tests__/fixtures.ts`) usan un spec 35×45 mm con los umbrales por defecto del contrato y rostros sintéticos en un frame 4:3: rostro ideal → `canAutoCapture` y `ok`; pequeño → `move_closer`; grande → `move_back`; roll 12° → `head_straight`; yaw 20° → `look_front`; pitch → `chin_down`/`chin_up`; ojos cerrados → `open_eyes`; sonrisa con `smile: forbidden` → `no_smile`; dos rostros → `only_one_person`; sin rostro → `no_face`; desplazado → `move_left`/`move_right`. Cubren además métricas de imagen oscura (`light.low`) y plana (nitidez 0), `computeDocumentCrop` (relación de aspecto y centrado), `AutoCaptureController` (un solo disparo, reinicio con frame inválido, `reset`) y `MockFaceAnalyzer.analyze`.
+
+Las anclas de accesorios se prueban con rostros sintéticos y números derivados del modelo: lentes centrados en la línea de ojos y con el ancho del rostro, ala del sombrero entre la coronilla y el punto 10, bigote entre nariz y labio y más ancho que la boca, aretes fuera del contorno y simétricos, giro que sigue la inclinación (y `followRoll: false` que lo apaga sin mover el centro), escala proporcional al rostro, el mismo rostro en 4:3 cayendo en los mismos píxeles, el arete de la oreja tapada que desaparece con `yaw` mientras el otro se queda, la curva de confianza, la malla incompleta y el rostro sin confianza que no colocan nada, y el determinismo.
 
 Las capacidades nuevas se prueban igual, sin modelo: máscaras (`scaleMask` conserva cobertura y caja, `featherMask` reparte el borde en valores deterministas, `maskCoverage` / `maskBounds`, silueta del mock inyectable), `GestureTriggerController` (dispara una sola vez tras el sostén, se reinicia si el gesto desaparece, respeta el enfriamiento, ignora la baja confianza), `groupFraming` (uno, tres y cero rostros, grupo que se sale del cuadro, rostro diminuto, grupo descentrado), `FramePacer`, `capabilityReport()` (cubre el catálogo de contratos y ninguna capacidad lista entra sin equivalente en Android) y las conversiones puras de los adaptadores (`categoryMaskToPersonMask`, `toGestureName`, `landmarksBox`, `toHands`, `toFaceBoxes`), que se ejecutan en Node porque no importan MediaPipe.

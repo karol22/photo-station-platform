@@ -4,8 +4,9 @@
  */
 import { DOCUMENT_SAFE_TOOLS } from '@psp/contracts';
 import type { EditOp, EditingPreset, EditingTool, Id, JsonValue } from '@psp/contracts';
-import { drawText } from './font';
-import { FONT_GLYPH_HEIGHT } from './font';
+import { FONT_GLYPH_HEIGHT, renderTextRaster } from './font';
+import type { TextAlign } from './primitives';
+import { drawProp } from './props';
 import { brightness, contrast, exposure, grayscale, saturation, temperature } from './ops/adjust';
 import { blend } from './ops/composite';
 import { duotone } from './ops/duotone';
@@ -61,10 +62,15 @@ export type EditOpSpec = {
   params: Record<string, ParamSpec>;
 };
 
+/** Alto máximo de letra admitido. Una foto de cabina ronda los 1200 px de lado: 512 es tope de sobra. */
+export const TEXT_MAX_SIZE_PX = 512;
+
 const number = (min: number, max: number, def?: number): ParamSpec => (def === undefined ? { kind: 'number', min, max } : { kind: 'number', min, max, default: def });
 const integer = (min: number, def?: number): ParamSpec => (def === undefined ? { kind: 'integer', min } : { kind: 'integer', min, default: def });
 const optionalInteger = (min: number): ParamSpec => ({ kind: 'integer', min, optional: true });
 const string = (def?: string): ParamSpec => (def === undefined ? { kind: 'string' } : { kind: 'string', default: def });
+
+const anchorParam = (): ParamSpec => ({ kind: 'string', allowed: ['topLeft', 'center'], default: 'topLeft' });
 
 const overlayParams = (): Record<string, ParamSpec> => ({
   assetId: string(),
@@ -73,6 +79,14 @@ const overlayParams = (): Record<string, ParamSpec> => ({
   w: optionalInteger(1),
   h: optionalInteger(1),
   opacity: number(0, 1, 1),
+  /**
+   * Giro horario alrededor del centro. Existe porque la capa de arrastre del kiosco ya gira con dos
+   * dedos y porque un accesorio anclado al rostro tiene que inclinarse con la cabeza; sin esto la
+   * vista previa mostraba un giro que la composición final perdía.
+   */
+  angle: number(-180, 180, 0),
+  /** Qué punto del activo cae en (x, y). `topLeft` por defecto: lo que ya hacía esta operación. */
+  anchor: anchorParam(),
 });
 
 function spec(tool: EditingTool, params: Record<string, ParamSpec>): EditOpSpec {
@@ -119,8 +133,30 @@ export const EDIT_OPS: Record<EditOpKey, EditOpSpec> = {
   /** Sin w/h, el sticker conserva su tamaño natural. */
   sticker: spec('stickers', overlayParams()),
   overlay: spec('overlays', overlayParams()),
-  /** Texto con la fuente bitmap interna; `sizePx` se convierte en escala entera (7 px por unidad). */
-  text: spec('text', { text: string(), x: integer(-1_000_000, 0), y: integer(-1_000_000, 0), sizePx: integer(1, 24), color: string('#FFFFFF') }),
+  /**
+   * Texto sobre la foto. `sizePx` es el alto de las letras y llega hasta `TEXT_MAX_SIZE_PX`: un
+   * nombre en una foto de cabina mide cientos de píxeles, no veinte. Con la fuente bitmap interna
+   * `sizePx` se redondea a una escala entera (7 px por unidad); con un rasterizador inyectado en
+   * `EditResources.textRasterizer` se respeta tal cual y se usa una tipografía real.
+   *
+   * `outlineWidth` es lo que hace legible un nombre sobre una fotografía; `anchor: 'center'` deja
+   * (x, y) en el centro del bloque, que es lo que entiende una capa de arrastre.
+   */
+  text: spec('text', {
+    text: string(),
+    x: integer(-1_000_000, 0),
+    y: integer(-1_000_000, 0),
+    sizePx: { kind: 'integer', min: 1, max: TEXT_MAX_SIZE_PX },
+    color: string('#FFFFFF'),
+    align: { kind: 'string', allowed: ['left', 'center', 'right'], default: 'left' },
+    weight: { kind: 'string', allowed: ['regular', 'bold'], default: 'regular' },
+    outlineColor: string('#000000'),
+    outlineWidth: { kind: 'integer', min: 0, max: 64, default: 0 },
+    angle: number(-180, 180, 0),
+    anchor: anchorParam(),
+    /** Familia tipográfica pedida al rasterizador; vacía = la que él decida. Nunca la elige el código. */
+    font: string(''),
+  }),
 };
 
 export const EDIT_OP_KEYS = Object.keys(EDIT_OPS) as EditOpKey[];
@@ -200,9 +236,31 @@ export function expandEditOps(ops: EditOp[], presets?: Record<Id, EditingPreset>
   return out;
 }
 
+/** Lo que hace falta para dibujar un texto, sin decidir con qué se dibuja. */
+export type TextRenderSpec = {
+  text: string;
+  /** Alto de letra en píxeles de la imagen. */
+  sizePx: number;
+  color: string;
+  bold: boolean;
+  align: TextAlign;
+  outline?: { color: string; width: number };
+  /** Familia pedida; el rasterizador decide si la tiene cargada. */
+  font?: string;
+};
+
+/**
+ * Dibuja el texto sobre un lienzo transparente de su tamaño. Se inyecta igual que `deflate`/`inflate`
+ * en el PNG: en Node no hay tipografías, así que el pipeline cae a la fuente bitmap interna y sigue
+ * siendo determinista; en el kiosco se le pasa uno de canvas y el nombre sale con una fuente real.
+ * Devolver `undefined` es decir "no puedo": se usa la fuente bitmap.
+ */
+export type TextRasterizer = (spec: TextRenderSpec) => Raster | undefined;
+
 export type EditResources = {
   assets?: Record<Id, Raster>;
   presets?: Record<Id, EditingPreset>;
+  textRasterizer?: TextRasterizer;
   /**
    * Máscara de recorte de persona del motor de visión, a cualquier resolución. Las ops de fondo y el
    * recorte la necesitan: sin ella se omiten, igual que un overlay sin su activo.
@@ -248,8 +306,17 @@ function applyOverlay(r: Raster, op: EditOp, key: 'frame' | 'sticker' | 'overlay
   const w = explicitW ?? (key === 'frame' ? r.width : asset.width);
   const h = explicitH ?? (key === 'frame' ? r.height : asset.height);
   const opacity = numberParam(op, key, 'opacity') ?? 1;
+  const angle = numberParam(op, key, 'angle') ?? 0;
+  const { left, top } = placeBox(op, key, x, y, w, h);
+  if (angle !== 0) return drawProp(r, asset, { x: left, y: top, w, h, rotationDeg: angle }, { opacity });
   const scaled = w === asset.width && h === asset.height ? asset : resize(asset, w, h);
-  return blend(r, scaled, x, y, opacity);
+  return blend(r, scaled, left, top, opacity);
+}
+
+/** Convierte (x, y) en la esquina superior izquierda según el `anchor` declarado. */
+function placeBox(op: EditOp, key: EditOpKey, x: number, y: number, w: number, h: number): { left: number; top: number } {
+  const centered = stringParam(op, key, 'anchor') === 'center';
+  return centered ? { left: x - w / 2, top: y - h / 2 } : { left: x, top: y };
 }
 
 function applyOne(r: Raster, op: EditOp, resources: EditResources | undefined): Raster {
@@ -328,8 +395,33 @@ function applyOne(r: Raster, op: EditOp, resources: EditResources | undefined): 
       const text = stringParam(op, key, 'text') ?? '';
       if (text.length === 0) return r;
       const sizePx = numberParam(op, key, 'sizePx') ?? 24;
+      const outlineWidth = numberParam(op, key, 'outlineWidth') ?? 0;
+      const font = stringParam(op, key, 'font') ?? '';
+      const textSpec: TextRenderSpec = {
+        text,
+        sizePx,
+        color: stringParam(op, key, 'color') ?? '#FFFFFF',
+        bold: stringParam(op, key, 'weight') === 'bold',
+        align: (stringParam(op, key, 'align') ?? 'left') as TextAlign,
+        ...(outlineWidth > 0 ? { outline: { color: stringParam(op, key, 'outlineColor') ?? '#000000', width: outlineWidth } } : {}),
+        ...(font.length > 0 ? { font } : {}),
+      };
+      // La fuente bitmap avanza de siete en siete píxeles: la escala entera es lo mejor que puede
+      // hacer con el tamaño pedido. El rasterizador inyectado, si existe, lo respeta exactamente.
       const scale = Math.max(1, Math.floor(sizePx / FONT_GLYPH_HEIGHT));
-      return drawText(r, text, numberParam(op, key, 'x') ?? 0, numberParam(op, key, 'y') ?? 0, scale, stringParam(op, key, 'color') ?? '#FFFFFF');
+      const rendered =
+        resources?.textRasterizer?.(textSpec) ??
+        renderTextRaster(text, scale, textSpec.color, {
+          bold: textSpec.bold,
+          align: textSpec.align,
+          ...(textSpec.outline ? { outline: textSpec.outline } : {}),
+        });
+      if (!rendered) return r;
+      const x = numberParam(op, key, 'x') ?? 0;
+      const y = numberParam(op, key, 'y') ?? 0;
+      const { left, top } = placeBox(op, key, x, y, rendered.width, rendered.height);
+      const angle = numberParam(op, key, 'angle') ?? 0;
+      return drawProp(r, rendered, { x: left, y: top, w: rendered.width, h: rendered.height, rotationDeg: angle });
     }
     default:
       return r;
