@@ -1,0 +1,97 @@
+{
+  "$comment": "Casos de evaluación de resolvePrice. Cada caso es un insumo completo y el resultado esperado. Un caso que falló en producción o en revisión se agrega aquí y no debe volver a fallar.",
+  "product": { "id": "prd_doc", "organizationId": "org_lumina", "basePrice": { "amount": 8000, "currency": "MXN" } },
+  "chain": [
+    { "level": "platform" },
+    { "level": "organization", "id": "org_lumina" },
+    { "level": "franchise", "id": "fr_norte" },
+    { "level": "location", "id": "loc_norte_1" },
+    { "level": "machine", "id": "mch_n1" }
+  ],
+  "timezone": "America/Mexico_City",
+  "cases": [
+    {
+      "name": "sin reglas: precio base del producto",
+      "now": "2026-09-09T00:00:00Z",
+      "expected": { "list": 8000, "final": 8000, "appliedPromotionIds": [], "provenance": { "level": "organization", "id": "org_lumina" } }
+    },
+    {
+      "name": "override por máquina gana a organización y franquicia",
+      "now": "2026-09-09T00:00:00Z",
+      "rules": [
+        { "id": "r_org", "productId": "prd_doc", "scope": { "level": "organization", "id": "org_lumina" }, "price": { "amount": 9000, "currency": "MXN" }, "updatedAt": "2026-09-01T00:00:00Z" },
+        { "id": "r_fr", "productId": "prd_doc", "scope": { "level": "franchise", "id": "fr_norte" }, "price": { "amount": 8500, "currency": "MXN" }, "updatedAt": "2026-09-01T00:00:00Z" },
+        { "id": "r_mch", "productId": "prd_doc", "scope": { "level": "machine", "id": "mch_n1" }, "price": { "amount": 6000, "currency": "MXN" }, "updatedAt": "2026-09-01T00:00:00Z" }
+      ],
+      "expected": { "list": 6000, "final": 6000, "appliedRuleId": "r_mch", "appliedPromotionIds": [], "provenance": { "level": "machine", "id": "mch_n1" } }
+    },
+    {
+      "name": "mandatory de la organización bloquea el override de la máquina",
+      "now": "2026-09-09T00:00:00Z",
+      "rules": [
+        { "id": "r_org", "productId": "prd_doc", "scope": { "level": "organization", "id": "org_lumina" }, "price": { "amount": 8000, "currency": "MXN" }, "lock": { "policy": "mandatory" }, "updatedAt": "2026-09-01T00:00:00Z" },
+        { "id": "r_mch", "productId": "prd_doc", "scope": { "level": "machine", "id": "mch_n1" }, "price": { "amount": 6000, "currency": "MXN" }, "updatedAt": "2026-09-01T00:00:00Z" }
+      ],
+      "expected": { "list": 8000, "final": 8000, "appliedRuleId": "r_org", "appliedPromotionIds": [], "provenance": { "level": "organization", "id": "org_lumina" }, "lockedBy": { "level": "organization", "id": "org_lumina" } }
+    },
+    {
+      "name": "range: la regla de máquina fuera de rango se ignora",
+      "now": "2026-09-09T00:00:00Z",
+      "rules": [
+        { "id": "r_org", "productId": "prd_doc", "scope": { "level": "organization", "id": "org_lumina" }, "price": { "amount": 8000, "currency": "MXN" }, "lock": { "policy": "range", "min": { "amount": 7000, "currency": "MXN" }, "max": { "amount": 9000, "currency": "MXN" } }, "updatedAt": "2026-09-01T00:00:00Z" },
+        { "id": "r_mch", "productId": "prd_doc", "scope": { "level": "machine", "id": "mch_n1" }, "price": { "amount": 6000, "currency": "MXN" }, "updatedAt": "2026-09-01T00:00:00Z" }
+      ],
+      "expected": { "list": 8000, "final": 8000, "appliedRuleId": "r_org", "appliedPromotionIds": [], "provenance": { "level": "organization", "id": "org_lumina" }, "lockedBy": { "level": "organization", "id": "org_lumina" } }
+    },
+    {
+      "name": "range: la regla de máquina dentro de rango aplica",
+      "now": "2026-09-09T00:00:00Z",
+      "rules": [
+        { "id": "r_org", "productId": "prd_doc", "scope": { "level": "organization", "id": "org_lumina" }, "price": { "amount": 8000, "currency": "MXN" }, "lock": { "policy": "range", "min": { "amount": 7000, "currency": "MXN" }, "max": { "amount": 9000, "currency": "MXN" } }, "updatedAt": "2026-09-01T00:00:00Z" },
+        { "id": "r_mch", "productId": "prd_doc", "scope": { "level": "machine", "id": "mch_n1" }, "price": { "amount": 8500, "currency": "MXN" }, "updatedAt": "2026-09-01T00:00:00Z" }
+      ],
+      "expected": { "list": 8500, "final": 8500, "appliedRuleId": "r_mch", "appliedPromotionIds": [], "provenance": { "level": "machine", "id": "mch_n1" }, "lockedBy": { "level": "organization", "id": "org_lumina" } }
+    },
+    {
+      "name": "happy hour: 20% entre 17:00 y 19:00 (martes 18:00 hora local)",
+      "now": "2026-09-09T00:00:00Z",
+      "promotions": [
+        { "id": "pr_hh", "organizationId": "org_lumina", "name": { "es": "Happy hour" }, "type": "percent_discount", "value": 20, "scope": { "level": "organization", "id": "org_lumina" }, "schedule": [{ "days": [1, 2, 3, 4, 5], "from": "17:00", "to": "19:00" }], "status": "active", "createdAt": "2026-09-01T00:00:00Z" }
+      ],
+      "expected": { "list": 8000, "final": 6400, "appliedPromotionIds": ["pr_hh"], "provenance": { "level": "organization", "id": "org_lumina" } }
+    },
+    {
+      "name": "happy hour fuera de horario (martes 20:00 hora local) no aplica",
+      "now": "2026-09-09T02:00:00Z",
+      "promotions": [
+        { "id": "pr_hh", "organizationId": "org_lumina", "name": { "es": "Happy hour" }, "type": "percent_discount", "value": 20, "scope": { "level": "organization", "id": "org_lumina" }, "schedule": [{ "days": [1, 2, 3, 4, 5], "from": "17:00", "to": "19:00" }], "status": "active", "createdAt": "2026-09-01T00:00:00Z" }
+      ],
+      "expected": { "list": 8000, "final": 8000, "appliedPromotionIds": [], "provenance": { "level": "organization", "id": "org_lumina" } }
+    },
+    {
+      "name": "promoción de otra franquicia no aplica aquí",
+      "now": "2026-09-09T00:00:00Z",
+      "promotions": [
+        { "id": "pr_bajio", "organizationId": "org_lumina", "franchiseId": "fr_bajio", "name": { "es": "Local bajío" }, "type": "free", "scope": { "level": "franchise", "id": "fr_bajio" }, "status": "active", "createdAt": "2026-09-01T00:00:00Z" }
+      ],
+      "expected": { "list": 8000, "final": 8000, "appliedPromotionIds": [], "provenance": { "level": "organization", "id": "org_lumina" } }
+    },
+    {
+      "name": "modo cortesía: final 0 con lista intacta",
+      "now": "2026-09-09T00:00:00Z",
+      "businessMode": "courtesy",
+      "expected": { "list": 8000, "final": 0, "appliedPromotionIds": [], "provenance": { "level": "organization", "id": "org_lumina" } }
+    },
+    {
+      "name": "campaña programada dentro de su ventana sobrescribe precio y anula promociones",
+      "now": "2026-09-09T00:00:00Z",
+      "promotions": [
+        { "id": "pr_hh", "organizationId": "org_lumina", "name": { "es": "Happy hour" }, "type": "percent_discount", "value": 20, "scope": { "level": "organization", "id": "org_lumina" }, "status": "active", "createdAt": "2026-09-01T00:00:00Z" }
+      ],
+      "campaigns": [
+        { "id": "cmp_1", "organizationId": "org_lumina", "name": { "es": "Regreso a clases" }, "startsAt": "2026-09-01T00:00:00Z", "endsAt": "2026-09-30T00:00:00Z", "targets": { "scopes": [{ "level": "franchise", "id": "fr_norte" }] }, "priceOverrides": [{ "productId": "prd_doc", "price": { "amount": 5000, "currency": "MXN" } }], "status": "scheduled", "createdAt": "2026-09-01T00:00:00Z" }
+      ],
+      "expected": { "list": 8000, "final": 5000, "appliedPromotionIds": [], "provenance": { "level": "organization", "id": "org_lumina" } }
+    }
+  ]
+}

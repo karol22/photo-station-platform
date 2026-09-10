@@ -1,0 +1,25 @@
+# dependencias y builds
+node_modules/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+coverage/
+
+# estado local de ejecución (nunca se versiona)
+var/
+out/
+ops/traces/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# secretos
+.env
+.env.*
+!.env.example
+
+# sistema
+.DS_Store
+*.log

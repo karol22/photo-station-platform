@@ -1,0 +1,610 @@
+{
+  "version": 1,
+  "description": "Casos de evaluación del motor de configuración: capas de entrada y efectivo esperado con procedencia, bloqueos y rechazos. Los ejecuta src/__tests__/evals.test.ts. Un caso rechazado por una persona se agrega aquí y se anota en ops/notes/rechazos.md.",
+  "cases": [
+    {
+      "name": "herencia de seis niveles con procedencia por clave",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_platform",
+            "level": "platform",
+            "values": { "timing.idleTimeoutSec": 90 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_org",
+            "level": "organization",
+            "entityId": "org_1",
+            "values": {
+              "branding.publicName": "Marca Demo",
+              "branding.palette.primary": "#112233"
+            },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_fr",
+            "level": "franchise",
+            "entityId": "fr_1",
+            "values": { "branding.palette.accent": "#445566" },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_reg",
+            "level": "region",
+            "entityId": "reg_1",
+            "values": { "kiosk.defaultLocale": "en" },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_loc",
+            "level": "location",
+            "entityId": "loc_1",
+            "values": { "printing.defaultCopies": 2 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_mch",
+            "level": "machine",
+            "entityId": "mch_1",
+            "values": { "kiosk.screenBrightness": 70 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ]
+      },
+      "expected": {
+        "values": {
+          "timing.idleTimeoutSec": 90,
+          "branding.publicName": "Marca Demo",
+          "branding.palette.primary": "#112233",
+          "branding.palette.accent": "#445566",
+          "kiosk.defaultLocale": "en",
+          "printing.defaultCopies": 2,
+          "kiosk.screenBrightness": 70,
+          "kiosk.volume": 50
+        },
+        "provenance": {
+          "timing.idleTimeoutSec": {
+            "level": "platform",
+            "layerId": "cfg_platform",
+            "isDefault": false
+          },
+          "branding.publicName": {
+            "level": "organization",
+            "entityId": "org_1",
+            "layerId": "cfg_org"
+          },
+          "branding.palette.primary": { "level": "organization", "entityId": "org_1" },
+          "branding.palette.accent": { "level": "franchise", "entityId": "fr_1" },
+          "kiosk.defaultLocale": { "level": "region", "entityId": "reg_1" },
+          "printing.defaultCopies": { "level": "location", "entityId": "loc_1" },
+          "kiosk.screenBrightness": { "level": "machine", "entityId": "mch_1" },
+          "kiosk.volume": { "level": "platform", "isDefault": true }
+        },
+        "rejected": []
+      }
+    },
+    {
+      "name": "override de máquina sobre un valor de ubicación",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_loc",
+            "level": "location",
+            "entityId": "loc_1",
+            "values": { "printing.defaultCopies": 2 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_mch",
+            "level": "machine",
+            "entityId": "mch_1",
+            "values": { "printing.defaultCopies": 3 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ]
+      },
+      "expected": {
+        "values": { "printing.defaultCopies": 3 },
+        "provenance": {
+          "printing.defaultCopies": { "level": "machine", "entityId": "mch_1", "isDefault": false }
+        },
+        "rejected": []
+      }
+    },
+    {
+      "name": "sin override de máquina el valor vuelve al heredado de ubicación",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_loc",
+            "level": "location",
+            "entityId": "loc_1",
+            "values": { "printing.defaultCopies": 2 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_mch",
+            "level": "machine",
+            "entityId": "mch_1",
+            "values": {},
+            "updatedAt": "2026-09-02T00:00:00Z",
+            "version": 2
+          }
+        ]
+      },
+      "expected": {
+        "values": { "printing.defaultCopies": 2 },
+        "provenance": {
+          "printing.defaultCopies": { "level": "location", "entityId": "loc_1", "isDefault": false }
+        },
+        "rejected": []
+      }
+    },
+    {
+      "name": "mandatory de organización rechaza el override de franquicia",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_org",
+            "level": "organization",
+            "entityId": "org_1",
+            "values": { "branding.palette.primary": "#112233" },
+            "locks": [
+              { "key": "branding.palette.primary", "policy": "mandatory", "setBy": "organization" }
+            ],
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_fr",
+            "level": "franchise",
+            "entityId": "fr_1",
+            "values": { "branding.palette.primary": "#FF0000" },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ]
+      },
+      "expected": {
+        "values": { "branding.palette.primary": "#112233" },
+        "provenance": {
+          "branding.palette.primary": { "level": "organization", "entityId": "org_1" }
+        },
+        "locks": {
+          "branding.palette.primary": {
+            "policy": "mandatory",
+            "setBy": "organization",
+            "setById": "org_1"
+          }
+        },
+        "rejected": [
+          {
+            "key": "branding.palette.primary",
+            "level": "franchise",
+            "entityId": "fr_1",
+            "reason": "locked_by_organization"
+          }
+        ]
+      }
+    },
+    {
+      "name": "range numérico acepta dentro y rechaza fuera",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_org",
+            "level": "organization",
+            "entityId": "org_1",
+            "values": {},
+            "locks": [
+              {
+                "key": "timing.idleTimeoutSec",
+                "policy": "range",
+                "range": { "min": 30, "max": 60 },
+                "setBy": "organization"
+              }
+            ],
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_loc",
+            "level": "location",
+            "entityId": "loc_1",
+            "values": { "timing.idleTimeoutSec": 40 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_mch",
+            "level": "machine",
+            "entityId": "mch_1",
+            "values": { "timing.idleTimeoutSec": 80 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ]
+      },
+      "expected": {
+        "values": { "timing.idleTimeoutSec": 40 },
+        "provenance": { "timing.idleTimeoutSec": { "level": "location", "entityId": "loc_1" } },
+        "locks": {
+          "timing.idleTimeoutSec": {
+            "policy": "range",
+            "setBy": "organization",
+            "range": { "min": 30, "max": 60 }
+          }
+        },
+        "rejected": [
+          {
+            "key": "timing.idleTimeoutSec",
+            "level": "machine",
+            "entityId": "mch_1",
+            "reason": "out_of_range"
+          }
+        ]
+      }
+    },
+    {
+      "name": "range enumerado acepta un valor permitido y rechaza otro",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_org",
+            "level": "organization",
+            "entityId": "org_1",
+            "values": {},
+            "locks": [
+              {
+                "key": "branding.tone",
+                "policy": "range",
+                "range": { "allowed": ["friendly", "formal"] },
+                "setBy": "organization"
+              }
+            ],
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_fr",
+            "level": "franchise",
+            "entityId": "fr_1",
+            "values": { "branding.tone": "formal" },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_loc",
+            "level": "location",
+            "entityId": "loc_1",
+            "values": { "branding.tone": "playful" },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ]
+      },
+      "expected": {
+        "values": { "branding.tone": "formal" },
+        "provenance": { "branding.tone": { "level": "franchise", "entityId": "fr_1" } },
+        "rejected": [
+          {
+            "key": "branding.tone",
+            "level": "location",
+            "entityId": "loc_1",
+            "reason": "out_of_range"
+          }
+        ]
+      }
+    },
+    {
+      "name": "hidden rechaza y la procedencia se queda en la organización",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_org",
+            "level": "organization",
+            "entityId": "org_1",
+            "values": { "techPanel.pinHash": "hash-org" },
+            "locks": [{ "key": "techPanel.pinHash", "policy": "hidden", "setBy": "organization" }],
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_fr",
+            "level": "franchise",
+            "entityId": "fr_1",
+            "values": { "techPanel.pinHash": "hash-fr" },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ]
+      },
+      "expected": {
+        "values": { "techPanel.pinHash": "hash-org" },
+        "provenance": { "techPanel.pinHash": { "level": "organization", "entityId": "org_1" } },
+        "locks": { "techPanel.pinHash": { "policy": "hidden", "setBy": "organization" } },
+        "rejected": [
+          {
+            "key": "techPanel.pinHash",
+            "level": "franchise",
+            "entityId": "fr_1",
+            "reason": "locked_by_organization"
+          }
+        ]
+      }
+    },
+    {
+      "name": "campaña vigente aplica, la vencida no, y entre dos vigentes gana la prioridad mayor",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_fr",
+            "level": "franchise",
+            "entityId": "fr_1",
+            "values": { "branding.palette.accent": "#445566" },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ],
+        "campaigns": [
+          {
+            "campaign": {
+              "id": "cmp_low",
+              "organizationId": "org_1",
+              "name": { "es": "Campaña de prioridad baja" },
+              "startsAt": "2026-09-01T00:00:00Z",
+              "endsAt": "2026-10-01T00:00:00Z",
+              "targets": { "scopes": [] },
+              "priority": 1,
+              "status": "active",
+              "createdAt": "2026-08-01T00:00:00Z"
+            },
+            "layer": {
+              "id": "cfg_cmp_low",
+              "level": "campaign",
+              "entityId": "cmp_low",
+              "values": {
+                "branding.palette.accent": "#AAAAAA",
+                "branding.footerText": "Prioridad baja"
+              },
+              "updatedAt": "2026-09-01T00:00:00Z"
+            }
+          },
+          {
+            "campaign": {
+              "id": "cmp_high",
+              "organizationId": "org_1",
+              "name": { "es": "Campaña de prioridad alta" },
+              "startsAt": "2026-09-05T00:00:00Z",
+              "endsAt": "2026-09-20T00:00:00Z",
+              "targets": { "scopes": [] },
+              "priority": 5,
+              "status": "active",
+              "createdAt": "2026-08-01T00:00:00Z"
+            },
+            "layer": {
+              "id": "cfg_cmp_high",
+              "level": "campaign",
+              "entityId": "cmp_high",
+              "values": { "branding.palette.accent": "#BBBBBB" },
+              "updatedAt": "2026-09-01T00:00:00Z"
+            }
+          },
+          {
+            "campaign": {
+              "id": "cmp_past",
+              "organizationId": "org_1",
+              "name": { "es": "Campaña vencida" },
+              "startsAt": "2026-01-01T00:00:00Z",
+              "endsAt": "2026-02-01T00:00:00Z",
+              "targets": { "scopes": [] },
+              "priority": 9,
+              "status": "finished",
+              "createdAt": "2025-12-01T00:00:00Z"
+            },
+            "layer": {
+              "id": "cfg_cmp_past",
+              "level": "campaign",
+              "entityId": "cmp_past",
+              "values": {
+                "branding.palette.accent": "#CCCCCC",
+                "branding.completionMessage": "Vencida"
+              },
+              "updatedAt": "2026-01-01T00:00:00Z"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "values": {
+          "branding.palette.accent": "#BBBBBB",
+          "branding.footerText": "Prioridad baja",
+          "branding.completionMessage": ""
+        },
+        "provenance": {
+          "branding.palette.accent": {
+            "level": "campaign",
+            "entityId": "cmp_high",
+            "layerId": "cfg_cmp_high"
+          },
+          "branding.footerText": { "level": "campaign", "entityId": "cmp_low" },
+          "branding.completionMessage": { "level": "platform", "isDefault": true }
+        },
+        "rejected": []
+      }
+    },
+    {
+      "name": "editableAt: kiosk.screenBrightness sólo se edita en máquina",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_org",
+            "level": "organization",
+            "entityId": "org_1",
+            "values": { "kiosk.screenBrightness": 40 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_mch",
+            "level": "machine",
+            "entityId": "mch_1",
+            "values": { "kiosk.screenBrightness": 60 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ]
+      },
+      "expected": {
+        "values": { "kiosk.screenBrightness": 60 },
+        "provenance": { "kiosk.screenBrightness": { "level": "machine", "entityId": "mch_1" } },
+        "rejected": [
+          {
+            "key": "kiosk.screenBrightness",
+            "level": "organization",
+            "entityId": "org_1",
+            "reason": "not_editable_at_level"
+          }
+        ]
+      }
+    },
+    {
+      "name": "blueprint entre organización y franquicia",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_org",
+            "level": "organization",
+            "entityId": "org_1",
+            "values": { "timing.reviewTimeoutSec": 100, "timing.captureCountdownSec": 4 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_fr",
+            "level": "franchise",
+            "entityId": "fr_1",
+            "values": { "timing.reviewTimeoutSec": 150 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ],
+        "blueprint": {
+          "id": "cfg_bp",
+          "level": "blueprint",
+          "entityId": "bp_cafe",
+          "values": { "timing.reviewTimeoutSec": 120, "timing.captureCountdownSec": 5 },
+          "updatedAt": "2026-09-01T00:00:00Z"
+        }
+      },
+      "expected": {
+        "values": { "timing.reviewTimeoutSec": 150, "timing.captureCountdownSec": 5 },
+        "provenance": {
+          "timing.reviewTimeoutSec": { "level": "franchise", "entityId": "fr_1" },
+          "timing.captureCountdownSec": {
+            "level": "blueprint",
+            "entityId": "bp_cafe",
+            "layerId": "cfg_bp"
+          }
+        },
+        "rejected": []
+      }
+    },
+    {
+      "name": "un bloqueo inferior no debilita al superior",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_org",
+            "level": "organization",
+            "entityId": "org_1",
+            "values": {},
+            "locks": [
+              {
+                "key": "timing.idleTimeoutSec",
+                "policy": "range",
+                "range": { "min": 30, "max": 60 },
+                "setBy": "organization"
+              }
+            ],
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_fr",
+            "level": "franchise",
+            "entityId": "fr_1",
+            "values": {},
+            "locks": [
+              { "key": "timing.idleTimeoutSec", "policy": "editable", "setBy": "franchise" }
+            ],
+            "updatedAt": "2026-09-01T00:00:00Z"
+          },
+          {
+            "id": "cfg_mch",
+            "level": "machine",
+            "entityId": "mch_1",
+            "values": { "timing.idleTimeoutSec": 200 },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ]
+      },
+      "expected": {
+        "values": { "timing.idleTimeoutSec": 60 },
+        "provenance": { "timing.idleTimeoutSec": { "level": "platform", "isDefault": true } },
+        "locks": {
+          "timing.idleTimeoutSec": {
+            "policy": "range",
+            "setBy": "organization",
+            "range": { "min": 30, "max": 60 }
+          }
+        },
+        "rejected": [
+          {
+            "key": "timing.idleTimeoutSec",
+            "level": "franchise",
+            "entityId": "fr_1",
+            "reason": "lock_ignored"
+          },
+          {
+            "key": "timing.idleTimeoutSec",
+            "level": "machine",
+            "entityId": "mch_1",
+            "reason": "out_of_range"
+          }
+        ]
+      }
+    },
+    {
+      "name": "una clave sin definición se acepta con procedencia normal",
+      "input": {
+        "now": "2026-09-09T12:00:00Z",
+        "timezone": "America/Mexico_City",
+        "layers": [
+          {
+            "id": "cfg_mch",
+            "level": "machine",
+            "entityId": "mch_1",
+            "values": { "custom.kioskTheme": "dark" },
+            "updatedAt": "2026-09-01T00:00:00Z"
+          }
+        ]
+      },
+      "expected": {
+        "values": { "custom.kioskTheme": "dark" },
+        "provenance": {
+          "custom.kioskTheme": { "level": "machine", "entityId": "mch_1", "isDefault": false }
+        },
+        "absentLocks": ["custom.kioskTheme"],
+        "rejected": []
+      }
+    }
+  ]
+}

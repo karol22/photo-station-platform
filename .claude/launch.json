@@ -1,0 +1,9 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "control-plane", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@psp/control-plane", "start"], "port": 4000 },
+    { "name": "station-agent", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@psp/station-agent", "start"], "port": 4100 },
+    { "name": "kiosk", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@psp/kiosk", "dev"], "port": 5173 },
+    { "name": "admin", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@psp/admin", "dev"], "port": 5174 }
+  ]
+}

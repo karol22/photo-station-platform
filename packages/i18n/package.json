@@ -1,0 +1,13 @@
+{
+  "name": "@psp/i18n",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Catálogos es/en para kiosco y admin, formateo de moneda, fecha, hora y números.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "test": "vitest run", "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": { "@psp/contracts": "workspace:*" },
+  "devDependencies": { "typescript": "5.9.3", "vitest": "3.2.7" }
+}

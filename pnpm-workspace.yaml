@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+  - tools/*
+
+# esbuild (vite/tsx) necesita su script de instalación; nada más compila.
+allowBuilds:
+  esbuild: true

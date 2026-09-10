@@ -1,0 +1,50 @@
+# Progreso
+
+Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar: un comando con su resultado esperado, una ruta que existe o una prueba que pasa. Sin evidencia, el paso no está hecho.
+
+| # | Paso | Estado | Evidencia | Fecha |
+|---|---|---|---|---|
+| 1 | Requisitos guardados en el repo | hecho | `docs/requisitos-producto.md` existe, 2294 líneas | 2026-09-09 |
+| 2 | Esqueleto del monorepo (pnpm, turbo, tsconfig, prettier) | hecho | `pnpm install` termina sin compilar nada | 2026-09-09 |
+| 3 | Arquitectura y ADRs 001–010 | hecho | `docs/arquitectura/00-vision-general.md`, `docs/arquitectura/decisiones/` | 2026-09-09 |
+| 4 | AGENTS.md con dos modos y estado en disco | hecho | `wc -c AGENTS.md` < 12000 | 2026-09-09 |
+| 5 | Contratos compartidos (`packages/contracts`) | hecho | `pnpm --filter @psp/contracts test` → 9 pruebas en verde; `docs/arquitectura/01-apis-de-paquetes.md` | 2026-09-09 |
+| 6 | Dominio puro (`packages/domain`) | hecho | `pnpm --filter @psp/domain test` → 77 pruebas en verde | 2026-09-09 |
+| 7 | Motor de configuración (`packages/config-engine`) | hecho | `pnpm --filter @psp/config-engine test` → 69 pruebas en verde | 2026-09-09 |
+| 8 | Visión local (`packages/vision`) | hecho | `pnpm --filter @psp/vision test` → 25 pruebas en verde | 2026-09-09 |
+| 9 | Edición y composición (`packages/imaging`) | hecho | `pnpm --filter @psp/imaging test` → 45 pruebas en verde; typecheck verde | 2026-09-09 |
+| 10 | Integraciones mock (`packages/integrations`) | hecho | `pnpm --filter @psp/integrations test` → 119 pruebas en verde | 2026-09-09 |
+| 11 | i18n, ui, sqlite, fixtures, catalog | hecho | i18n 44, sqlite 20, fixtures 54 pruebas; `pnpm psp bundle --machine mch_demo_doc_01` imprime procedencia; catalog registra gates y comandos | 2026-09-09 |
+| 12 | control-plane con seed y simulación de flota | hecho | `pnpm --filter @psp/control-plane test` → 12 pruebas; `pnpm seed` siembra 608 sesiones en `var/control-plane` | 2026-09-09 |
+| 13 | station-agent con sync, outbox y hardware mock | hecho | `pnpm --filter @psp/station-agent test` → 11 pruebas; `curl localhost:4100/station/v1/bundle` devuelve 9 productos del dataset demo sin nube | 2026-09-09 |
+| 14 | kiosk: flujos documental, entretenimiento, pago, panel técnico | hecho | `pnpm --filter @psp/kiosk test` → 19 pruebas; `build` 663 kB; recorrido documental completo verificado en navegador con cámara sintética hasta "Impresión terminada" y retorno a atracción | 2026-09-09 |
+| 15 | admin: consola completa y portal de franquicia | hecho | `pnpm --filter @psp/admin test` → 34 pruebas; `build`; dashboard, inventario y pestaña de configuración con procedencia verificados en navegador | 2026-09-09 |
+| 16 | CLI y compuertas | hecho | `pnpm gate:quick` ejecuta 12 compuertas; `pnpm psp catalog` imprime el catálogo | 2026-09-09 |
+| 17 | Trazabilidad de requisitos | hecho | `docs/trazabilidad.md` → 124 completo · 2 parcial · 2 pendiente; compuerta `traceability` verde | 2026-09-09 |
+| 18 | Corte por límite de uso 03:30–07:10; relanzamiento de 7 agentes | hecho | esta fila; `git status` muestra el trabajo previo en disco | 2026-09-09 |
+| 19 | Integración nube ↔ máquina ↔ kiosco verificada | hecho | heartbeat actualiza la máquina en la nube; comando `set_maintenance` ejecutado y en línea temporal; sesión registrada en `GET /admin/v1/sessions` sin fotos; rollout piloto avanza con 100 máquinas simuladas | 2026-09-09 |
+| 20 | Compuertas | hecho | `pnpm gate:quick` → 12/12 en verde (ver commit) | 2026-09-09 |
+| 21 | Identidad efímera de cliente (ADR-011) | hecho | `pnpm --filter @psp/domain test` cubre rotación y un solo uso; el agente ofrece el QR y lo caduca; verificado en el kiosco hasta la pantalla final | 2026-09-09 |
+| 22 | Codificador de QR real y decodificable | hecho | `encodeQr`/`decodeQr` en `@psp/imaging`; round-trip exacto de la URL del enlace, versión 4 ECC M | 2026-09-09 |
+| 23 | Documento de producto: qué es Una de Todos, marca, paleta y familia de formas | hecho | `docs/producto/00-que-es.md`; `AGENTS.md` lo pone primero en la lista de lectura de ambos modos | 2026-09-09 |
+| 24 | Recorrido canónico de cinco pasos y decisiones abiertas | hecho | `docs/producto/01-flujo-de-sesion.md`, `docs/producto/02-decisiones-abiertas.md` | 2026-09-09 |
+| 25 | Corrección: el enlace efímero identifica al Club, no entrega fotos | hecho | ADR-011 y `03-sesiones-y-privacidad.md` reescritos; el kiosco pide propósito `loyalty` | 2026-09-09 |
+| 26 | Cuenta regresiva con la familia de formas | hecho | `apps/kiosk/src/screens/Capture.tsx` usa `BlobFace` en el conteo del recorrido social | 2026-09-09 |
+| 28 | La cabina no pregunta cuántas personas son | hecho | principio escrito en `docs/producto/00-que-es.md`; el paso se retiró del kiosco | 2026-09-09 |
+| 27 | Pendiente: paleta y familia de formas de Una de Todos en el dataset y el kiosco | pendiente | `docs/producto/00-que-es.md` fija los seis colores y los seis personajes | |
+| 29 | Marca Una de Todos en el dataset demo | hecho | `pnpm psp bundle` muestra publicName Una de Todos, paleta propia y retención `none`; 26 activos | 2026-09-09 |
+| 30 | La tira social es imprimible en la máquina por defecto | hecho | las tiras 2x6 se cortan de una hoja 4x6; `prd_tira_amigos` disponible en `mch_demo_doc_01` | 2026-09-09 |
+| 31 | Las siluetas de pose no llevan texto | hecho | la vista de cámara va en espejo y el texto salía invertido; la instrucción vive en la interfaz | 2026-09-09 |
+| 32 | Estándar de repositorio listo para agentes guardado y referenciado | hecho | `docs/estandares/repositorio-listo-para-agentes.md` íntegro; citado en `AGENTS.md` §3.b, `README.md` y `docs/README.md` | 2026-09-09 |
+| 33 | Auditoría contra las 24 guías del estándar | hecho | `docs/estandares/auditoria.md`: 12 cumple, 9 parcial, 3 pendiente, con los tres huecos que cerrar primero | 2026-09-09 |
+| 34 | Catálogo de capacidades de visión con paridad Android | hecho | `packages/contracts/src/vision-effects.ts`; modelos de segmentación, gestos y detección descargados | 2026-09-09 |
+| 35 | Visión en el aparato: recorte de persona, gestos y detección de rostros | hecho | `pnpm --filter @psp/vision test` → 70 pruebas; `capabilityReport()` declara la clase equivalente de Android por capacidad | 2026-09-09 |
+| 36 | Efectos sobre la foto: fondo, elementos pegados a la cara, retoque y filtros | hecho | `pnpm --filter @psp/imaging test` → 114 pruebas; composición con alfa gradual, no umbral duro | 2026-09-09 |
+| 37 | Tira de filtros con vista previa sobre la foto de la persona | hecho | `apps/kiosk/src/components/FilterStrip.tsx`; miniaturas a 132 px, una por cuadro de animación | 2026-09-09 |
+| 38 | Los cuatro modelos se descargan con un solo guion | hecho | `scripts/fetch-models.sh` y `apps/kiosk/public/models/README.md` con la tabla de los cuatro | 2026-09-09 |
+| 39 | Pendiente: efectos de fondo y disparo por gesto en el kiosco | pendiente | los puertos y efectos existen; falta el bucle que los une en la pantalla de captura | |
+| 40 | Estándar de ingeniería de producto con agentes integrado | hecho | `docs/estandares/ingenieria-de-producto-con-agentes.md` íntegro; `como-se-aplica.md` mapea sus 20 secciones y nombra la falla que evita cada mecanismo | 2026-09-09 |
+| 41 | Tres modos, política dura y atención activa separadas | hecho | `AGENTS.md` §0 con lo que no debe abrir cada modo; `ops/POLITICA.md`, `ops/ATENCION.md` | 2026-09-09 |
+| 42 | Campañas durables | hecho | `ops/campanas/` con plantilla y la campaña abierta de rediseño visual del kiosco | 2026-09-09 |
+| 43 | Plugin frontend-design activado en el proyecto | hecho | `.claude/settings.json`; toma efecto en la próxima sesión | 2026-09-09 |
+| 44 | La compuerta de texto de negocio vigila la marca real y no el copy del producto | hecho | `FORBIDDEN_BUSINESS_TEXT` en `tools/gates/src/gates.ts` busca `Una de Todos`/`unadetodos`/`org_una_de_todos`; `pnpm --filter @psp/gates test` → 4 pruebas en verde; el paso 4 del recorrido vuelve a decir «¡Qué buena una de todos!» | 2026-09-09 |

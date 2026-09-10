@@ -1,0 +1,29 @@
+{
+  "name": "@psp/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CLI operativo: catalog, seed, demo, simulate-fleet, bundle, gates.",
+  "main": "./src/main.ts",
+  "scripts": {
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@psp/bundler": "workspace:*",
+    "@psp/catalog": "workspace:*",
+    "@psp/config-engine": "workspace:*",
+    "@psp/contracts": "workspace:*",
+    "@psp/control-plane": "workspace:*",
+    "@psp/domain": "workspace:*",
+    "@psp/fixtures": "workspace:*",
+    "@psp/gates": "workspace:*",
+    "@psp/sqlite": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.5.0",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}

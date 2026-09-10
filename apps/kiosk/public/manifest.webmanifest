@@ -1,0 +1,13 @@
+{
+  "name": "Kiosco",
+  "short_name": "Kiosco",
+  "description": "Estación fotográfica de autoservicio",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#F6F7FB",
+  "theme_color": "#0B1B3F",
+  "lang": "es",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
