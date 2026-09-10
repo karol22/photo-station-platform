@@ -33,7 +33,7 @@ Ejemplos:
 ```bash
 # Login (usuarios y contraseñas en DEMO_USERS de @psp/fixtures)
 curl -s localhost:4000/admin/v1/auth/login -H 'content-type: application/json' \
-  -d '{"email":"owner@lumina.demo","password":"..."}'
+  -d '{"email":"owner@platform.demo","password":"..."}'
 
 # Listado con alcance, búsqueda, filtros y paginación
 curl -s 'localhost:4000/admin/v1/machines?q=norte&filters[status]=active&page=1&pageSize=20&sort=-lastSeenAt' \
@@ -56,7 +56,7 @@ curl -s localhost:4000/fleet/v1/heartbeat -H "Authorization: Machine mch_demo_do
 
 ### Rutas `/fleet/v1`
 
-`POST /enroll` (token `stableHash('provision:' + organizationId)` o `demo-provisioning-token` → `org_lumina`), `POST /heartbeat`, `GET /bundle?version=`, `GET /assets/:hash`, `POST /events` (idempotente por `id`; validación por evento), `POST /commands/ack`, `GET /release`.
+`POST /enroll` (token `stableHash('provision:' + organizationId)` o `demo-provisioning-token` → `org_una_de_todos`, la marca del dataset demo), `POST /heartbeat`, `GET /bundle?version=`, `GET /assets/:hash`, `POST /events` (idempotente por `id`; validación por evento), `POST /commands/ack`, `GET /release`.
 
 ### Recurso → permiso → alcance
 
