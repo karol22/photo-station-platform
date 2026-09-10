@@ -47,3 +47,4 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 41 | Tres modos, política dura y atención activa separadas | hecho | `AGENTS.md` §0 con lo que no debe abrir cada modo; `ops/POLITICA.md`, `ops/ATENCION.md` | 2026-09-09 |
 | 42 | Campañas durables | hecho | `ops/campanas/` con plantilla y la campaña abierta de rediseño visual del kiosco | 2026-09-09 |
 | 43 | Plugin frontend-design activado en el proyecto | hecho | `.claude/settings.json`; toma efecto en la próxima sesión | 2026-09-09 |
+| 44 | La compuerta de texto de negocio vigila la marca real y no el copy del producto | hecho | `FORBIDDEN_BUSINESS_TEXT` en `tools/gates/src/gates.ts` busca `Una de Todos`/`unadetodos`/`org_una_de_todos`; `pnpm --filter @psp/gates test` → 4 pruebas en verde; el paso 4 del recorrido vuelve a decir «¡Qué buena una de todos!» | 2026-09-09 |

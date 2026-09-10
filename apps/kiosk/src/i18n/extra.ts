@@ -3,6 +3,8 @@
  * Cada entrada es una tupla `[es, en]`: la paridad es por construcción y la prueba
  * `extra.test.ts` verifica que ninguna de las dos cadenas esté vacía.
  * Ninguna cadena contiene nombres de marca, precios ni ubicaciones: eso viene del bundle.
+ * «¡Qué buena una de todos!» sí se queda: es el copy del paso 4 del recorrido
+ * (`docs/producto/01-flujo-de-sesion.md`), una frase común en minúsculas, no la marca.
  * Cuando una clave se mueve al paquete, se elimina de aquí (el paquete tiene prioridad).
  */
 import type { Locale } from '@psp/i18n';
@@ -264,7 +266,7 @@ export const EXTRA_TABLE: Record<string, Pair> = {
 
   /* ---------- revisión ---------- */
   'kiosk.review.title': ['¿Te gusta esta foto?', 'Do you like this photo?'],
-  'kiosk.review.title_set': ['¡Quedaron muy bien!', 'These came out great!'],
+  'kiosk.review.title_set': ['¡Qué buena una de todos!', 'What a great one of everyone!'],
   'kiosk.review.approved': ['Criterios cumplidos', 'Checks passed'],
   'kiosk.review.warnings': ['Advertencias', 'Warnings'],
   'kiosk.review.no_warnings': ['Sin advertencias', 'No warnings'],

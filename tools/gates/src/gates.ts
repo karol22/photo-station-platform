@@ -109,6 +109,26 @@ export const i18nParity: Gate = {
   },
 };
 
+/**
+ * Marcas, ciudades y precios del dataset demo que ninguna UI puede traer escritos a mano.
+ *
+ * La marca real se busca como nombre propio (`Una de Todos`, `UNA DE TODOS`) y como identificador
+ * (`unadetodos.demo`, `org_una_de_todos`), nunca como frase en minúsculas: «¡Qué buena una de todos!»
+ * es copy del producto (`docs/producto/01-flujo-de-sesion.md`, paso 4), vive en el catálogo de
+ * traducción y no es la marca puesta a mano en una pantalla.
+ */
+export const FORBIDDEN_BUSINESS_TEXT: readonly RegExp[] = [
+  /Una de Todos|UNA DE TODOS/,
+  /unadetodos|una[_-]de[_-]todos/i,
+  /FotoR[aá]pida/i,
+  /Monterrey/,
+  /Quer[eé]taro/,
+  /Bogot[aá]/,
+  /Ciudad de M[eé]xico/,
+  /\bLe[oó]n\b/,
+  /\$\s?\d{2,}(\.\d{2})?\b/,
+];
+
 /** 5. Nada de marcas, precios ni ciudades literales en las UIs. */
 export const noHardcodedBusinessText: Gate = {
   key: 'no-hardcoded-business-text',
@@ -116,12 +136,11 @@ export const noHardcodedBusinessText: Gate = {
   description: 'apps/kiosk/src y apps/admin/src no contienen nombres de marcas, ciudades ni precios del dataset demo.',
   modes: ['quick', 'full'],
   async run({ root }) {
-    const forbidden = [/Una de Todos/i, /FotoR[aá]pida/i, /Monterrey/, /Quer[eé]taro/, /Bogot[aá]/, /Ciudad de M[eé]xico/, /\bLe[oó]n\b/, /\$\s?\d{2,}(\.\d{2})?\b/];
     const problems: string[] = [];
     for (const app of ['apps/kiosk/src', 'apps/admin/src']) {
       for (const file of walk(root, app, (p) => /\.(tsx?|css|html)$/.test(p) && !/\.test\.tsx?$/.test(p))) {
         const text = readText(root, file);
-        for (const re of forbidden) {
+        for (const re of FORBIDDEN_BUSINESS_TEXT) {
           const m = text.match(re);
           if (m) problems.push(`${file}: contiene "${m[0]}"`);
         }

@@ -16,7 +16,7 @@ Salida: una línea por compuerta con ✅/❌ y mensajes; código de salida 1 si 
 | `agents-size` | `AGENTS.md` < 12 000 caracteres |
 | `readmes` | README con `Propósito`, `Cómo se usa`, `Cómo se prueba` en cada paquete y app |
 | `i18n-parity` | mismas claves es/en en `@psp/i18n` y en `src/i18n/extra.ts` de las apps |
-| `no-hardcoded-business-text` | sin marcas, ciudades ni precios del dataset en `apps/*/src` |
+| `no-hardcoded-business-text` | sin marcas, ciudades ni precios del dataset en `apps/*/src` (patrones en `FORBIDDEN_BUSINESS_TEXT`) |
 | `no-secrets` | sin credenciales reconocibles en archivos versionados |
 | `traceability` | `docs/trazabilidad.md` apunta a secciones reales con estados válidos |
 | `progress-evidence` | filas `hecho` de `ops/state/PROGRESS.md` con evidencia |
@@ -29,8 +29,18 @@ Salida: una línea por compuerta con ✅/❌ y mensajes; código de salida 1 si 
 
 Agregar una compuerta: crear el objeto `Gate` en `src/gates.ts`, añadirlo a `ALL_GATES`; el catálogo la recoge solo.
 
+La marca real del cliente (**Una de Todos**) se busca como nombre propio (`Una de Todos`, `UNA DE TODOS`)
+y como identificador (`unadetodos.demo`, `org_una_de_todos`), nunca como frase suelta en minúsculas:
+«¡Qué buena una de todos!» es el copy del paso 4 del recorrido (`docs/producto/01-flujo-de-sesion.md`)
+y vive en el catálogo de traducción del kiosco. Un patrón que ignore las mayúsculas convierte ese copy
+en un hallazgo falso y empuja a reescribir el texto del producto para callar la compuerta.
+
 ## Cómo se prueba
 ```bash
 pnpm --filter @psp/gates typecheck
+pnpm --filter @psp/gates test
 pnpm gate:quick
 ```
+
+`src/gates.test.ts` fija el comportamiento de `FORBIDDEN_BUSINESS_TEXT`: qué formas de marca, ciudad y
+precio se marcan y qué copy del producto pasa. El resto de las compuertas se comprueba corriéndolas.
