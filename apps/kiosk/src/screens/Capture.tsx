@@ -1,22 +1,29 @@
 /**
  * Captura. Modo documental: vista en espejo, recorte del preset como superposición, criterios,
- * instrucción principal, anillo de auto-captura y botón manual. Modo experiencia: secuencia de
- * poses con instrucción, silueta, cuenta regresiva, n/N, pistas no bloqueantes y repetición por foto.
+ * instrucción principal, anillo de auto-captura y botón manual. Modo experiencia: la cabina.
+ *
+ * El recorrido social no es un editor con lienzo e inspector: es un espejo a sangre que ocupa la
+ * banda del cartel, dos ojos de tinta donde está el lente, y una tira de huecos que se va
+ * llenando. La persona vino a verse, así que nada se pone encima de su cara salvo esos dos ojos,
+ * no hay velo que le baje la luz y no hay «foto 3 de 6»: la tira ES el progreso. El documental
+ * conserva su disposición y su sobriedad, porque una foto de trámite no se celebra.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import type { PoseStep } from '@psp/contracts';
-import { BigButton, BlobFace, Countdown, CriteriaList, Icon, InstructionBanner, Notice, ProgressDots, Sheet, StatusPill, type BlobVariant, type CriteriaItem } from '@psp/ui';
+import { BigButton, BlobFace, Countdown, CriteriaList, Icon, InstructionBanner, Marquee, Notice, StatusPill, type BlobVariant, type CriteriaItem } from '@psp/ui';
 import { AutoCaptureController, VISION_CRITERIA, evaluateDocumentCompliance, evaluatePoseGuidance, mirrorInstruction, type ComplianceResult, type FrameAnalysis, type InstructionKey } from '@psp/vision';
 import { stationApi } from '../api/station';
 import { ANALYSIS_HEIGHT, ANALYSIS_WIDTH, useCamera, useFrameLoop } from '../camera/useCamera';
 import { captureDocument, capturePhoto, summarize } from '../capture/capture';
 import { CameraView } from '../components/CameraView';
+import { LensEyes, LENS_WIDE_SEC, lensStateFor, type LensMoment } from '../components/LensEyes';
 import { SessionFrame } from '../components/SessionFrame';
+import { Shell } from '../components/Shell';
 import { useT } from '../i18n';
 import { retakesLeft } from '../session/flow';
 import { useSession } from '../session/useSession';
-import { useIdleHold } from '../session/useSessionTimeout';
+import { useIdleHold, useSessionTimeout } from '../session/useSessionTimeout';
 import { useSound } from '../sound/useSound';
 import { useKioskStore } from '../store';
 import { resolveAssetUrl } from '../theme/assets';
@@ -35,6 +42,19 @@ type Phase = 'live' | 'countdown' | 'shooting' | 'uploading' | 'beat';
 
 /** Cuánto se queda en pantalla la foto recién tomada antes de seguir con la siguiente. */
 const BEAT_MS = 1400;
+
+/**
+ * El destello: blanco al 90 % y caída al acento de la toma.
+ *
+ * Medio segundo de blanco es una eternidad y además cuenta como estímulo luminoso repetido; el
+ * límite de accesibilidad es de tres destellos por segundo y aquí hay uno por toma. Estos son los
+ * tiempos del plan, y se comparten con el CSS: si cambian aquí, cambian allá.
+ */
+const FLASH_MS = 110;
+const FLASH_FALL_MS = 180;
+
+/** Cuántos acentos tiene la paleta: la tanda los recorre, uno por toma. */
+const ACCENTS = 6;
 
 export function CaptureScreen() {
   const { t, tl } = useT();
@@ -65,6 +85,8 @@ export function CaptureScreen() {
   const burstRef = useRef(false);
   burstRef.current = burst;
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  /** El cuadro pendiente de la cuenta regresiva, para poder cancelarlo al salir. */
+  const frame = useRef(0);
   const latest = useRef<{ analysis?: FrameAnalysis; compliance?: ComplianceResult }>({});
   const phaseRef = useRef<Phase>('live');
   phaseRef.current = phase;
@@ -87,12 +109,19 @@ export function CaptureScreen() {
   const autoEnabled = isDocument && (product?.autoCapture ?? false) && preset.spec.autoCapture.enabled && !visionLimited;
   const controller = useMemo(() => new AutoCaptureController({ stabilityMs, cooldownMs: 4000 }), [stabilityMs]);
 
+  /** La última foto de cada hueco. La tira se dibuja de la sesión, que es la única verdad. */
+  const shots = useMemo(() => {
+    const byIndex = new Map<number, string>();
+    for (const capture of session?.captures ?? []) byIndex.set(capture.index, capture.url);
+    return byIndex;
+  }, [session?.captures]);
+
   const shoot = useCallback(async () => {
     if (!session || !product || !camera.source) return;
     setPhase('shooting');
     setFlash(true);
     sound.play('shutter');
-    setTimeout(() => setFlash(false), 500);
+    timers.current.push(setTimeout(() => setFlash(false), FLASH_MS + FLASH_FALL_MS));
     try {
       const snap = latest.current;
       const image = isDocument
@@ -151,16 +180,41 @@ export function CaptureScreen() {
       setPhase('countdown');
       setCountdown(seconds);
       sound.play(seconds <= 1 ? 'tick_last' : 'tick');
-      let left = seconds;
-      const tick = setInterval(() => {
-        left -= 1;
-        setCountdown(left);
-        if (left > 0) sound.play(left === 1 ? 'tick_last' : 'tick');
-        if (left <= 0) {
-          clearInterval(tick);
-          void shoot();
+      // Reloj real contra una fecha límite, no un intervalo de mil milisegundos: el hilo principal
+      // está analizando cuadros de cámara y un intervalo se desfasa, así que el numeral saltaba a
+      // tirones y el obturador llegaba tarde. El estado sólo cambia cuando cambia el número, para
+      // no repintar la pantalla sesenta veces por segundo mientras la visión trabaja.
+      const endsAt = performance.now() + seconds * 1000;
+      let shown = seconds;
+      let done = false;
+      let safety: ReturnType<typeof setTimeout> | undefined;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(safety);
+        if (frame.current) cancelAnimationFrame(frame.current);
+        frame.current = 0;
+        setCountdown(0);
+        void shoot();
+      };
+      const step = () => {
+        if (performance.now() >= endsAt) {
+          finish();
+          return;
         }
-      }, 1000);
+        const whole = Math.ceil((endsAt - performance.now()) / 1000);
+        if (whole < shown) {
+          shown = whole;
+          setCountdown(whole);
+          sound.play(whole === 1 ? 'tick_last' : 'tick');
+        }
+        frame.current = requestAnimationFrame(step);
+      };
+      // Red de seguridad: con la pestaña oculta el navegador deja de entregar cuadros, y una
+      // cuenta congelada dejaría la tanda colgada para siempre con el temporizador retenido.
+      safety = setTimeout(finish, seconds * 1000 + 250);
+      timers.current.push(safety);
+      frame.current = requestAnimationFrame(step);
     },
     [shoot, sound],
   );
@@ -168,20 +222,20 @@ export function CaptureScreen() {
   useFrameLoop(
     camera.source,
     camera.analyzer,
-    (frame) => {
-      setAnalysis(frame);
+    (frameAnalysis) => {
+      setAnalysis(frameAnalysis);
       if (isDocument) {
-        const result = evaluateDocumentCompliance(frame, preset.spec);
-        latest.current = { analysis: frame, compliance: result };
+        const result = evaluateDocumentCompliance(frameAnalysis, preset.spec);
+        latest.current = { analysis: frameAnalysis, compliance: result };
         setCompliance(result);
         if (autoEnabled && phaseRef.current === 'live' && !lastShot) {
-          const update = controller.update(result, frame.atMs);
+          const update = controller.update(result, frameAnalysis.atMs);
           setAutoProgress(update.progress);
           if (update.shouldCapture) startCountdown(Math.min(captureCountdown, 2));
         }
       } else {
-        latest.current = { analysis: frame };
-        if (experience?.guidanceEnabled !== false) setHints(evaluatePoseGuidance(frame, pose?.guidance).hints);
+        latest.current = { analysis: frameAnalysis };
+        if (experience?.guidanceEnabled !== false) setHints(evaluatePoseGuidance(frameAnalysis, pose?.guidance).hints);
       }
     },
     camera.phase === 'ready',
@@ -193,6 +247,8 @@ export function CaptureScreen() {
     setBurst(false);
     for (const timer of timers.current) clearTimeout(timer);
     timers.current = [];
+    if (frame.current) cancelAnimationFrame(frame.current);
+    frame.current = 0;
     fail(new Error('camera'), 'camera_unavailable');
   }, [camera.phase, fail]);
 
@@ -211,6 +267,8 @@ export function CaptureScreen() {
     () => () => {
       for (const timer of timers.current) clearTimeout(timer);
       timers.current = [];
+      if (frame.current) cancelAnimationFrame(frame.current);
+      frame.current = 0;
     },
     [],
   );
@@ -233,6 +291,107 @@ export function CaptureScreen() {
   const retakesForPhoto = retakesLeft(product, session, currentIndex);
   const title = isDocument ? t('kiosk.capture.title_document') : t('kiosk.capture.title_experience');
 
+  if (!isDocument) {
+    /**
+     * El momento que viven los ojos. La subida y el compás siguen siendo «acaba de disparar»:
+     * entre el obturador y la foto en su hueco no pasa nada que la persona deba mirar.
+     */
+    const moment: LensMoment = phase === 'countdown' ? 'countdown' : phase === 'shooting' ? 'shot' : burst ? 'work' : 'rest';
+    // El aro de luz es la única fuente de relleno que este producto controla: entra a dos
+    // segundos del disparo y se queda hasta que la foto está guardada.
+    const halo = phase === 'countdown' ? countdown <= LENS_WIDE_SEC : phase === 'shooting' || phase === 'uploading';
+    // Cada toma tiene su acento, y durante la cuenta el campo corta a otro en cada segundo: el
+    // color ES la señal del tiempo, y de paso ninguna composición se queda fija en el panel.
+    const accent = ((phase === 'countdown' ? currentIndex + countdown : currentIndex) % ACCENTS) + 1;
+    const cadence = phase === 'countdown' ? 'count' : burst ? 'work' : 'call';
+    const machineCode = bundle?.machine.code;
+
+    return (
+      <Shell bleed marquee={<Marquee cadence={cadence} />} hideHeader hideLang>
+        {/* El reloj de la sesión sigue corriendo aunque no se vea: esta pantalla va a sangre y no
+            lleva `SessionFrame`, que es donde vive. Sin él, una sesión abandonada antes del
+            primer toque dejaría la máquina ocupada para siempre. */}
+        <IdleGuard onAutoAdvance={() => void advance('idle_auto_advance')} />
+        <div className="kiosk-captura" data-phase={phase} data-accent={accent} data-aro={halo ? 'true' : 'false'} data-testid="capture-screen">
+          {/* CARTEL: el espejo a sangre. Aquí no hay nada táctil, y encima de la cara sólo van
+              los dos ojos del lente. */}
+          <div className="kiosk-captura__cartel">
+            <CameraView source={camera.source} loadingLabel={camera.phase === 'starting' ? t('kiosk.capture.preparing_camera') : t('kiosk.capture.loading_vision')} />
+            <div className="kiosk-captura__aro" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+            <LensEyes bundle={bundle} state={lensStateFor(moment, countdown)} />
+            {phase === 'countdown' && countdown > 0 ? (
+              /* El numeral va sobre la cara, sin velo detrás: bajarle la luz a la persona en el
+                 único momento en que se está mirando pelea contra el motivo por el que vino. */
+              <span key={countdown} className="kiosk-captura__numeral" aria-hidden="true">
+                {countdown}
+              </span>
+            ) : null}
+            {flash ? (
+              <>
+                <div className="kiosk-capture__flash" />
+                <div className="kiosk-captura__caida" aria-hidden="true" />
+              </>
+            ) : null}
+          </div>
+
+          {/* REPISA: la tira ES el progreso. Huecos vacíos desde el primer segundo, punteados,
+              llenándose con cada toma. Ni un número. */}
+          <div className="kiosk-captura__repisa">
+            <ol className="kiosk-captura__tira" style={{ ['--psp-slots' as string]: total }} aria-label={t('kiosk.capture.strip')}>
+              {Array.from({ length: total }, (_unused, i) => {
+                const url = shots.get(i);
+                const flying = lastShot?.index === i;
+                return (
+                  <li
+                    key={i}
+                    className="kiosk-captura__hueco"
+                    data-filled={url ? 'true' : 'false'}
+                    style={{ ['--psp-slot' as string]: i, ['--psp-hueco' as string]: `var(--psp-color-accent-${(i % ACCENTS) + 1})` }}
+                  >
+                    <span className="psp-sr-only">{t(url ? 'kiosk.capture.slot_taken' : 'kiosk.capture.slot_pending', { n: i + 1 })}</span>
+                    {url ? <img className={`kiosk-captura__foto${flying ? ' kiosk-captura__foto--vuelo' : ''}`} key={flying ? lastShot.id : 'quieta'} src={url} alt="" /> : null}
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+
+          {/* ALCANCE: exactamente una cosa. Antes de empezar, el único botón; mientras la máquina
+              trabaja, la pose que toca, actuada por una forma de la familia. */}
+          <div className="kiosk-captura__alcance">
+            {burst ? (
+              <div className="kiosk-captura__pose" data-testid="capture-burst">
+                <BlobFace variant={((currentIndex % ACCENTS) + 1) as BlobVariant} size={220} expression={phase === 'countdown' && countdown <= 1 ? 'grin' : 'happy'} animated />
+                <span className="kiosk-captura__instruccion">{tl(pose?.instruction) || t('kiosk.capture.smile')}</span>
+              </div>
+            ) : (
+              <BigButton size="xl" variant="primary" block icon={<Icon name="camera" />} disabled={camera.phase !== 'ready'} onClick={startBurst} data-testid="capture-manual">
+                {t('kiosk.capture.start_sequence')}
+              </BigButton>
+            )}
+          </div>
+
+          <div className="kiosk-captura__zocalo">
+            {machineCode ? <span>{machineCode}</span> : null}
+            {visionLimited ? <span>{t('kiosk.capture.vision_unavailable')}</span> : null}
+            {cameraKind === 'synthetic' ? <span>{t('kiosk.capture.synthetic_notice')}</span> : null}
+          </div>
+
+          {/* Los últimos segundos, para quien navega con lector de pantalla: el `Countdown` del
+              sistema declara `aria-live="off"` y nunca anuncia nada. */}
+          <p className="psp-sr-only" role="status" aria-live="polite">
+            {phase === 'countdown' && countdown > 0 && countdown <= 3 ? t('kiosk.capture.countdown_live', { n: countdown }) : ''}
+          </p>
+        </div>
+      </Shell>
+    );
+  }
+
   return (
     <SessionFrame title={title}>
       <div className="kiosk-capture">
@@ -242,14 +401,13 @@ export function CaptureScreen() {
             loadingLabel={camera.phase === 'starting' ? t('kiosk.capture.preparing_camera') : t('kiosk.capture.loading_vision')}
             overlay={
               <>
-                {isDocument && cropRect ? (
+                {cropRect ? (
                   <>
                     <rect x={cropRect.x} y={cropRect.y} width={cropRect.w} height={cropRect.h} fill="none" stroke={compliance?.canAutoCapture ? '#2ecc71' : '#ffb020'} strokeWidth={4} rx={8} />
                     <line x1={cropRect.x} x2={cropRect.x + cropRect.w} y1={cropRect.y + cropRect.h * ((preset.spec.face.eyeLineFromTop.min + preset.spec.face.eyeLineFromTop.max) / 2)} y2={cropRect.y + cropRect.h * ((preset.spec.face.eyeLineFromTop.min + preset.spec.face.eyeLineFromTop.max) / 2)} stroke="#ffffff" strokeDasharray="8 8" strokeWidth={2} />
                   </>
                 ) : null}
-                {isDocument ? <ellipse cx={ANALYSIS_WIDTH / 2} cy={ANALYSIS_HEIGHT * 0.44} rx={ANALYSIS_HEIGHT * 0.22} ry={ANALYSIS_HEIGHT * 0.3} fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth={2} strokeDasharray="10 10" /> : null}
-                {pose?.guidance?.zone ? <rect x={pose.guidance.zone.x * ANALYSIS_WIDTH} y={pose.guidance.zone.y * ANALYSIS_HEIGHT} width={pose.guidance.zone.w * ANALYSIS_WIDTH} height={pose.guidance.zone.h * ANALYSIS_HEIGHT} fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth={3} strokeDasharray="12 8" rx={12} /> : null}
+                <ellipse cx={ANALYSIS_WIDTH / 2} cy={ANALYSIS_HEIGHT * 0.44} rx={ANALYSIS_HEIGHT * 0.22} ry={ANALYSIS_HEIGHT * 0.3} fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth={2} strokeDasharray="10 10" />
                 {silhouette ? <image href={silhouette} x={0} y={0} width={ANALYSIS_WIDTH} height={ANALYSIS_HEIGHT} opacity={0.45} preserveAspectRatio="xMidYMid meet" /> : null}
                 {(analysis?.faces ?? []).map((f, i) => (
                   <rect key={i} x={f.box.x * ANALYSIS_WIDTH} y={f.box.y * ANALYSIS_HEIGHT} width={f.box.w * ANALYSIS_WIDTH} height={f.box.h * ANALYSIS_HEIGHT} fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth={1.5} />
@@ -259,13 +417,8 @@ export function CaptureScreen() {
           />
           {phase === 'countdown' ? (
             <div className="kiosk-capture__countdown">
-              {/* Cuenta regresiva con personalidad: en el recorrido social acompaña una forma
-                  distinta en cada segundo; en el documental el número va solo, sin distraer. */}
               <div className="kiosk-capture__countdown-figure">
-                {!isDocument ? (
-                  <BlobFace variant={((countdown % 6) + 1) as BlobVariant} size={132} expression={countdown <= 1 ? 'grin' : 'happy'} />
-                ) : null}
-                <Countdown seconds={countdown} total={captureCountdown} label={t('kiosk.capture.countdown')} size={isDocument ? 200 : 168} tone="accent" caption={pose && !isDocument ? t('kiosk.capture.smile') : t('kiosk.capture.stability')} />
+                <Countdown seconds={countdown} total={captureCountdown} label={t('kiosk.capture.countdown')} size={200} tone="accent" caption={t('kiosk.capture.stability')} />
               </div>
             </div>
           ) : null}
@@ -277,38 +430,33 @@ export function CaptureScreen() {
           ) : null}
         </div>
         <div className="kiosk-capture__side">
-          {!isDocument && total > 1 ? <ProgressDots steps={total} current={currentIndex} label={t('kiosk.common.photo_n_of_m', { n: currentIndex + 1, m: total })} showNumbers size="lg" /> : null}
-          {pose && !isDocument ? (
-            <div className="kiosk-card">
-              <h2 style={{ margin: 0 }}>{tl(pose.name) || t('kiosk.common.photo_n_of_m', { n: currentIndex + 1, m: total })}</h2>
-              <p className="kiosk-lead" style={{ marginBottom: 0 }}>{tl(pose.instruction) || t('kiosk.capture.pose_intro', { n: currentIndex + 1, m: total })}</p>
-              {pose.guidance?.expectedPeople ? <p className="kiosk-small kiosk-muted">{t('kiosk.capture.expected_people', { n: pose.guidance.expectedPeople })}</p> : null}
-            </div>
-          ) : null}
           <InstructionBanner tone={primaryTone} size="lg" animate={primaryTone !== 'ok'}>
             {t(`instructions.${primary}`)}
           </InstructionBanner>
-          {isDocument ? <CriteriaList items={criteria} compact label={t('kiosk.capture.criteria')} statusLabels={{ ok: t('kiosk.capture.status_ok'), warn: t('kiosk.capture.status_warn'), block: t('kiosk.capture.status_block'), na: t('kiosk.capture.status_na') }} /> : null}
+          <CriteriaList items={criteria} compact label={t('kiosk.capture.criteria')} statusLabels={{ ok: t('kiosk.capture.status_ok'), warn: t('kiosk.capture.status_warn'), block: t('kiosk.capture.status_block'), na: t('kiosk.capture.status_na') }} />
           {visionLimited ? <Notice tone="warn" position="static">{t('kiosk.capture.vision_unavailable')}</Notice> : null}
           {cameraKind === 'synthetic' ? <StatusPill tone="info">{t('kiosk.capture.synthetic_notice')}</StatusPill> : null}
           {autoEnabled ? <p className="kiosk-small kiosk-muted">{t('kiosk.capture.auto_hint')}</p> : null}
-          {/* Un solo toque en el recorrido social: arranca la tanda entera y la máquina lleva el
-              ritmo. Mientras corre, el botón desaparece; no hay nada que tocar, sólo posar. */}
-          {isDocument ? (
-            product.manualCapture || !autoEnabled ? (
-              <BigButton size="xl" variant="primary" block icon={<Icon name="camera" />} disabled={phase !== 'live' || camera.phase !== 'ready'} loading={phase === 'uploading'} loadingLabel={t('kiosk.capture.uploading')} onClick={() => startCountdown(pose?.countdownSec ?? captureCountdown)} data-testid="capture-manual">
-                {t('kiosk.capture.manual')}
-              </BigButton>
-            ) : null
-          ) : burst ? (
-            <p className="kiosk-lead kiosk-muted" data-testid="capture-burst">{t('kiosk.capture.burst_running', { n: currentIndex + 1, m: total })}</p>
-          ) : (
-            <BigButton size="xl" variant="primary" block icon={<Icon name="camera" />} disabled={camera.phase !== 'ready'} onClick={startBurst} data-testid="capture-manual">
-              {t('kiosk.capture.start_sequence')}
+          {product.manualCapture || !autoEnabled ? (
+            <BigButton size="xl" variant="primary" block icon={<Icon name="camera" />} disabled={phase !== 'live' || camera.phase !== 'ready'} loading={phase === 'uploading'} loadingLabel={t('kiosk.capture.uploading')} onClick={() => startCountdown(pose?.countdownSec ?? captureCountdown)} data-testid="capture-manual">
+              {t('kiosk.capture.manual')}
             </BigButton>
-          )}
+          ) : null}
         </div>
       </div>
     </SessionFrame>
   );
+}
+
+/**
+ * El temporizador de inactividad sin nada que mirar.
+ *
+ * Vive en su propio componente porque el recorrido social no monta `SessionFrame` —el plan
+ * prohíbe un reloj de sesión en esta pantalla— y un hook no se puede llamar a medias. Mientras la
+ * máquina dispara, `useIdleHold` lo tiene retenido; lo que vigila es la espera antes del primer
+ * toque, que es la única en la que de verdad puede no haber nadie delante.
+ */
+function IdleGuard({ onAutoAdvance }: { onAutoAdvance: () => void }) {
+  useSessionTimeout(true, undefined, { onAutoAdvance });
+  return null;
 }
