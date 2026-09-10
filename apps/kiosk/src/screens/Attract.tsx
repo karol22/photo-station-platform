@@ -259,7 +259,10 @@ function ResultWall({ count }: { count: number }) {
           className="kiosk-attract__tile"
           style={{ animationDelay: `${i * 0.24}s`, ['--psp-tile' as string]: `var(--psp-color-accent-${(i % 6) + 1})` }}
         >
-          <BlobFace variant={((i % 6) + 1) as BlobVariant} size={140} />
+          {/* La forma nunca lleva el color de su propia ficha: sobre sí misma desaparece y sólo
+              quedarían los ojos flotando. Se desplaza tres puestos, que es media vuelta a la
+              paleta y garantiza contraste venga la marca que venga. */}
+          <BlobFace variant={(((i + 3) % 6) + 1) as BlobVariant} size={140} />
         </div>
       ))}
     </div>
