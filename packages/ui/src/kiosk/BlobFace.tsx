@@ -51,13 +51,43 @@ const SHAPES: Record<BlobVariant, Shape> = {
 const CENTER = 50;
 const BASE_RADIUS = 34;
 
+export interface BlobPathOptions {
+  /**
+   * Cuánto se aparta la silueta de un óvalo, de 0 a 1.
+   *
+   * `1` es el personaje. Un contenedor no es el personaje escalado: llevar el mismo `1` a un botón
+   * o a un marco lo vuelve ilegible y, sobre una cara humana, la deforma. `0.45` sirve para
+   * botones y fichas grandes, `0.30` para miniaturas, y `0.14` —casi recto— para todo lo que
+   * contenga la cara de una persona, que vino a verse, no a verse deformada.
+   */
+  amplitude?: number;
+  /**
+   * Gira el arranque de los ocho radios. Dos contenedores de la misma variante puestos uno al lado
+   * del otro se ven calcados; con un giro distinto son parientes en vez de copias.
+   */
+  spin?: number;
+  /**
+   * Proporción ancho/alto del lienzo. Con `1` la silueta es cuadrada; con otro valor se estira
+   * para llenar un contenedor que no lo es, sin que los radios pierdan su relación.
+   */
+  ratio?: number;
+}
+
 /** Curva cerrada y suave a partir de los ocho puntos, con tangentes tipo Catmull-Rom. */
-function blobPath(radii: readonly number[]): string {
+export function blobPath(radii: readonly number[], options: BlobPathOptions = {}): string {
+  const amplitude = options.amplitude ?? 1;
+  const spin = Math.round(options.spin ?? 0);
+  const ratio = options.ratio ?? 1;
   const n = radii.length;
-  const pts = radii.map((r, i) => {
+  const pts = radii.map((_unused, i) => {
+    // El giro se aplica a QUÉ radio toca cada punto, no al ángulo: así la silueta rota su
+    // personalidad sin rotar el lienzo, y los ojos siguen mirando al frente.
+    const r = radii[(((i + spin) % n) + n) % n] ?? 1;
+    // La amplitud interpola entre el óvalo (1) y la silueta completa (r).
+    const shaped = 1 + (r - 1) * Math.min(1, Math.max(0, amplitude));
     const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
-    const radius = BASE_RADIUS * (r ?? 1);
-    return { x: CENTER + Math.cos(angle) * radius, y: CENTER + Math.sin(angle) * radius };
+    const radius = BASE_RADIUS * shaped;
+    return { x: CENTER + Math.cos(angle) * radius * ratio, y: CENTER + Math.sin(angle) * radius };
   });
   const at = (i: number) => pts[((i % n) + n) % n]!;
   let d = `M${at(0).x.toFixed(2)} ${at(0).y.toFixed(2)}`;
@@ -151,3 +181,17 @@ export function BlobFace({ variant, color, size = 96, expression, animated, titl
 
 /** Las seis variantes en orden, para pintar la familia completa. */
 export const BLOB_VARIANTS: BlobVariant[] = [1, 2, 3, 4, 5, 6];
+
+/**
+ * Los ocho radios de cada silueta, sin la cara. Los usa `BlobFrame` para que un contenedor con
+ * forma de la familia salga de la MISMA geometría que el personaje: si algún día se retocan las
+ * siluetas, los contenedores cambian con ellas y no se separan en silencio.
+ */
+export const BLOB_RADII: Record<BlobVariant, readonly number[]> = {
+  1: SHAPES[1].radii,
+  2: SHAPES[2].radii,
+  3: SHAPES[3].radii,
+  4: SHAPES[4].radii,
+  5: SHAPES[5].radii,
+  6: SHAPES[6].radii,
+};

@@ -40,7 +40,10 @@ export type { CardProps } from './shared/Card';
 // Kiosco
 export { KioskShell } from './kiosk/KioskShell';
 export type { KioskShellProps } from './kiosk/KioskShell';
-export { BlobFace, BLOB_VARIANTS } from './kiosk/BlobFace';
+export { BlobFace, BLOB_VARIANTS, BLOB_RADII, blobPath } from './kiosk/BlobFace';
+export type { BlobPathOptions } from './kiosk/BlobFace';
+export { BlobFrame, FACE_SAFE_AMPLITUDE } from './kiosk/BlobFrame';
+export type { BlobFrameProps } from './kiosk/BlobFrame';
 export type { BlobExpression, BlobFaceProps, BlobVariant } from './kiosk/BlobFace';
 export { BigButton } from './kiosk/BigButton';
 export type { BigButtonProps, BigButtonSize, BigButtonVariant } from './kiosk/BigButton';

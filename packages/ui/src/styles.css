@@ -3529,3 +3529,7 @@
 .psp-kiosk-shell[data-bleed='true'] { grid-template-rows: auto 1fr; }
 .psp-kiosk-shell[data-bleed='true']:has(> .psp-marquee) { grid-template-rows: auto 1fr; }
 .psp-kiosk-shell[data-bleed='true'] > .psp-kiosk-shell__main { padding: 0; gap: 0; overflow: hidden; }
+
+/* Contenedor con forma de la familia: recorta su contenido, no lo repinta. */
+.psp-blobframe { position: relative; display: grid; place-items: center; overflow: hidden; }
+.psp-blobframe__def { position: absolute; width: 0; height: 0; pointer-events: none; }
