@@ -10,6 +10,7 @@ import { EDIT_OPS, applyEditOps, editingPresetToOps, validateEditOps, type EditO
 import { canvasToRaster, loadRaster, rasterToCanvas, rasterToDataUrl } from '@psp/imaging/browser';
 import { BigButton, Icon, IconButton, Spinner, Toggle, TouchSlider } from '@psp/ui';
 import { FilterStrip, filterOptions, type FilterOption } from '../components/FilterStrip';
+import { StickerLayer, type PlacedSticker } from '../components/StickerLayer';
 import { stationApi } from '../api/station';
 import { SessionFrame } from '../components/SessionFrame';
 import { useT } from '../i18n';
@@ -131,9 +132,17 @@ export function EditScreen() {
 
   if (!session || !product) return null;
 
-  const push = (next: EditOp[]) => {
+  const push = (next: EditOp[], options: { transient?: boolean } = {}) => {
     const valid = validateEditOps(next, allowed);
     const kept = next.filter((op) => !valid.rejected.includes(op));
+    if (options.transient) {
+      // Un gesto en curso reemplaza el estado actual: deshacer debe revertir el arrastre entero,
+      // no cada píxel que recorrió el dedo.
+      const replaced = [...history];
+      replaced[cursor] = kept;
+      setHistory(replaced);
+      return;
+    }
     setHistory([...history.slice(0, cursor + 1), kept]);
     setCursor(cursor + 1);
   };
@@ -219,6 +228,58 @@ export function EditScreen() {
     const manual = current ? ops.slice(0, ops.length - current.ops.length) : ops;
     push([...manual, ...option.ops]);
   };
+  /**
+   * Las pegatinas colocadas se leen de las propias ops, no de un estado paralelo: así deshacer y
+   * rehacer las mueven igual que a todo lo demás y no hay dos verdades que se puedan separar.
+   */
+  const placed: PlacedSticker[] = ops
+    .map((op, index) => ({ op, index }))
+    .filter(({ op }) => op.op === 'sticker')
+    .map(({ op, index }) => ({
+      key: `${index}:${String(op.params['assetId'] ?? '')}`,
+      assetId: String(op.params['assetId'] ?? ''),
+      url: resolveAssetUrl(bundle, String(op.params['assetId'] ?? '')) ?? '',
+      x: Number(op.params['x'] ?? 0),
+      y: Number(op.params['y'] ?? 0),
+      size: Number(op.params['w'] ?? Math.round((original?.width ?? 600) * 0.2)),
+      angle: Number(op.params['angle'] ?? 0),
+    }));
+
+  const setPlaced = (next: PlacedSticker[], options: { transient?: boolean } = {}) => {
+    const others = ops.filter((op) => op.op !== 'sticker');
+    push([
+      ...others,
+      ...next.map((sticker) => ({
+        op: 'sticker',
+        params: {
+          assetId: sticker.assetId,
+          x: Math.round(sticker.x),
+          y: Math.round(sticker.y),
+          w: Math.round(sticker.size),
+          h: Math.round(sticker.size),
+        },
+      })),
+    ], options);
+  };
+
+  const addSticker = (assetId: string) => {
+    const side = Math.round((original?.width ?? 600) * 0.22);
+    setPlaced([
+      ...placed,
+      {
+        key: `nuevo:${assetId}:${placed.length}`,
+        assetId,
+        url: resolveAssetUrl(bundle, assetId) ?? '',
+        // Entra un poco arriba del centro y desplazada por cuántas hay, para que dos seguidas no
+        // se tapen y se vea que la segunda es otra.
+        x: Math.round((original?.width ?? 600) * (0.5 + placed.length * 0.06)),
+        y: Math.round((original?.height ?? 600) * (0.45 + placed.length * 0.05)),
+        size: side,
+        angle: 0,
+      },
+    ]);
+  };
+
   const canUndo = cursor > 0;
   const canRedo = cursor < history.length - 1;
 
@@ -231,8 +292,17 @@ export function EditScreen() {
       ) : null}
       <div className="kiosk-edit">
         <div className="kiosk-stack">
-          <div className="kiosk-preview" style={{ position: 'relative' }}>
+          <div className="kiosk-preview kiosk-preview--stickers" style={{ position: 'relative' }}>
             {preview || (showBefore && capture) ? <img src={showBefore ? capture?.url : preview} alt={t('kiosk.edit.title')} data-testid="edit-preview" /> : <Spinner size="xl" label={t('kiosk.common.loading')} />}
+            {stickers.length > 0 && original && !showBefore ? (
+              <StickerLayer
+                stickers={placed}
+                onChange={setPlaced}
+                imageWidth={original.width}
+                imageHeight={original.height}
+                removeLabel={t('kiosk.edit.remove_sticker')}
+              />
+            ) : null}
           </div>
           {filters.length > 1 ? (
             <FilterStrip source={original} options={filters} activeKey={typeof activeFilter === 'string' ? activeFilter : 'none'} onPick={pickFilter} />
@@ -292,8 +362,9 @@ export function EditScreen() {
               <div>
                 <p className="kiosk-small">{t('kiosk.edit.tool.stickers')}</p>
                 <div className="kiosk-chips">
+                  {/* Tocar agrega otra: caben varias y cada una se arrastra a donde quiera. */}
                   {stickers.map((id) => (
-                    <button key={id} type="button" className="kiosk-chip" aria-pressed={ops.some((o) => o.op === 'sticker' && o.params['assetId'] === id)} onClick={() => setOverlay('sticker', ops.some((o) => o.op === 'sticker' && o.params['assetId'] === id) ? undefined : id)}>
+                    <button key={id} type="button" className="kiosk-chip" onClick={() => addSticker(id)} data-testid={`sticker-${id}`}>
                       <img src={resolveAssetUrl(bundle, id)} alt="" />
                     </button>
                   ))}

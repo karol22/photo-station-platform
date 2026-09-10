@@ -119,3 +119,17 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 @media (prefers-reduced-motion: reduce) {
   .kiosk-screen[data-direction] { animation: none; }
 }
+
+/* Pegatinas: se arrastran con el dedo, se escalan y giran con dos, y se quitan sacándolas. */
+.kiosk-preview--stickers { position: relative; }
+.kiosk-stickers { position: absolute; inset: 0; touch-action: none; }
+.kiosk-sticker { position: absolute; aspect-ratio: 1; touch-action: none; cursor: grab; transition: filter 120ms ease; }
+.kiosk-sticker[data-active='true'] { cursor: grabbing; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.35)); z-index: 2; }
+.kiosk-sticker img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+.kiosk-sticker__remove {
+  position: absolute; top: -14px; right: -14px; width: 48px; height: 48px; border-radius: 50%;
+  border: 3px solid var(--psp-color-text, #111); background: var(--psp-color-surface, #fff);
+  color: var(--psp-color-text, #111); display: grid; place-items: center; padding: 0;
+}
+.kiosk-sticker:not([data-active='true']) .kiosk-sticker__remove { opacity: 0.85; }
+@media (prefers-reduced-motion: reduce) { .kiosk-sticker { transition: none; } }

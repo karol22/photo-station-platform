@@ -304,6 +304,7 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.edit.tool.backgroundAdjust': ['Fondo', 'Background'],
   'kiosk.edit.tool.frames': ['Marcos', 'Frames'],
   'kiosk.edit.tool.stickers': ['Stickers', 'Stickers'],
+  'kiosk.edit.remove_sticker': ['Quitar', 'Remove'],
   'kiosk.edit.tool.illustrations': ['Ilustraciones', 'Illustrations'],
   'kiosk.edit.tool.text': ['Texto', 'Text'],
   'kiosk.edit.tool.date': ['Fecha', 'Date'],
