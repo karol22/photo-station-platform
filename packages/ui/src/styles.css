@@ -3470,3 +3470,62 @@
   50% { transform: translateY(-6px) rotate(-2.5deg); }
 }
 @media (prefers-reduced-motion: reduce) { .psp-blob--animated { animation: none; } }
+
+/* --------------------------------------------------------------------------
+   Marquesina: la banda de focos del borde superior. Es identidad, es luz sobre
+   la cara de quien posa, y es el único reloj del recorrido social.
+   -------------------------------------------------------------------------- */
+.psp-marquee {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4vw;
+  height: var(--psp-marquee-height, 120px);
+  padding: 0 var(--psp-space-5);
+  background: var(--psp-color-text);
+  flex: 0 0 auto;
+}
+
+.psp-marquee__bulb {
+  flex: 1 1 0;
+  aspect-ratio: 1;
+  max-width: 3.2vw;
+  border-radius: 50%;
+  background: var(--psp-bulb-color, var(--psp-color-accent));
+  /* El halo es una sombra sin desplazamiento: un foco encendido derrama luz alrededor. */
+  box-shadow: 0 0 1.4vw color-mix(in srgb, var(--psp-bulb-color, var(--psp-color-accent)) 70%, transparent);
+  opacity: 0.22;
+  transition: opacity 200ms ease;
+}
+
+.psp-marquee__bulb[data-lit='false'] { opacity: 0.08; box-shadow: none; }
+.psp-marquee[data-cadence='still'] .psp-marquee__bulb { opacity: 0.9; }
+.psp-marquee[data-cadence='wait'] .psp-marquee__bulb[data-lit='true'] { opacity: 0.9; }
+
+.psp-marquee[data-cadence='call'] .psp-marquee__bulb,
+.psp-marquee[data-cadence='count'] .psp-marquee__bulb,
+.psp-marquee[data-cadence='work'] .psp-marquee__bulb {
+  animation-name: psp-bulb-chase;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes psp-bulb-chase {
+  0%, 14% { opacity: 1; }
+  30%, 100% { opacity: 0.22; }
+}
+
+/* Con movimiento reducido la marquesina sigue existiendo —es identidad y es luz— pero deja de
+   correr: se queda encendida y firme. El reloj de `wait` no depende de animación, así que no
+   pierde información. */
+@media (prefers-reduced-motion: reduce) {
+  .psp-marquee .psp-marquee__bulb { animation: none; opacity: 0.85; }
+  .psp-marquee__bulb[data-lit='false'] { opacity: 0.08; }
+}
+
+/* Modo a sangre: el color llega al vidrio. Sin encabezado, sin márgenes, sin scroll.
+   La marquesina es la primera fila y no participa de nada: nunca cambia de sitio ni de tamaño. */
+.psp-kiosk-shell:has(> .psp-marquee) { grid-template-rows: auto auto 1fr auto; }
+.psp-kiosk-shell[data-bleed='true'] { grid-template-rows: auto 1fr; }
+.psp-kiosk-shell[data-bleed='true']:has(> .psp-marquee) { grid-template-rows: auto 1fr; }
+.psp-kiosk-shell[data-bleed='true'] > .psp-kiosk-shell__main { padding: 0; gap: 0; overflow: hidden; }

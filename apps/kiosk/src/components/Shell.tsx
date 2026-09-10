@@ -18,6 +18,10 @@ export interface ShellProps {
   footer?: ReactNode;
   background?: ReactNode;
   hideHeader?: boolean;
+  /** Modo a sangre: el color llega al vidrio, sin encabezado ni márgenes. */
+  bleed?: boolean;
+  /** La marquesina, que ocupa siempre el mismo sitio en todas las pantallas. */
+  marquee?: ReactNode;
   contentAlign?: 'start' | 'center';
   hideLang?: boolean;
 }
@@ -25,7 +29,7 @@ export interface ShellProps {
 const HIDDEN_TAPS = 5;
 const HIDDEN_WINDOW_MS = 2500;
 
-export function Shell({ children, headerStart, headerEnd, footer, background, hideHeader, contentAlign, hideLang }: ShellProps) {
+export function Shell({ children, headerStart, headerEnd, footer, background, hideHeader, bleed, marquee, contentAlign, hideLang }: ShellProps) {
   const { t } = useT();
   const navigate = useNavigate();
   const bundle = useKioskStore((s) => s.bundle);
@@ -72,8 +76,21 @@ export function Shell({ children, headerStart, headerEnd, footer, background, hi
       footer={footer}
       background={background}
       hideHeader={hideHeader}
+      bleed={bleed}
+      marquee={marquee}
       contentAlign={contentAlign}
     >
+      {/* La zona oculta del panel técnico vive en el encabezado, y a sangre no hay encabezado.
+          Sin esto, cada pantalla a sangre dejaría al técnico fuera de su propia máquina. */}
+      {hideHeader || bleed ? (
+        <button
+          type="button"
+          className="kiosk-hidden-zone"
+          onClick={onHiddenTap}
+          aria-label={publicName}
+          data-testid="hidden-tech-zone"
+        />
+      ) : null}
       {children}
       <Notice open={connection === 'lost'} tone="warn" position="top-center" title={t('kiosk.connection.lost')}>
         {t('kiosk.connection.retrying')}

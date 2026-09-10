@@ -1,16 +1,45 @@
 /**
- * Pantalla de atracción: branding, imágenes rotativas, categorías destacadas, precio "desde",
- * CTA grande, avisos de privacidad/videovigilancia, impresión disponible y notices de servicio.
+ * Atracción: la pantalla que la plaza ve el noventa por ciento del tiempo.
+ *
+ * No es un salvapantallas ni el estado de reposo de una aplicación: es el cartel de la cabina, y
+ * su único trabajo es que alguien que va caminando por un pasillo se detenga. Compite con tiendas
+ * iluminadas y con máquinas que suenan, así que va a sangre, en color pleno, con algo moviéndose
+ * siempre y sin un solo contenedor.
+ *
+ * El bucle tiene cinco compases y corta seco entre ellos, porque desde el pasillo se percibe
+ * antes «cambió de color» que «cambió de contenido». El compás más fuerte y el más barato es el
+ * espejo: la cámara ya está dentro y verse a uno mismo es el imán que ninguna pantalla de video
+ * puede igualar. Ese compás entra en cuanto la cámara ve a alguien, y el video se apaga cuando no
+ * hay nadie, para no tener la cámara encendida mirando un pasillo vacío.
+ *
+ * Ni una cadena de negocio vive aquí: el nombre, el precio y los avisos vienen del bundle y de
+ * i18n, y los colores salen de los acentos de la marca.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BigButton, BlobFace, BLOB_VARIANTS, Icon, Notice, StatusPill } from '@psp/ui';
+import { BlobFace, BLOB_VARIANTS, Marquee, Notice, StatusPill, type BlobVariant } from '@psp/ui';
+import { CameraView } from '../components/CameraView';
 import { Shell } from '../components/Shell';
+import { useCamera, useFrameLoop } from '../camera/useCamera';
 import { useT } from '../i18n';
-import { groupByCategory, minPrice, productViews } from '../lib/products';
+import { minPrice, productViews } from '../lib/products';
 import { ROUTES } from '../session/flow';
 import { useKioskStore } from '../store';
-import { configBool, configList, configNumber, configString, resolveAssetUrl } from '../theme/assets';
+import { configBool, configNumber, configString, type ConfigSource } from '../theme/assets';
+
+/** Los cinco compases del bucle, con su duración en segundos. */
+export const ATTRACT_BEATS = [
+  { key: 'mirror', seconds: 12 },
+  { key: 'price', seconds: 6 },
+  { key: 'wall', seconds: 11 },
+  { key: 'howto', seconds: 9 },
+  { key: 'invite', seconds: 8 },
+] as const;
+
+/** Cuánto aguanta sin ver a nadie antes de dar por vacío el pasillo. */
+const ABSENCE_MS = 8000;
+/** Cuánto tiene que verse un rostro para creer que alguien llegó, y no que pasó una sombra. */
+const PRESENCE_MS = 400;
 
 export function AttractScreen() {
   const { t, tl, money } = useT();
@@ -19,12 +48,10 @@ export function AttractScreen() {
   const status = useKioskStore((s) => s.status);
   const releaseSession = useKioskStore((s) => s.releaseSession);
   const pendingRelease = useKioskStore((s) => s.pendingRelease);
-  const [slide, setSlide] = useState(0);
+  const [beat, setBeat] = useState(0);
+  const [present, setPresent] = useState(false);
 
-  const images = useMemo(() => configList(bundle, 'branding.attractImageAssetIds').map((id) => resolveAssetUrl(bundle, id)).filter((u): u is string => !!u), [bundle]);
-  const rotation = configNumber(bundle, 'kiosk.attractRotationSec', 8);
   const views = useMemo(() => productViews(bundle), [bundle]);
-  const categories = useMemo(() => groupByCategory(views).slice(0, 4), [views]);
   const from = minPrice(views);
   const showPrices = configBool(bundle, 'kiosk.showPricesOnIdle', true);
   const printerReady = (status?.printers ?? []).some((p) => p.status === 'ready' || p.status === 'busy');
@@ -32,31 +59,66 @@ export function AttractScreen() {
   const maintenance = status?.maintenance.on === true;
   const publicName = configString(bundle, 'branding.publicName') ?? bundle?.organization.name ?? '';
   const footerText = configString(bundle, 'branding.footerText');
+  const shortest = views
+    .filter((v) => v.availability.available)
+    .map((v) => v.product.estimatedDurationSec)
+    .sort((a, b) => a - b)[0];
+
+  const releasing = !!pendingRelease;
+  const blocked = outOfService || maintenance || !bundle || releasing;
 
   useEffect(() => {
-    // Volver a atracción cierra la sesión anterior EN EL APARATO, no sólo en la pantalla. Si el
-    // agente no confirma, queda anotada y se reintenta: la máquina no puede quedarse ocupada por
-    // alguien que ya se fue.
+    // Volver a atracción cierra la sesión anterior EN EL APARATO, no sólo en la pantalla.
     void releaseSession('returned_to_attract');
   }, [releaseSession]);
 
-  // Reintento del cierre pendiente. Mientras exista, la cabina no ofrece empezar.
   useEffect(() => {
     if (!pendingRelease) return;
     const timer = setInterval(() => void releaseSession('release_retry'), 2500);
     return () => clearInterval(timer);
   }, [pendingRelease, releaseSession]);
 
-  useEffect(() => {
-    if (images.length < 2) return;
-    const id = setInterval(() => setSlide((s) => (s + 1) % images.length), rotation * 1000);
-    return () => clearInterval(id);
-  }, [images.length, rotation]);
+  const current = ATTRACT_BEATS[beat] ?? ATTRACT_BEATS[0]!;
 
-  // Una sesión que no se pudo cerrar bloquea la cabina a propósito: es preferible una espera de
-  // segundos, explicada, a que la persona toque «empezar» y se lleve un error del agente.
-  const releasing = !!pendingRelease;
-  const blocked = outOfService || maintenance || !bundle || releasing;
+  useEffect(() => {
+    if (blocked) return;
+    const timer = setTimeout(() => setBeat((b) => (b + 1) % ATTRACT_BEATS.length), current.seconds * 1000);
+    return () => clearTimeout(timer);
+  }, [beat, blocked, current.seconds]);
+
+  // Enseñar un pasillo vacío no atrae a nadie: sin gente delante, el espejo se salta.
+  useEffect(() => {
+    if (current.key === 'mirror' && !present) setBeat((b) => (b + 1) % ATTRACT_BEATS.length);
+  }, [current.key, present]);
+
+  // La cámara vive sólo mientras se necesita.
+  const wantsCamera = !blocked && (current.key === 'mirror' || present);
+  const camera = useCamera(wantsCamera);
+  const lastFace = useRef(0);
+  const since = useRef(0);
+
+  useFrameLoop(
+    camera.source,
+    camera.analyzer,
+    (frame) => {
+      const now = frame.atMs;
+      if (frame.faces.length > 0) {
+        if (since.current === 0) since.current = now;
+        lastFace.current = now;
+        if (now - since.current >= PRESENCE_MS) setPresent(true);
+        return;
+      }
+      since.current = 0;
+      if (lastFace.current > 0 && now - lastFace.current > ABSENCE_MS) setPresent(false);
+    },
+    camera.phase === 'ready',
+  );
+
+  // Alguien llegó: lo primero que ve es su propia cara.
+  useEffect(() => {
+    if (present) setBeat(0);
+  }, [present]);
+
   const blockedTitle = releasing
     ? t('kiosk.attract.releasing')
     : maintenance
@@ -72,72 +134,134 @@ export function AttractScreen() {
         ? t('kiosk.attract.out_of_service_text')
         : t('kiosk.attract.no_bundle_text');
 
-  return (
-    <Shell footer={footerText ? <p className="kiosk-small kiosk-muted">{footerText}</p> : undefined} contentAlign="center">
-      <div className="kiosk-attract" data-testid="attract">
-        <div className="kiosk-attract__hero">
-          <h1>{publicName}</h1>
-          {status?.demoMode ? <StatusPill tone="info">{t('kiosk.common.demo')}</StatusPill> : null}
-          {!blocked && showPrices && from ? <p className="kiosk-lead">{t('kiosk.attract.from_price', { price: money(from) })}</p> : null}
-        </div>
-        {/* La imagen promocional es contenido, no decoración: se muestra completa y rota por
-            programación local (requisito 4.1), nunca detrás del texto. */}
-        {!blocked && images[slide] ? (
-          <div className="kiosk-attract__promo">
-            <img src={images[slide]} alt="" className="kiosk-attract__promo-img" />
-            {images.length > 1 ? (
-              <div className="kiosk-attract__dots" aria-hidden="true">
-                {images.map((src, i) => (
-                  <span key={src} className={i === slide ? 'is-active' : undefined} />
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-        {/* La familia: el recurso de marca que hace que la cabina se reconozca de lejos. */}
-        {!blocked ? (
-          <div className="kiosk-attract__family" aria-hidden="true">
-            {BLOB_VARIANTS.map((variant) => (
-              <BlobFace key={variant} variant={variant} size={104} animated />
-            ))}
-          </div>
-        ) : null}
-        {blocked ? (
+  if (blocked) {
+    return (
+      <Shell bleed marquee={<Marquee cadence="still" />} hideHeader hideLang>
+        <div className="kiosk-attract kiosk-attract--blocked" data-testid="attract">
           <Notice tone={maintenance || releasing ? 'info' : 'warn'} position="static" title={blockedTitle}>
             {blockedText}
           </Notice>
-        ) : (
-          <>
-            <div className="kiosk-attract__cta">
-              <BigButton size="xl" variant="primary" icon={<Icon name="camera" />} onClick={() => navigate(ROUTES.home)} data-testid="attract-cta">
-                {t('kiosk.attract.cta')}
-              </BigButton>
+        </div>
+      </Shell>
+    );
+  }
+
+  return (
+    <Shell bleed marquee={<Marquee cadence="call" />} hideHeader hideLang>
+      {/* Toda la pantalla es el objetivo táctil: quien llega no busca un botón, toca donde sea. */}
+      <button
+        type="button"
+        className="kiosk-attract"
+        data-beat={current.key}
+        data-testid="attract"
+        aria-label={t('kiosk.attract.cta')}
+        onClick={() => navigate(ROUTES.home)}
+      >
+        <div className="kiosk-attract__cartel">
+          {current.key === 'mirror' ? (
+            <div className="kiosk-attract__mirror">
+              <CameraView source={camera.source} loadingLabel={t('kiosk.attract.loading')} />
+              <LensEyes bundle={bundle} />
             </div>
-            {categories.length > 0 ? (
-              <div className="kiosk-stack" style={{ alignItems: 'center' }}>
-                <p className="kiosk-lead" style={{ margin: 0 }}>{t('kiosk.attract.featured')}</p>
-                <div className="kiosk-attract__featured">
-                  {categories.map(({ category, items }) => (
-                    <StatusPill key={category} tone="neutral" size="lg" icon={false}>
-                      {t(`kiosk.category.${category}`)} · {items.length}
-                    </StatusPill>
-                  ))}
-                </div>
+          ) : null}
+
+          {current.key === 'price' && showPrices && from ? (
+            <div className="kiosk-attract__price">
+              <span className="kiosk-attract__numeral" data-testid="attract-price">{money(from)}</span>
+              {shortest ? <span className="kiosk-attract__aside">{t('kiosk.common.minutes_approx', { minutes: Math.round(shortest / 60) })}</span> : null}
+              <div className="kiosk-attract__flock" aria-hidden="true">
+                {BLOB_VARIANTS.map((variant) => (
+                  <BlobFace key={variant} variant={variant} size={120} expression="curious" animated />
+                ))}
               </div>
-            ) : null}
-          </>
-        )}
-        <div className="kiosk-attract__notes">
-          <StatusPill tone={printerReady ? 'ok' : 'warn'} icon={<Icon name="print" />}>{printerReady ? t('kiosk.attract.print_available') : t('kiosk.attract.print_unavailable')}</StatusPill>
-          <span className="kiosk-small kiosk-muted">{t('kiosk.attract.privacy_short')}</span>
-          {configBool(bundle, 'kiosk.surveillanceNotice') ? <span className="kiosk-small kiosk-muted">{t('kiosk.attract.surveillance')}</span> : null}
+            </div>
+          ) : null}
+
+          {current.key === 'wall' ? <ResultWall count={views.filter((v) => v.availability.available).length} /> : null}
+
+          {current.key === 'howto' ? (
+            <div className="kiosk-attract__howto" aria-hidden="true">
+              {/* Tres formas actuando los tres pasos. Sin una palabra: se entiende mirando. */}
+              {([1, 3, 5] as BlobVariant[]).map((variant, i) => (
+                <div key={variant} className="kiosk-attract__step" style={{ animationDelay: `${i * 0.4}s` }}>
+                  <BlobFace variant={variant} size={200} expression={i === 2 ? 'grin' : 'happy'} animated />
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {current.key === 'invite' ? (
+            <div className="kiosk-attract__invite">
+              <span className="kiosk-attract__rotulo">{publicName}</span>
+              <div className="kiosk-attract__flock" aria-hidden="true">
+                {BLOB_VARIANTS.map((variant) => (
+                  <BlobFace key={variant} variant={variant} size={132} animated />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="kiosk-attract__repisa">
+          {showPrices && from && current.key !== 'price' ? (
+            <span className="kiosk-attract__desde">{t('kiosk.attract.from_price', { price: money(from) })}</span>
+          ) : null}
+        </div>
+
+        <div className="kiosk-attract__alcance">
+          <span className="kiosk-attract__cta">{t('kiosk.attract.cta')}</span>
+        </div>
+
+        <div className="kiosk-attract__zocalo">
+          <span>{t('kiosk.attract.privacy_short')}</span>
+          {configBool(bundle, 'kiosk.surveillanceNotice') ? <span>{t('kiosk.attract.surveillance')}</span> : null}
+          {footerText ? <span>{footerText}</span> : null}
+          {!printerReady ? <StatusPill tone="warn">{t('kiosk.attract.print_unavailable')}</StatusPill> : null}
           {(status?.notices ?? []).map((n) => (
             <StatusPill key={n.code} tone={n.kind === 'error' ? 'danger' : n.kind === 'warning' ? 'warn' : 'info'}>
               {tl(n.message)}
             </StatusPill>
           ))}
         </div>
-      </div>
+      </button>
     </Shell>
+  );
+}
+
+/**
+ * Los ojos del lente: el elemento por el que esta pantalla se recuerda.
+ *
+ * Nadie mira al lente, porque nadie sabe dónde está: mira su propia cara, que es lo que la
+ * pantalla le enseña. Dos ojos de la familia, quietos exactamente donde está la cámara física,
+ * resuelven eso sin letrero y sin idioma. Son lo único que se puede poner encima del espejo.
+ *
+ * El sitio del lente cambia con el modelo de aparato, así que llega por configuración.
+ */
+function LensEyes({ bundle }: { bundle: ConfigSource | undefined }) {
+  const x = configNumber(bundle, 'kiosk.lens.offsetX', 50);
+  const y = configNumber(bundle, 'kiosk.lens.offsetY', 6);
+  return (
+    <div className="kiosk-lens" style={{ left: `${x}%`, top: `${Math.max(3, y)}%` }} aria-hidden="true">
+      <span className="kiosk-lens__eye" />
+      <span className="kiosk-lens__eye" />
+    </div>
+  );
+}
+
+/** El muro: fichas cayendo, una por acento. Lo que la persona se lleva, en el idioma de la marca. */
+function ResultWall({ count }: { count: number }) {
+  const tiles = Math.max(4, Math.min(6, count || 6));
+  return (
+    <div className="kiosk-attract__wall" aria-hidden="true">
+      {Array.from({ length: tiles }, (_unused, i) => (
+        <div
+          key={i}
+          className="kiosk-attract__tile"
+          style={{ animationDelay: `${i * 0.24}s`, ['--psp-tile' as string]: `var(--psp-color-accent-${(i % 6) + 1})` }}
+        >
+          <BlobFace variant={((i % 6) + 1) as BlobVariant} size={140} />
+        </div>
+      ))}
+    </div>
   );
 }

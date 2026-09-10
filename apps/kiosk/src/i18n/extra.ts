@@ -8,9 +8,15 @@
  * Cuando una clave se mueve al paquete, se elimina de aquí (el paquete tiene prioridad).
  */
 import type { Locale } from '@psp/i18n';
+import { SCREEN_TABLES } from './pantallas';
 
-type Pair = readonly [es: string, en: string];
+export type Pair = readonly [es: string, en: string];
 
+/**
+ * Los textos que pertenecen a una sola pantalla viven en `pantallas/`, un archivo por pantalla,
+ * para que dos personas puedan trabajar en pantallas distintas sin editar el mismo archivo.
+ * Aquí queda lo común y lo que todavía no se ha repartido.
+ */
 export const EXTRA_TABLE: Record<string, Pair> = {
   /* ---------- común ---------- */
   'kiosk.common.continue': ['Continuar', 'Continue'],
@@ -779,10 +785,13 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.tech.simulation.scenario.eyes_closed': ['Ojos cerrados', 'Eyes closed'],
 };
 
+/** Todo junto: lo común de arriba más lo de cada pantalla. Las claves no se repiten. */
+const ALL: Record<string, Pair> = { ...EXTRA_TABLE, ...SCREEN_TABLES };
+
 /** Catálogos derivados: `es` y `en` con exactamente las mismas claves. */
 export const EXTRA_MESSAGES: Record<Locale, Record<string, string>> = {
-  es: Object.fromEntries(Object.entries(EXTRA_TABLE).map(([key, pair]) => [key, pair[0]])),
-  en: Object.fromEntries(Object.entries(EXTRA_TABLE).map(([key, pair]) => [key, pair[1]])),
+  es: Object.fromEntries(Object.entries(ALL).map(([key, pair]) => [key, pair[0]])),
+  en: Object.fromEntries(Object.entries(ALL).map(([key, pair]) => [key, pair[1]])),
 };
 
 /** Exportes planos para la compuerta `i18n-parity` (`tools/gates`), que compara `es` y `en`. */

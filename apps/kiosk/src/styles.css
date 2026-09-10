@@ -1,4 +1,5 @@
-/* Estilos propios del kiosco: disposición de pantallas sobre los tokens de @psp/ui. */
+/* Estilos propios del kiosco. Lo común vive aquí; cada pantalla trae su archivo en `styles/`. */
+@import './styles/pantallas.css';
 html, body, #root { height: 100%; margin: 0; overscroll-behavior: none; touch-action: manipulation; }
 body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .kiosk-boot { min-height: 100vh; display: grid; place-content: center; gap: 16px; text-align: center; font-size: 1.5rem; }
@@ -20,21 +21,6 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .kiosk-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .kiosk-list li { display: flex; justify-content: space-between; gap: 16px; font-size: 1.1rem; }
 .kiosk-list li span:last-child { font-weight: 600; text-align: right; }
-
-/* Atracción */
-.kiosk-attract { position: relative; min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
-.kiosk-attract__promo { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0 16px; }
-.kiosk-attract__promo-img { max-height: 34vh; max-width: min(88vw, 520px); width: auto; border-radius: 20px; box-shadow: 0 12px 32px rgba(11, 27, 63, 0.18); animation: kiosk-attract-fade 0.6s ease; }
-.kiosk-attract__dots { display: flex; gap: 8px; }
-.kiosk-attract__dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--psp-color-muted, #94a3b8); opacity: 0.4; }
-.kiosk-attract__dots span.is-active { opacity: 1; background: var(--psp-color-primary, #1E5EFF); }
-@keyframes kiosk-attract-fade { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: none; } }
-.kiosk-attract__hero { position: relative; z-index: 1; text-align: center; padding: 32px 16px 0; }
-.kiosk-attract__hero h1 { font-size: clamp(2.2rem, 6vw, 4rem); margin: 0 0 12px; }
-.kiosk-attract__cta { position: relative; z-index: 1; display: flex; justify-content: center; padding: 8px 16px; }
-.kiosk-attract__cta button { min-height: 120px; font-size: 1.8rem; width: min(90vw, 640px); }
-.kiosk-attract__featured { position: relative; z-index: 1; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-.kiosk-attract__notes { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; font-size: 1rem; padding-bottom: 8px; }
 
 /* Cámara */
 .kiosk-camera { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #111; border-radius: 20px; overflow: hidden; }
@@ -82,11 +68,6 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .kiosk-handoff__sim { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
 
-/* La familia en atracción */
-.kiosk-attract__family { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: center; flex-wrap: wrap; padding: 0 16px; }
-.kiosk-attract__family > * + * { margin-left: -26px; }
-.kiosk-attract__family > *:nth-child(even) { transform: translateY(10px); }
-@media (max-width: 700px) { .kiosk-attract__family > * { width: 72px; height: 72px; } }
 
 /* Cuenta regresiva con personalidad */
 .kiosk-capture__countdown-figure { display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -133,3 +114,18 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 }
 .kiosk-sticker:not([data-active='true']) .kiosk-sticker__remove { opacity: 0.85; }
 @media (prefers-reduced-motion: reduce) { .kiosk-sticker { transition: none; } }
+
+/* Zona oculta del panel técnico para las pantallas a sangre: cinco toques en la esquina superior
+   izquierda. Invisible a propósito, pero con área táctil de sobra para quien sabe que está ahí. */
+.kiosk-hidden-zone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 112px;
+  height: 112px;
+  z-index: 3;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  opacity: 0;
+}

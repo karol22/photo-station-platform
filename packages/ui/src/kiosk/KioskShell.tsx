@@ -14,6 +14,16 @@ export interface KioskShellProps extends Omit<ComponentProps<'div'>, 'children'>
   /** Capa de fondo (imágenes de atracción, degradados). */
   background?: ReactNode;
   hideHeader?: boolean;
+  /**
+   * Modo a sangre: el color llega al borde del vidrio, sin márgenes ni encabezado.
+   *
+   * Es obligatorio donde la pantalla tiene que verse desde el pasillo o donde la persona se está
+   * mirando a sí misma. Un margen alrededor del color convierte la cabina en una ventana de
+   * aplicación, que es exactamente lo que no es.
+   */
+  bleed?: boolean;
+  /** La marquesina: la banda que no se mueve de sitio en ninguna pantalla. */
+  marquee?: ReactNode;
   /** Alineación vertical del contenido principal. */
   contentAlign?: 'start' | 'center';
   /** Texto accesible del área principal. */
@@ -34,6 +44,8 @@ export function KioskShell({
   footer,
   background,
   hideHeader = false,
+  bleed = false,
+  marquee,
   contentAlign = 'start',
   mainLabel,
   className,
@@ -41,7 +53,8 @@ export function KioskShell({
   ...rest
 }: KioskShellProps) {
   return (
-    <div className={cx('psp-kiosk-shell', className)} {...rest}>
+    <div className={cx('psp-kiosk-shell', className)} data-bleed={bleed ? 'true' : undefined} {...rest}>
+      {marquee}
       {background !== undefined ? (
         <div className="psp-kiosk-shell__background" aria-hidden="true">
           {background}

@@ -1,0 +1,150 @@
+/* Pantalla: atracción. El cartel de la cabina. */
+
+/* ==========================================================================
+   ATRACCIÓN
+   El cartel de la cabina. Cinco bandas fijas, color a sangre, cero contenedores.
+   Las bandas son las mismas en todas las pantallas del recorrido social: lo que
+   se mira arriba, lo que se toca abajo, y nada táctil a la altura de la cara.
+   ========================================================================== */
+.kiosk-attract {
+  display: grid;
+  /* CARTEL 1060 · REPISA 300 · ALCANCE 300 · ZÓCALO 140, sobre 1920 menos la marquesina. */
+  grid-template-rows: minmax(0, 1060fr) 300fr 300fr 140fr;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--psp-color-text);
+  text-align: center;
+  background: var(--psp-field);
+  /* El campo corta seco entre compases: desde el pasillo se percibe antes «cambió de color»
+     que «cambió de contenido». */
+  transition: background-color 0ms;
+}
+/* Cada compás es una habitación: fija su propio campo, y la luz y la profundidad se derivan de
+   él. Así el relieve y el halo siempre pertenecen al color que se está viendo, y no al primero
+   de la paleta. */
+.kiosk-attract[data-beat] {
+  background: var(--psp-field);
+  --psp-rincon: color-mix(in srgb, var(--psp-field) 72%, var(--psp-color-text));
+  --psp-aro: color-mix(in srgb, var(--psp-field) 38%, #ffffff);
+  --psp-lift: 12px 12px 0 var(--psp-rincon);
+}
+.kiosk-attract[data-beat='mirror'] { --psp-field: var(--psp-color-accent-5); }
+.kiosk-attract[data-beat='price'] { --psp-field: var(--psp-color-accent-3); }
+.kiosk-attract[data-beat='wall'] { --psp-field: var(--psp-color-accent-1); }
+.kiosk-attract[data-beat='howto'] { --psp-field: var(--psp-color-accent-4); }
+.kiosk-attract[data-beat='invite'] { --psp-field: var(--psp-color-accent-6); }
+
+.kiosk-attract--blocked { display: grid; place-content: center; padding: 6vmin; min-height: 100%; }
+
+/* CARTEL: una sola cosa, a sangre. Nunca lleva un objetivo táctil. */
+.kiosk-attract__cartel { position: relative; display: grid; place-items: center; overflow: hidden; min-height: 0; }
+
+/* El espejo llena el cartel completo. La persona vino a verse. */
+.kiosk-attract__mirror { position: absolute; inset: 0; }
+.kiosk-attract__mirror .kiosk-camera { width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; background: transparent; }
+
+/* Los ojos del lente: quietos donde está la cámara. */
+.kiosk-lens { position: absolute; transform: translate(-50%, -50%); display: flex; gap: 2.6vw; pointer-events: none; z-index: 2; }
+.kiosk-lens__eye {
+  width: 4.4vw; height: 5.6vw; border-radius: 50%;
+  background: var(--psp-color-text);
+  animation: kiosk-blink 6s ease-in-out infinite;
+}
+.kiosk-lens__eye:nth-child(2) { animation-delay: 0.06s; }
+@keyframes kiosk-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.06); }
+}
+
+/* El precio como titular, no como letra chica. */
+.kiosk-attract__price { display: grid; gap: 2vh; place-items: center; }
+.kiosk-attract__numeral {
+  font-size: clamp(6rem, 26vw, 18rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.82;
+  font-variant-numeric: tabular-nums;
+}
+.kiosk-attract__aside { font-size: clamp(1.4rem, 3.4vw, 2.6rem); font-weight: 700; opacity: 0.8; }
+/* Canto de tinta en cada forma: sin él, la que comparte color con el campo desaparece y la
+   bandada queda coja. Es un contorno, no una sombra. */
+.kiosk-attract__flock { display: flex; align-items: flex-end; justify-content: center; }
+.kiosk-attract__flock .psp-blob path { stroke: var(--psp-color-text); stroke-width: 3; paint-order: stroke fill; }
+/* Las medidas en píxeles que trae el componente son una reserva: en el cartel manda el ancho de
+   la pantalla, porque esto es un cartel y no una tarjeta. */
+.kiosk-attract__flock .psp-blob { width: 13vw; height: auto; }
+.kiosk-attract__flock > * + * { margin-left: -2.2vw; }
+.kiosk-attract__flock > *:nth-child(even) { transform: translateY(1.4vh); }
+
+.kiosk-attract__rotulo {
+  display: block;
+  font-size: clamp(3rem, 12vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 0.9;
+  text-wrap: balance;
+}
+.kiosk-attract__invite { display: grid; gap: 4vh; place-items: center; padding: 0 4vw; width: 100%; }
+.kiosk-attract__invite .psp-blob { width: 14vw; height: auto; }
+
+/* El muro: las fichas caen y se quedan. */
+.kiosk-attract__wall {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-content: center;
+  gap: 2.4vw;
+  width: 100%;
+  height: 100%;
+  padding: 3vh 6vw;
+}
+.kiosk-attract__tile .psp-blob { width: 58%; height: auto; }
+.kiosk-attract__tile {
+  display: grid; place-items: center; aspect-ratio: 4 / 5;
+  border: 4px solid var(--psp-color-text);
+  background: var(--psp-tile);
+  box-shadow: var(--psp-lift);
+  animation: kiosk-tile-drop 620ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes kiosk-tile-drop { from { opacity: 0; transform: translate3d(0, -28%, 0) rotate(-4deg); } to { opacity: 1; transform: none; } }
+
+/* Los tres pasos, actuados. */
+.kiosk-attract__howto { display: flex; align-items: center; justify-content: center; gap: 4vw; width: 100%; }
+.kiosk-attract__howto .psp-blob { width: 26vw; height: auto; }
+.kiosk-attract__howto .psp-blob path { stroke: var(--psp-color-text); stroke-width: 2.4; paint-order: stroke fill; }
+.kiosk-attract__step { animation: kiosk-step-pop 900ms ease both; }
+@keyframes kiosk-step-pop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: none; } }
+
+/* REPISA: el dato que acompaña, a la altura de la mano pero sin ser un botón. */
+.kiosk-attract__repisa { display: grid; place-items: center; }
+.kiosk-attract__desde { font-size: clamp(1.6rem, 4.4vw, 3.2rem); font-weight: 800; }
+
+/* ALCANCE: la única acción, a la altura del pulgar de alguien de pie. */
+.kiosk-attract__alcance { display: grid; place-items: center; padding: 0 4vw; }
+.kiosk-attract__cta {
+  display: block;
+  padding: 0.5em 1em;
+  background: var(--psp-color-text);
+  color: var(--psp-aro);
+  font-size: clamp(1.8rem, 5.6vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  box-shadow: var(--psp-lift);
+  animation: kiosk-cta-pulse 2.4s ease-in-out infinite;
+}
+@keyframes kiosk-cta-pulse { 0%, 100% { transform: none; } 50% { transform: scale(1.035); } }
+
+/* ZÓCALO: lo que la operación obliga a decir, en tinta plena y fuera del camino. */
+.kiosk-attract__zocalo {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 1.4vw; padding: 0 4vw;
+  font-size: clamp(0.8rem, 1.9vw, 1.2rem); font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kiosk-attract__cta, .kiosk-attract__tile, .kiosk-attract__step, .kiosk-lens__eye { animation: none; }
+}
+

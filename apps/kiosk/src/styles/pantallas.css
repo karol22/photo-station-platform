@@ -1,0 +1,12 @@
+/* Importa el archivo de cada pantalla. Una línea por pantalla: así dos personas que trabajan en
+   pantallas distintas nunca tocan las mismas líneas. */
+@import './atraccion.css';
+@import './elegir.css';
+@import './consentimiento.css';
+@import './pago.css';
+@import './captura.css';
+@import './revision.css';
+@import './seleccion.css';
+@import './edicion.css';
+@import './composicion.css';
+@import './cierre.css';
