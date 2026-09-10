@@ -115,3 +115,21 @@ describe('SoundBoard', () => {
     expect(fake.started.length).toBe(afterFirst);
   });
 });
+
+describe('avisos nuevos', () => {
+  it('el aterrizaje es discreto: no compite con el obturador', () => {
+    const land = SOUND_SCORES.land.reduce((max, t) => Math.max(max, t.gain), 0);
+    const shutter = SOUND_SCORES.shutter.reduce((max, t) => Math.max(max, t.gain), 0);
+    expect(land).toBeLessThan(shutter);
+  });
+
+  it('el cobro aprobado sube de tono, que es como se oye que algo salió bien', () => {
+    const [primero, segundo] = SOUND_SCORES.approved;
+    expect(segundo!.hz).toBeGreaterThan(primero!.hz);
+  });
+
+  it('los dos nuevos caben en el presupuesto de medio segundo', () => {
+    expect(cueDuration('land')).toBeLessThanOrEqual(0.5);
+    expect(cueDuration('approved')).toBeLessThanOrEqual(0.5);
+  });
+});

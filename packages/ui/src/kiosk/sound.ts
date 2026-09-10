@@ -4,7 +4,12 @@
  * Una cabina en una plaza suena. No suena mucho: el contrato de un local comercial suele
  * restringir el audio continuo, y una instrucción que sólo viaja por el oído deja fuera a quien
  * no oye. Así que aquí no hay música ni voz: hay avisos cortos que confirman lo que la pantalla
- * ya dice por su cuenta. Si el volumen queda en cero, la cabina funciona igual.
+ * ya dice por su cuenta.
+ *
+ * Con el volumen en cero no se pierde una sola instrucción, porque cada aviso tiene gemelo visual
+ * obligatorio: la cuenta se ve en el anillo, el obturador en el destello y en los ojos que se
+ * cierran, el aterrizaje en el foco que se enciende, la tanda completa en las formas que entran,
+ * y el cobro aprobado en la pantalla entera cambiando de color.
  *
  * No se empaqueta ni un archivo de audio: los avisos se sintetizan con osciladores. Eso deja el
  * paquete sin activos que descargar, funciona sin conexión y suena igual en cualquier aparato.
@@ -25,6 +30,10 @@ export type SoundCue =
   | 'complete'
   /** Confirmación de un toque. */
   | 'tap'
+  /** Una miniatura aterriza en su hueco. */
+  | 'land'
+  /** El cobro quedó aprobado. */
+  | 'approved'
   /** Algo no se pudo hacer. */
   | 'reject';
 
@@ -70,6 +79,11 @@ export const SOUND_SCORES: Record<SoundCue, readonly SoundTone[]> = {
     { at: 0.3, hz: 1046.5, dur: 0.34, shape: 'triangle', gain: 0.6 },
   ],
   tap: [{ at: 0, hz: 1500, dur: 0.022, shape: 'sine', gain: 0.28 }],
+  land: [{ at: 0, hz: 440, dur: 0.12, shape: 'sine', gain: 0.22 }],
+  approved: [
+    { at: 0, hz: 523.25, dur: 0.1, shape: 'triangle', gain: 0.5 },
+    { at: 0.1, hz: 783.99, dur: 0.1, shape: 'triangle', gain: 0.5 },
+  ],
   reject: [
     { at: 0, hz: 320, dur: 0.1, shape: 'square', gain: 0.32 },
     { at: 0.11, hz: 240, dur: 0.16, shape: 'square', gain: 0.32 },

@@ -46,6 +46,14 @@ Una máquina puede ofrecer ambos recorridos, uno o ninguno, según su configurac
 
 ## Distancia con lo implementado
 
-El kiosco implementa el recorrido completo de extremo a extremo. La entrada es un catálogo por categoría y queda pendiente simplificarla a pocas opciones grandes. La cuenta regresiva ya lleva la familia de formas.
+El kiosco implementa el recorrido completo de extremo a extremo, con el ritmo de una fotocabina:
+se disparan seis tomas para cuatro huecos, un solo toque arranca la tanda entera y la máquina
+lleva el compás, elegir va antes que editar, y el estilo se elige una vez y se aplica a todas.
 
-Lo pendiente está registrado en `ops/state/PROGRESS.md`.
+La pantalla en reposo ya es un cartel: color a sangre, cinco bandas, una banda de focos que
+además es el único reloj, y un bucle de cinco compases que entra por el espejo en cuanto la
+cámara ve a alguien.
+
+Queda pendiente aplicar esa misma dirección visual al resto de las pantallas. El plan que la fija
+vive en `ops/campanas/rediseno-visual-kiosco/PLAN-VISUAL.md` y lo pendiente en
+`ops/state/PROGRESS.md`.
