@@ -1,9 +1,16 @@
 /**
- * Tira de filtros con vista previa real.
+ * El riel de estilos: la banda REPISA de la edición.
  *
- * Cada opción se calcula sobre la foto de la persona, no sobre una muestra genérica: se elige con
- * los ojos, no leyendo un nombre. Las miniaturas se generan a resolución muy baja, así que el
- * cálculo es barato incluso en un aparato modesto, y se recalculan sólo cuando cambia la foto.
+ * Cada opción se calcula sobre la foto de la persona, no sobre una muestra genérica ni sobre un
+ * nombre: se elige con los ojos, mirándose. Es el patrón que domina en las cabinas asiáticas y es
+ * el que convierte «elegir un filtro» en «verme de seis maneras».
+ *
+ * Los seis caben a la vez y no hay barra de desplazamiento: deslizar de pie, con alguien esperando
+ * detrás, es donde la gente se atora. Cada ficha lleva su propio acento de la marca, así que el
+ * riel también es la paleta: desde el pasillo se ve un bloque de colores vivos, no una lista.
+ *
+ * Las miniaturas se generan a resolución muy baja, así que el cálculo es barato incluso en un
+ * aparato modesto, y se recalculan sólo cuando cambia la foto.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { EditOp } from '@psp/contracts';
@@ -13,7 +20,7 @@ import { rasterToDataUrl } from '@psp/imaging/browser';
 import { useT } from '../i18n';
 
 /** Ancho de la miniatura. Suficiente para juzgar el color, ridículo para el procesador. */
-const THUMB_WIDTH = 132;
+const THUMB_WIDTH = 160;
 
 export interface FilterOption {
   key: string;
@@ -75,27 +82,33 @@ export function FilterStrip({ source, options, activeKey, onPick }: {
   if (options.length <= 1) return null;
 
   return (
-    <div className="kiosk-filters" data-testid="filter-strip">
-      <p className="kiosk-small kiosk-muted">{t('kiosk.edit.filters')}</p>
-      <div className="kiosk-filters__row">
-        {options.map((option) => (
-          <button
+    <div className="kiosk-filters kiosk-edicion__looks" data-testid="filter-strip">
+      <ul className="kiosk-filters__row" role="group" aria-label={t('kiosk.edit.looks_label')}>
+        {options.map((option, i) => (
+          <li
             key={option.key}
-            type="button"
-            className="kiosk-filters__item"
-            aria-pressed={activeKey === option.key}
-            onClick={() => onPick(option)}
-            data-testid={`filter-${option.key}`}
+            className="kiosk-filters__cell"
+            // Cada estilo lleva su acento de la marca: el riel es también la paleta. El índice se
+            // reparte entre los seis para que dos estilos vecinos nunca compartan color.
+            style={{ ['--psp-look' as string]: `var(--psp-color-accent-${(i % 6) + 1})` }}
           >
-            {thumbs[option.key] ? (
-              <img src={thumbs[option.key]} alt="" className="kiosk-filters__thumb" />
-            ) : (
-              <span className="kiosk-filters__thumb kiosk-filters__thumb--empty" />
-            )}
-            <span className="kiosk-filters__label">{t(`kiosk.edit.filter.${option.key}`)}</span>
-          </button>
+            <button
+              type="button"
+              className="kiosk-filters__item"
+              aria-pressed={activeKey === option.key}
+              onClick={() => onPick(option)}
+              data-testid={`filter-${option.key}`}
+            >
+              {thumbs[option.key] ? (
+                <img src={thumbs[option.key]} alt="" className="kiosk-filters__thumb" />
+              ) : (
+                <span className="kiosk-filters__thumb kiosk-filters__thumb--empty" />
+              )}
+              <span className="kiosk-filters__label">{t(`kiosk.edit.filter.${option.key}`)}</span>
+            </button>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }

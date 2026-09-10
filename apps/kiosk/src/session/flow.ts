@@ -99,9 +99,15 @@ export function nextScreen(product: Product, current: SessionStage, opts: FlowOp
   return stage ? screenForStage(stage, product) : ROUTES.finish;
 }
 
+/**
+ * Orden de referencia para una etapa que no está en el plan del producto: se salta a la primera
+ * posterior que sí lo esté. `selecting` va antes de `editing` porque ése es el orden real del
+ * recorrido —primero se elige y después se estiliza—; al revés, una sesión guardada en `selecting`
+ * se saltaba la edición entera al recuperarse.
+ */
 const CANONICAL_ORDER: SessionStage[] = [
-  'started', 'product_selected', 'configuring', 'consent', 'awaiting_payment', 'capturing', 'reviewing', 'editing',
-  'selecting', 'composing', 'confirming', 'printing', 'delivering', 'finishing', 'done',
+  'started', 'product_selected', 'configuring', 'consent', 'awaiting_payment', 'capturing', 'reviewing', 'selecting',
+  'editing', 'composing', 'confirming', 'printing', 'delivering', 'finishing', 'done',
 ];
 
 /** ¿Hay que cobrar? Sólo en modo `paid`, con precio final > 0 y fuera de demo. */

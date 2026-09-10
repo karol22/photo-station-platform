@@ -1,22 +1,36 @@
 /**
- * Edición: sólo las herramientas de `product.editing.allowedTools` (documental = lista segura del
- * preset). Sliders táctiles, toggles, rotación fina, presets permitidos, marcos/stickers de la
- * experiencia; deshacer/rehacer/restaurar/antes-después. Aplica con `applyEditOps` sobre el raster
- * y sube `resultBase64`.
+ * Edición: la pantalla donde la foto se vuelve un recuerdo (PANTALLA 7).
+ *
+ * En el recorrido social hay **una sola decisión**: cuál de los estilos. Va a sangre, la foto
+ * ocupa la banda alta entera, y los estilos se eligen mirándose —cada miniatura está renderizada
+ * sobre la cara de quien está enfrente, no sobre una muestra genérica ni sobre un nombre—. La
+ * salida está presente desde el segundo cero: nunca hay que buscar cómo terminar.
+ *
+ * Lo que aquí murió, y por qué: la rejilla lienzo+inspector, el panel de herramientas con barra de
+ * desplazamiento y la vista previa como tarjeta blanca con sombra. Eso es un editor de escritorio
+ * y esto es una cabina: de pie, a metro y medio, con alguien esperando detrás. Cero deslizadores,
+ * cero listas con scroll, cero antes/después —enseñar el «antes» rompe el hechizo y cuesta un
+ * toque—, y ningún objetivo táctil por encima de la banda REPISA.
+ *
+ * En el recorrido documental no aplica nada de lo anterior: ahí cada imagen es un trámite
+ * distinto, se edita foto por foto y los ajustes finos siguen existiendo, porque lo que se juzga
+ * es la fidelidad y no el gusto.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EditOp, EditingTool } from '@psp/contracts';
 import { EDIT_OPS, applyEditOps, editingPresetToOps, validateEditOps, type EditOpKey, type Raster } from '@psp/imaging';
 import { canvasToRaster, loadRaster, rasterToCanvas, rasterToDataUrl } from '@psp/imaging/browser';
-import { BigButton, Icon, IconButton, Spinner, Toggle, TouchSlider } from '@psp/ui';
+import { BigButton, Icon, IconButton, Marquee, Spinner, Toggle, TouchSlider } from '@psp/ui';
 import { FilterStrip, filterOptions, type FilterOption } from '../components/FilterStrip';
 import { StickerLayer, type PlacedSticker } from '../components/StickerLayer';
 import { stationApi } from '../api/station';
 import { SessionFrame } from '../components/SessionFrame';
+import { Shell } from '../components/Shell';
 import { useT } from '../i18n';
 import { useSession } from '../session/useSession';
+import { useSessionTimeout } from '../session/useSessionTimeout';
 import { useKioskStore } from '../store';
-import { resolveAssetUrl } from '../theme/assets';
+import { configString, resolveAssetUrl } from '../theme/assets';
 
 type SliderKey = 'brightness' | 'contrast' | 'exposure' | 'saturation' | 'temperature';
 const SLIDERS: Array<{ key: SliderKey; param: string; min: number; max: number; step: number }> = [
@@ -35,6 +49,14 @@ const PREVIEW_MAX = 900;
  */
 const PREVIEW_LIVE = 360;
 const SETTLE_MS = 220;
+
+/**
+ * Cuánto suaviza «un poquito». Es piel y luz, nunca geometría de la cara: nadie se agranda los
+ * ojos ni se afina la nariz, porque el default de 2026 es que la persona siga reconociéndose.
+ * Vive aquí, y no en la interfaz, porque no es una preferencia que se pregunte: es un valor de
+ * producto, y su casa definitiva es una clave de bundle cuando exista.
+ */
+const RETOUCH_AMOUNT = 0.55;
 
 export function EditScreen() {
   const { t, tl } = useT();
@@ -130,8 +152,6 @@ export function EditScreen() {
     };
   }, [original, ops, frames, stickers, bundle, presetMap, settled]);
 
-  if (!session || !product) return null;
-
   const push = (next: EditOp[], options: { transient?: boolean } = {}) => {
     const valid = validateEditOps(next, allowed);
     const kept = next.filter((op) => !valid.rejected.includes(op));
@@ -177,7 +197,7 @@ export function EditScreen() {
   const applyToWholeSet = !isDocument && captures.length > 1;
 
   const save = async () => {
-    if (!capture || !original) return;
+    if (!session || !capture || !original) return;
     setSaving(true);
     setSavedCount(0);
     const toolsUsed = [...new Set(ops.map((o) => (o.op in EDIT_OPS ? EDIT_OPS[o.op as EditOpKey].tool : undefined)).filter((x): x is EditingTool => !!x))];
@@ -209,12 +229,27 @@ export function EditScreen() {
   };
 
   /**
+   * Una sola salida en la banda de alcance. Sin operaciones no hay nada que componer, así que
+   * termina sin volver a escribir cuatro fotos idénticas a las originales: en un aparato modesto
+   * ese trabajo son segundos de la persona a cambio de nada.
+   */
+  const finish = () => {
+    if (saving) return;
+    void (ops.length === 0 ? skip() : save());
+  };
+
+  // El reloj de la pantalla es la marquesina: los focos se van apagando. Nunca hay un contador en
+  // rojo sobre la foto de nadie. En documental lo trae el marco de sesión.
+  const timeout = useSessionTimeout(!isDocument, undefined, { onAutoAdvance: () => void skip() });
+
+  if (!session || !product) return null;
+
+  /**
    * En el recorrido social la interfaz es la tira de estilos y nada más: cada deslizador es una
    * decisión que no cambia el resultado lo suficiente para pagarla con el tiempo de la fila.
    * Los ajustes finos siguen existiendo donde importan, que es el trámite documental.
    */
   const has = (tool: EditingTool) => isDocument && allowed.includes(tool);
-
 
   const endsWith = (list: EditOp[], tail: EditOp[]): boolean =>
     tail.length > 0 &&
@@ -228,6 +263,15 @@ export function EditScreen() {
     const manual = current ? ops.slice(0, ops.length - current.ops.length) : ops;
     push([...manual, ...option.ops]);
   };
+
+  /** El único control de retoque: dos estados, sin jerga, sin porcentajes y sin nombres de la cara. */
+  const canRetouch = !isDocument && allowed.includes('filterIntensity');
+  const retouching = ops.some((o) => o.op === 'smoothSkin');
+  const setRetouch = (on: boolean) => {
+    const others = ops.filter((o) => o.op !== 'smoothSkin');
+    push(on ? [...others, { op: 'smoothSkin', params: { amount: RETOUCH_AMOUNT } }] : others);
+  };
+
   /**
    * Las pegatinas colocadas se leen de las propias ops, no de un estado paralelo: así deshacer y
    * rehacer las mueven igual que a todo lo demás y no hay dos verdades que se puedan separar.
@@ -283,96 +327,145 @@ export function EditScreen() {
   const canUndo = cursor > 0;
   const canRedo = cursor < history.length - 1;
 
-  return (
-    <SessionFrame title={t('kiosk.edit.title')} onAutoAdvance={() => void skip()}>
-      {applyToWholeSet ? (
-        <p className="kiosk-lead">{t('kiosk.edit.applies_to_all', { n: captures.length })}</p>
-      ) : captures.length > 1 ? (
-        <p className="kiosk-lead">{t('kiosk.common.photo_n_of_m', { n: captureIndex + 1, m: captures.length })}</p>
+  const photo = (
+    <div
+      className="kiosk-edicion__foto"
+      // La proporción real de la foto: el marco se ciñe a ella, así que una pegatina cae donde el
+      // dedo la suelta y no desplazada por una banda de campo entre el borde y la imagen.
+      style={{ ['--psp-foto-ratio' as string]: original ? `${original.width} / ${original.height}` : undefined }}
+    >
+      {preview ? <img src={preview} alt={t('kiosk.edit.title')} data-testid="edit-preview" /> : <Spinner size="xl" label={t('kiosk.common.loading')} />}
+      {stickers.length > 0 && original && preview ? (
+        <StickerLayer
+          stickers={placed}
+          onChange={setPlaced}
+          imageWidth={original.width}
+          imageHeight={original.height}
+          removeLabel={t('kiosk.edit.remove_sticker')}
+        />
       ) : null}
-      <div className="kiosk-edit">
-        <div className="kiosk-stack">
-          <div className="kiosk-preview kiosk-preview--stickers" style={{ position: 'relative' }}>
-            {preview || (showBefore && capture) ? <img src={showBefore ? capture?.url : preview} alt={t('kiosk.edit.title')} data-testid="edit-preview" /> : <Spinner size="xl" label={t('kiosk.common.loading')} />}
-            {stickers.length > 0 && original && !showBefore ? (
-              <StickerLayer
-                stickers={placed}
-                onChange={setPlaced}
-                imageWidth={original.width}
-                imageHeight={original.height}
-                removeLabel={t('kiosk.edit.remove_sticker')}
-              />
+    </div>
+  );
+
+  if (!isDocument) {
+    return (
+      <Shell bleed hideHeader hideLang marquee={<Marquee cadence="wait" remaining={timeout.total > 0 ? timeout.remaining / timeout.total : 1} />}>
+        <div className="kiosk-edicion" data-testid="edit">
+          {/* CARTEL: la foto y nada más, a sangre y sin tarjeta debajo. */}
+          <div className="kiosk-edicion__cartel">{photo}</div>
+
+          {/* REPISA: el riel de estilos y, debajo, la fila de accesorios. */}
+          <div className="kiosk-edicion__repisa">
+            <FilterStrip source={original} options={filters} activeKey={typeof activeFilter === 'string' ? activeFilter : 'none'} onPick={pickFilter} />
+            {/*
+              Hueco previsto para los accesorios que se anclan al rostro (sombrero, gafas, bigote) y
+              para la herramienta de texto: el componente nuevo se monta AQUÍ dentro, como una fila
+              más de esta misma banda, y hereda su altura y su área táctil. Hoy lo ocupan los
+              marcos y las pegatinas que declara la experiencia; cuando llegue la fila anclada al
+              rostro, convive con ellos en el mismo contenedor sin tocar el resto de la pantalla.
+            */}
+            {frames.length > 0 || stickers.length > 0 ? (
+              <div className="kiosk-edicion__accesorios" data-slot="accesorios" role="group" aria-label={t('kiosk.edit.props_label')}>
+                {frames.map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className="kiosk-edicion__accesorio"
+                    aria-pressed={ops.some((o) => o.op === 'frame' && o.params['assetId'] === id)}
+                    onClick={() => setOverlay('frame', ops.some((o) => o.op === 'frame' && o.params['assetId'] === id) ? undefined : id)}
+                  >
+                    <img src={resolveAssetUrl(bundle, id)} alt="" />
+                  </button>
+                ))}
+                {/* Tocar agrega otra: caben varias y cada una se arrastra a donde quiera. */}
+                {stickers.map((id) => (
+                  <button key={id} type="button" className="kiosk-edicion__accesorio" onClick={() => addSticker(id)} data-testid={`sticker-${id}`}>
+                    <img src={resolveAssetUrl(bundle, id)} alt="" />
+                  </button>
+                ))}
+              </div>
             ) : null}
           </div>
-          {filters.length > 1 ? (
-            <FilterStrip source={original} options={filters} activeKey={typeof activeFilter === 'string' ? activeFilter : 'none'} onPick={pickFilter} />
-          ) : null}
+
+          {/* ALCANCE: la salida, presente desde el segundo cero, y el único control de retoque. */}
+          <div className="kiosk-edicion__alcance">
+            <button type="button" className="kiosk-edicion__accion" disabled={!original || saving} onClick={finish} data-testid="edit-apply">
+              {saving
+                ? applyToWholeSet
+                  ? t('kiosk.edit.applying_n', { n: savedCount + 1, m: captures.length })
+                  : t('kiosk.edit.applying')
+                : t('kiosk.edit.looks_good')}
+            </button>
+            {canRetouch ? (
+              <div className="kiosk-edicion__retoque" role="group" aria-label={t('kiosk.edit.retouch_label')}>
+                <button type="button" className="kiosk-edicion__ficha" aria-pressed={!retouching} onClick={() => setRetouch(false)} data-testid="retouch-none">
+                  {t('kiosk.edit.retouch_none')}
+                </button>
+                <button type="button" className="kiosk-edicion__ficha" aria-pressed={retouching} onClick={() => setRetouch(true)} data-testid="retouch-soft">
+                  {t('kiosk.edit.retouch_soft')}
+                </button>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="kiosk-edicion__zocalo">
+            {applyToWholeSet ? <span>{t('kiosk.edit.applies_to_all', { n: captures.length })}</span> : null}
+            <span>{bundle?.machine.code}</span>
+            {configString(bundle, 'branding.footerText') ? <span>{configString(bundle, 'branding.footerText')}</span> : null}
+          </div>
+        </div>
+      </Shell>
+    );
+  }
+
+  return (
+    <SessionFrame title={t('kiosk.edit.title')} onAutoAdvance={() => void skip()}>
+      {captures.length > 1 ? <p className="kiosk-lead">{t('kiosk.common.photo_n_of_m', { n: captureIndex + 1, m: captures.length })}</p> : null}
+      <div className="kiosk-edicion-doc">
+        <div className="kiosk-edicion-doc__vista">
+          <div className="kiosk-edicion-doc__marco">
+            {preview || (showBefore && capture) ? <img src={showBefore ? capture?.url : preview} alt={t('kiosk.edit.title')} data-testid="edit-preview" /> : <Spinner size="xl" label={t('kiosk.common.loading')} />}
+          </div>
           <div className="kiosk-row" style={{ justifyContent: 'center' }}>
             <IconButton label={t('kiosk.edit.undo')} icon={<Icon name="back" />} size="lg" variant="outline" showLabel disabled={!canUndo} onClick={() => setCursor(cursor - 1)} />
             <IconButton label={t('kiosk.edit.redo')} icon={<Icon name="forward" />} size="lg" variant="outline" showLabel disabled={!canRedo} onClick={() => setCursor(cursor + 1)} />
             <IconButton label={t('kiosk.edit.reset')} icon={<Icon name="retry" />} size="lg" variant="outline" showLabel disabled={ops.length === 0} onClick={() => push([])} />
+            {/* Comparar sólo existe aquí: es la prueba de que la imagen de trámite no se alteró. */}
             <IconButton label={showBefore ? t('kiosk.edit.after') : t('kiosk.edit.before')} icon={<Icon name="image" />} size="lg" variant={showBefore ? 'primary' : 'outline'} showLabel onPointerDown={() => setShowBefore(true)} onPointerUp={() => setShowBefore(false)} onPointerLeave={() => setShowBefore(false)} />
           </div>
         </div>
-        <div className="kiosk-stack">
-          <div className="kiosk-edit__tools">
-            {allowed.length === 0 ? <p>{t('kiosk.edit.no_tools')}</p> : null}
-            {(isDocument ? SLIDERS.filter((s) => has(s.key)) : []).map((s) => (
-              <TouchSlider key={s.key} label={t(`kiosk.edit.tool.${s.key}`)} min={s.min} max={s.max} step={s.step} value={valueOf(s.key, s.param)} onChange={(v) => setParam(s.key, s.param, Math.round(v * 100) / 100)} centerMark formatValue={(v) => `${v > 0 ? '+' : ''}${Math.round(v * 100)}`} decreaseLabel={t('kiosk.common.previous')} increaseLabel={t('kiosk.common.next')} />
-            ))}
-            {has('levelRotation') ? <TouchSlider label={t('kiosk.edit.tool.rotate')} min={-15} max={15} step={0.5} value={valueOf('levelRotation', 'degrees')} onChange={(v) => setParam('levelRotation', 'degrees', v)} centerMark formatValue={(v) => `${v}°`} decreaseLabel={t('kiosk.edit.rotate_left')} increaseLabel={t('kiosk.edit.rotate_right')} /> : null}
-            {has('sharpen') ? <TouchSlider label={t('kiosk.edit.tool.sharpen')} min={0} max={1} step={0.1} value={valueOf('sharpen', 'amount')} onChange={(v) => setParam('sharpen', 'amount', v)} /> : null}
-            {has('vignette') ? <TouchSlider label={t('kiosk.edit.tool.vignette')} min={0} max={1} step={0.1} value={valueOf('vignette', 'strength')} onChange={(v) => setParam('vignette', 'strength', v)} /> : null}
-            {has('backgroundAdjust') ? <TouchSlider label={t('kiosk.edit.tool.backgrounds')} min={0} max={1} step={0.1} value={valueOf('backgroundAdjust', 'lighten')} onChange={(v) => setParam('backgroundAdjust', 'lighten', v)} /> : null}
-            {has('grayscale') ? <Toggle checked={ops.some((o) => o.op === 'grayscale')} onChange={() => toggleFlag('grayscale')} label={t('kiosk.edit.tool.grayscale')} /> : null}
-            {has('mirror') ? <Toggle checked={ops.some((o) => o.op === 'mirror')} onChange={() => toggleFlag('mirror')} label={t('kiosk.edit.tool.mirror')} /> : null}
-            {has('rotate') ? (
-              <div className="kiosk-row">
-                <BigButton variant="secondary" onClick={() => push([...ops, { op: 'rotate', params: { degrees: 270 } }])}>{t('kiosk.edit.rotate_left')}</BigButton>
-                <BigButton variant="secondary" onClick={() => push([...ops, { op: 'rotate', params: { degrees: 90 } }])}>{t('kiosk.edit.rotate_right')}</BigButton>
+        {/* Los ajustes finos, en columna y sin barra de desplazamiento: son pocos y caben. */}
+        <div className="kiosk-edicion-doc__ajustes">
+          {allowed.length === 0 ? <p>{t('kiosk.edit.no_tools')}</p> : null}
+          {SLIDERS.filter((s) => has(s.key)).map((s) => (
+            <TouchSlider key={s.key} label={t(`kiosk.edit.tool.${s.key}`)} min={s.min} max={s.max} step={s.step} value={valueOf(s.key, s.param)} onChange={(v) => setParam(s.key, s.param, Math.round(v * 100) / 100)} centerMark formatValue={(v) => `${v > 0 ? '+' : ''}${Math.round(v * 100)}`} decreaseLabel={t('kiosk.common.previous')} increaseLabel={t('kiosk.common.next')} />
+          ))}
+          {has('levelRotation') ? <TouchSlider label={t('kiosk.edit.tool.rotate')} min={-15} max={15} step={0.5} value={valueOf('levelRotation', 'degrees')} onChange={(v) => setParam('levelRotation', 'degrees', v)} centerMark formatValue={(v) => `${v}°`} decreaseLabel={t('kiosk.edit.rotate_left')} increaseLabel={t('kiosk.edit.rotate_right')} /> : null}
+          {has('sharpen') ? <TouchSlider label={t('kiosk.edit.tool.sharpen')} min={0} max={1} step={0.1} value={valueOf('sharpen', 'amount')} onChange={(v) => setParam('sharpen', 'amount', v)} /> : null}
+          {has('vignette') ? <TouchSlider label={t('kiosk.edit.tool.vignette')} min={0} max={1} step={0.1} value={valueOf('vignette', 'strength')} onChange={(v) => setParam('vignette', 'strength', v)} /> : null}
+          {has('backgroundAdjust') ? <TouchSlider label={t('kiosk.edit.tool.backgrounds')} min={0} max={1} step={0.1} value={valueOf('backgroundAdjust', 'lighten')} onChange={(v) => setParam('backgroundAdjust', 'lighten', v)} /> : null}
+          {has('grayscale') ? <Toggle checked={ops.some((o) => o.op === 'grayscale')} onChange={() => toggleFlag('grayscale')} label={t('kiosk.edit.tool.grayscale')} /> : null}
+          {has('mirror') ? <Toggle checked={ops.some((o) => o.op === 'mirror')} onChange={() => toggleFlag('mirror')} label={t('kiosk.edit.tool.mirror')} /> : null}
+          {has('rotate') ? (
+            <div className="kiosk-row">
+              <BigButton variant="secondary" onClick={() => push([...ops, { op: 'rotate', params: { degrees: 270 } }])}>{t('kiosk.edit.rotate_left')}</BigButton>
+              <BigButton variant="secondary" onClick={() => push([...ops, { op: 'rotate', params: { degrees: 90 } }])}>{t('kiosk.edit.rotate_right')}</BigButton>
+            </div>
+          ) : null}
+          {has('presets') && presets.length > 0 ? (
+            <div>
+              <p className="kiosk-small">{t('kiosk.edit.tool.presets')}</p>
+              <div className="kiosk-chips">
+                <button type="button" className="kiosk-chip" aria-pressed={!ops.some((o) => o.op === 'preset')} onClick={() => push(ops.filter((o) => o.op !== 'preset'))}>{t('kiosk.edit.no_preset')}</button>
+                {presets.map((p) => (
+                  <button key={p.id} type="button" className="kiosk-chip" aria-pressed={ops.some((o) => o.op === 'preset' && o.params['presetId'] === p.id)} onClick={() => applyPreset(p.id)}>
+                    {tl(p.name)}
+                  </button>
+                ))}
               </div>
-            ) : null}
-            {has('presets') && presets.length > 0 ? (
-              <div>
-                <p className="kiosk-small">{t('kiosk.edit.tool.presets')}</p>
-                <div className="kiosk-chips">
-                  <button type="button" className="kiosk-chip" aria-pressed={!ops.some((o) => o.op === 'preset')} onClick={() => push(ops.filter((o) => o.op !== 'preset'))}>{t('kiosk.edit.no_preset')}</button>
-                  {presets.map((p) => (
-                    <button key={p.id} type="button" className="kiosk-chip" aria-pressed={ops.some((o) => o.op === 'preset' && o.params['presetId'] === p.id)} onClick={() => applyPreset(p.id)}>
-                      {tl(p.name)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            {frames.length > 0 ? (
-              <div>
-                <p className="kiosk-small">{t('kiosk.edit.tool.frames')}</p>
-                <div className="kiosk-chips">
-                  <button type="button" className="kiosk-chip" aria-pressed={!ops.some((o) => o.op === 'frame')} onClick={() => setOverlay('frame', undefined)}>{t('kiosk.edit.no_frame')}</button>
-                  {frames.map((id) => (
-                    <button key={id} type="button" className="kiosk-chip" aria-pressed={ops.some((o) => o.op === 'frame' && o.params['assetId'] === id)} onClick={() => setOverlay('frame', id)}>
-                      <img src={resolveAssetUrl(bundle, id)} alt="" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            {stickers.length > 0 ? (
-              <div>
-                <p className="kiosk-small">{t('kiosk.edit.tool.stickers')}</p>
-                <div className="kiosk-chips">
-                  {/* Tocar agrega otra: caben varias y cada una se arrastra a donde quiera. */}
-                  {stickers.map((id) => (
-                    <button key={id} type="button" className="kiosk-chip" onClick={() => addSticker(id)} data-testid={`sticker-${id}`}>
-                      <img src={resolveAssetUrl(bundle, id)} alt="" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-          <BigButton variant="primary" size="xl" block icon={<Icon name="check" />} disabled={!original} loading={saving} loadingLabel={applyToWholeSet ? t('kiosk.edit.applying_n', { n: savedCount + 1, m: captures.length }) : t('kiosk.edit.applying')} onClick={() => void save()} data-testid="edit-apply">
+            </div>
+          ) : null}
+          <BigButton variant="primary" size="xl" block icon={<Icon name="check" />} disabled={!original} loading={saving} loadingLabel={t('kiosk.edit.applying')} onClick={() => void save()} data-testid="edit-apply">
             {t('kiosk.edit.apply')}
           </BigButton>
           <BigButton variant="ghost" block onClick={() => void skip()}>

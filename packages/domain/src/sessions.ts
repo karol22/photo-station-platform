@@ -67,18 +67,25 @@ export function canTransition(from: SessionStage, to: SessionStage): boolean {
 }
 
 /**
- * Recorrido ordenado de etapas para un producto: sin `selecting` en documentos ni en experiencias
- * de una sola captura; sin `printing` cuando `printCount` es 0; `awaiting_payment` y `consent`
- * sólo cuando se requieren; `editing` sólo si la política de edición lo permite.
+ * Recorrido ordenado de etapas para un producto: sin `printing` cuando `printCount` es 0;
+ * `awaiting_payment` y `consent` sólo cuando se requieren; `editing` sólo si la política de
+ * edición lo permite.
+ *
+ * `selecting` ya no existe como etapa propia. Mirar las tomas y quedarse con unas cuantas es una
+ * sola decisión, y partirla en dos pantallas la cobraba dos veces: primero «¿te gustan?» y
+ * después «¿cuáles?». `reviewing` es esa decisión completa —se descartan las que sobran y ahí
+ * queda hecha la selección— y sigue siendo la etapa a la que `capturing` transita, así que el
+ * grafo no cambia. La etapa se conserva en el contrato y en las transiciones porque hay sesiones
+ * guardadas que están en ella.
+ *
+ * Primero se elige y después se edita: al revés, quien dispara seis tomas edita seis fotos para
+ * acabar tirando dos, trabajo que se paga con el tiempo de la persona y con el de la fila.
  */
 export function stagesForProduct(product: Product, opts: { paymentRequired: boolean; consentRequired: boolean }): SessionStage[] {
   const stages: SessionStage[] = ['started', 'product_selected', 'configuring'];
   if (opts.consentRequired) stages.push('consent');
   if (opts.paymentRequired) stages.push('awaiting_payment');
   stages.push('capturing', 'reviewing');
-  // Primero se elige y después se edita. Al revés, quien dispara seis tomas edita seis fotos para
-  // acabar tirando dos: trabajo que se paga con el tiempo de la persona y con el de la fila.
-  if (product.kind !== 'document' && product.captureCount > 1) stages.push('selecting');
   if (product.editing.enabled && product.editing.allowedTools.length > 0) stages.push('editing');
   stages.push('composing', 'confirming');
   if (product.printCount > 0) stages.push('printing');
