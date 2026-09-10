@@ -31,6 +31,37 @@ Componentes:
 | Admin | `AppShell`, `PageHeader`, `DataTable`, `FilterBar`, `StatCard`, `Badge`, `Tabs`, `Field`, `Input`, `Select`, `Textarea`, `Switch`, `NumberInput`, `ColorInput`, `ProvenanceTag`, `LockTag`, `ConfirmDialog`, `Drawer`, `EmptyState`, `Skeleton`, `Alert`, `Timeline`, `KeyValue`, `Breadcrumbs`, `Toolbar` |
 | Compartidos | `Card`, `Icon` (`ICON_NAMES`), `VisuallyHidden`, `cx` |
 
+## Tipografía: cuatro papeles
+
+El modo kiosco no usa la pila del sistema. Un **papel** es la unidad tipográfica del producto, igual
+que un papel de color lo es de la paleta: cada texto pertenece a uno y sólo a uno. Los archivos
+viven en `apps/kiosk/public/fonts` (los llena `scripts/fetch-fonts.sh`, con su licencia OFL al
+lado) y `src/styles.css` §1.1 los declara con `@font-face`; §2.1 los deja listos en clases.
+
+| Papel | Token de familia | Clases | Qué compone |
+|---|---|---|---|
+| Display | `--psp-paper-display` (+ `--psp-paper-display-inline`) | `.psp-type-rotulo`, `.psp-type-rotulo--capas` | Rótulo y llamada a la acción |
+| Numeral | `--psp-paper-numeral` | `.psp-type-numeral`, `.psp-type-precio` | Cuenta regresiva y precio |
+| Texto | `--psp-paper-text` | `.psp-type-titular`, `.psp-type-destacado`, `.psp-type-cuerpo`, `.psp-type-micro` | Todo lo que se lee |
+| Utilitario | `--psp-paper-util` | `.psp-type-codigo`, `.psp-type-maquina` | Código de rescate e identificador de máquina |
+
+Reglas que la escala impone:
+
+- **Base 26 px, declarada en `.psp-kiosk`.** Como la base no vive en `html`, `rem` está prohibido en
+  el kiosco: `rem` mira `html`, que sigue en 16 px, y un «destacado» de `1.35rem` mide 21,6 px, o sea
+  menos que el cuerpo. Se escribe en `em` o en los tokens `--psp-font-*`.
+- **Piso duro de 22 px.** `--psp-font-micro` es el mínimo del kiosco, y `--psp-font-xs` y
+  `--psp-font-sm` se hunden en él.
+- **Cifras tabulares obligatorias en el numeral.** `--psp-feat-numeral` trae `'tnum' 1`; sin él el
+  dígito de la cuenta salta hasta 34 px de sitio entre un tic y el siguiente (medido a 416 px).
+- **La palabra en dos colores** se compone con dos capas de Bungee superpuestas:
+  `<span class="psp-type-rotulo psp-type-rotulo--capas">TEXTO<span class="psp-type-rotulo__inline" aria-hidden="true">TEXTO</span></span>`.
+- **El movimiento es de dos titulares y nada más.** `.psp-type-entra` anima el bloque;
+  `.psp-type-entra--piezas` reparte la entrada entre sus hijos con un retraso por índice, sin
+  biblioteca y sin red. Con `prefers-reduced-motion` no se anima nada.
+
+Se mira y se aprueba en `ops/campanas/rediseno-visual-kiosco/ESPECIMEN.html`.
+
 Criterios de accesibilidad aplicados: controles táctiles de al menos 64 px en modo kiosco, contraste calculado por luminancia para cada color de marca, estados que combinan icono y texto (nunca sólo color), una acción principal por pantalla, confirmaciones para acciones irreversibles.
 
 ## Cómo se prueba

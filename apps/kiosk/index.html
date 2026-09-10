@@ -10,6 +10,22 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#0B1B3F" />
+    <!--
+      Los cuatro papeles tipográficos que la primera pantalla llega a pintar. Van precargados
+      porque la cabina arranca en el bucle de atracción y ahí no puede haber un parpadeo de
+      sustitución: el rótulo, el precio y el zócalo se dibujan a la vez. `crossorigin` es
+      obligatorio aunque el archivo sea del mismo origen, porque las fuentes se piden en modo CORS
+      y sin el atributo el navegador descarga el archivo dos veces.
+
+      La capa interior del rótulo (BungeeLayersInline) NO va aquí: sólo se pinta cuando una
+      pantalla pide la palabra en dos colores, y son 10 KB de disco local, sin red de por medio.
+
+      Nada de `@import` ni de `<link>` a Google Fonts: el aparato no tiene conexión.
+    -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/BricolageGrotesque-var.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/BungeeLayers.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Anybody-cifras-var.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/RecursiveMono-var.woff2" crossorigin />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <title>Kiosco</title>
