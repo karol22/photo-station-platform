@@ -4,7 +4,7 @@ Lo que un agente no puede olvidar nunca, pase lo que pase con el contexto. No so
 
 | Regla | Cómo se hace cumplir |
 |---|---|
-| **No publicar cambios.** Un agente nunca ejecuta `git push`. Una persona revisa y fusiona. | Gancho `scripts/hooks/pre-push`, que rechaza el envío cuando `PSP_AGENT=1`. Instalar con `scripts/install-hooks.sh` |
+| **No publicar por iniciativa propia.** Un agente nunca ejecuta `git push` porque le pareció el siguiente paso. Sólo lo hace cuando la persona dueña lo pide de forma explícita, y entonces queda dicho en el reporte. Fusionar en local no es publicar. | Gancho `scripts/hooks/pre-push`, que rechaza el envío cuando `PSP_AGENT=1`. Instalar con `scripts/install-hooks.sh` |
 | **No conectar proveedores externos reales.** Nada de pagos, IA, mensajería, fiscal ni CRM de verdad. Sólo puertos con adaptador simulado. | Los adaptadores reales existen como esbozos que lanzan `NotConfiguredError`; ninguna credencial vive en el repositorio |
 | **Ninguna fotografía sale de la máquina**, salvo un tránsito consentido para procesamiento pesado que no la almacena. | `SessionRecord` no tiene ningún campo de imagen, así que zod descarta cualquier intento por construcción |
 | **No inventar claves de configuración ni de contrato.** Las listas son cerradas y viven en `packages/contracts`. | Compuerta `catalog-complete`: lo que no está registrado hace fallar la construcción |
