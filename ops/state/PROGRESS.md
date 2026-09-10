@@ -43,3 +43,7 @@ Formato: una fila por paso. `Evidencia` es algo que otra persona puede verificar
 | 37 | Tira de filtros con vista previa sobre la foto de la persona | hecho | `apps/kiosk/src/components/FilterStrip.tsx`; miniaturas a 132 px, una por cuadro de animación | 2026-09-09 |
 | 38 | Los cuatro modelos se descargan con un solo guion | hecho | `scripts/fetch-models.sh` y `apps/kiosk/public/models/README.md` con la tabla de los cuatro | 2026-09-09 |
 | 39 | Pendiente: efectos de fondo y disparo por gesto en el kiosco | pendiente | los puertos y efectos existen; falta el bucle que los une en la pantalla de captura | |
+| 40 | Estándar de ingeniería de producto con agentes integrado | hecho | `docs/estandares/ingenieria-de-producto-con-agentes.md` íntegro; `como-se-aplica.md` mapea sus 20 secciones y nombra la falla que evita cada mecanismo | 2026-09-09 |
+| 41 | Tres modos, política dura y atención activa separadas | hecho | `AGENTS.md` §0 con lo que no debe abrir cada modo; `ops/POLITICA.md`, `ops/ATENCION.md` | 2026-09-09 |
+| 42 | Campañas durables | hecho | `ops/campanas/` con plantilla y la campaña abierta de rediseño visual del kiosco | 2026-09-09 |
+| 43 | Plugin frontend-design activado en el proyecto | hecho | `.claude/settings.json`; toma efecto en la próxima sesión | 2026-09-09 |

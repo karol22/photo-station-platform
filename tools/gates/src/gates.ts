@@ -243,7 +243,11 @@ export const validationAtEdges: Gate = {
 };
 
 /** Documentos que se conservan tal cual vienen de fuera y no se reescriben. */
-const VERBATIM_DOCS = ['requisitos-producto.md', 'estandares/repositorio-listo-para-agentes.md'];
+const VERBATIM_DOCS = [
+  'requisitos-producto.md',
+  'estandares/repositorio-listo-para-agentes.md',
+  'estandares/ingenieria-de-producto-con-agentes.md',
+];
 
 /** 10. Documentación en presente. */
 export const docsPresentTense: Gate = {

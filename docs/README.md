@@ -53,5 +53,7 @@ Lee esto antes que nada: manda sobre cualquier otra fuente del repositorio.
 
 | Documento | Qué contiene |
 |---|---|
-| [Repositorio listo para agentes](estandares/repositorio-listo-para-agentes.md) | El estándar que sigue este repositorio para poder ser operado por agentes de IA. Se conserva íntegro y en su idioma original |
+| [Cómo se aplica](estandares/como-se-aplica.md) | Dónde vive cada mecánica de los dos estándares, y qué falla evita cada mecanismo |
+| [Repositorio listo para agentes](estandares/repositorio-listo-para-agentes.md) | Cómo está estructurado el repositorio para que un agente lo opere en frío. Íntegro y en su idioma original |
+| [Ingeniería de producto con agentes](estandares/ingenieria-de-producto-con-agentes.md) | Cómo se conduce el trabajo: modo, campaña, exploración, y terminar ejerciendo la interfaz. Íntegro y en su idioma original |
 | [Auditoría contra el estándar](estandares/auditoria.md) | Qué cumple hoy este repositorio de las veinticuatro guías, con evidencia, y qué falta |
