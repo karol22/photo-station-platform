@@ -1,1 +1,161 @@
 /* Pantalla: pago. Sólo clases con prefijo `.kiosk-pago`. Lo común vive en `../styles.css`. */
+
+/* ==========================================================================
+   PAGO
+   El precio es la pantalla. Mismas cinco bandas, la espera con carácter y un
+   corte de color entero al aprobarse.
+   ========================================================================== */
+.kiosk-pago {
+  display: grid;
+  grid-template-rows: minmax(0, 1060fr) minmax(0, 300fr) minmax(0, 300fr) minmax(0, 140fr);
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  /* Alto definido, no heredado: con un alto de porcentaje sobre una fila que se dimensiona por su
+     contenido, una foto de ejemplo grande estira la pantalla y las bandas de abajo se van fuera
+     del vidrio. Aquí las cinco bandas reparten exactamente lo que hay bajo la marquesina. */
+  height: calc(100dvh - var(--psp-marquee-height, 120px));
+  overflow: hidden;
+  color: var(--psp-color-text);
+  text-align: center;
+  background: var(--psp-field);
+  --psp-field: var(--psp-color-accent-4);
+  --psp-rincon: color-mix(in srgb, var(--psp-field) 72%, var(--psp-color-text));
+  --psp-aro: color-mix(in srgb, var(--psp-field) 38%, var(--psp-flash));
+  --psp-lift: 12px 12px 0 var(--psp-rincon);
+  /* El corte es seco a propósito: lo que se percibe desde lejos es el cambio de color, y una
+     transición lo convierte en un desvanecimiento que nadie mira. */
+  transition: background-color 0ms;
+}
+/* Aprobado: la pantalla entera se va al color del papel de «confirma», que la marca decide por
+   matiz y no por posición en la paleta. Nada de una pastilla verde en una esquina. */
+.kiosk-pago[data-settled] { --psp-field: var(--psp-role-confirma); }
+.kiosk-pago[data-failed] { --psp-field: var(--psp-role-avisa); }
+
+/* CARTEL: el precio, la cola y el estado. Nada táctil. */
+.kiosk-pago__cartel {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: 1vh;
+  padding: 3vh 4vw 1vh;
+  min-height: 0;
+  overflow: hidden;
+}
+.kiosk-pago__total { font-size: clamp(14px, min(2.4vw, 2.2vh), 26px); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.kiosk-pago__precio {
+  font-size: clamp(48px, min(24vw, 20vh), 300px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.82;
+  font-variant-numeric: tabular-nums;
+}
+.kiosk-pago__listo {
+  font-size: clamp(28px, min(11vw, 9vh), 96px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 0.9;
+}
+/* La cola: tres caras turnándose un salto. Sustituye al disco genérico que giraba aquí, que no
+   dice de quién es la máquina ni que la espera vaya a terminar. */
+.kiosk-pago__cola { display: flex; align-items: center; justify-content: center; min-height: 0; height: 100%; }
+.kiosk-pago__cola-uno { display: block; height: 100%; max-height: min(260px, 24vh); }
+.kiosk-pago__cola-uno + .kiosk-pago__cola-uno { margin-left: -2vw; }
+.kiosk-pago__cola-uno .psp-blob { width: auto; height: 100%; }
+.kiosk-pago__cola-uno .psp-blob path { stroke: var(--psp-color-text); stroke-width: 3; paint-order: stroke fill; }
+.kiosk-pago__cola[data-waiting] .kiosk-pago__cola-uno { animation: kiosk-pago-cola 2.7s cubic-bezier(0.2, 0.8, 0.2, 1) infinite; }
+.kiosk-pago__cola[data-waiting] .kiosk-pago__cola-uno:nth-child(2) { animation-delay: 0.9s; }
+.kiosk-pago__cola[data-waiting] .kiosk-pago__cola-uno:nth-child(3) { animation-delay: 1.8s; }
+@keyframes kiosk-pago-cola {
+  0%, 24%, 100% { transform: none; }
+  12% { transform: translate3d(24px, -18px, 0); }
+}
+.kiosk-pago__estado {
+  margin: 0;
+  font-size: clamp(20px, min(4.4vw, 4vh), 40px);
+  font-weight: 700;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+/* REPISA: lo que hay que hacer, o lo que está pasando. */
+.kiosk-pago__repisa { display: grid; place-items: center; padding: 0 6vw; min-height: 0; }
+.kiosk-pago__pista {
+  margin: 0;
+  max-width: 26ch;
+  font-size: clamp(16px, min(2.8vw, 2.6vh), 30px);
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+/* ALCANCE: sólo lo que se puede hacer ahora mismo. */
+.kiosk-pago__alcance {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  align-content: center;
+  justify-items: center;
+  gap: 1vh;
+  padding: 0 4vw 1vh;
+  min-height: 0;
+}
+.kiosk-pago__cta {
+  /* Cada cosa en su fila aunque la de arriba no exista: sin esto, con «reintentar» ausente el
+     botón de cancelar hereda la fila grande y se convierte en la acción principal de la pantalla,
+     que es exactamente lo que no puede ser. */
+  grid-row: 1;
+  width: 100%;
+  min-height: clamp(64px, 8.4vh, 160px);
+  padding: 0.2em 0.8em;
+  border: 0;
+  background: var(--psp-color-text);
+  color: var(--psp-aro);
+  font: inherit;
+  font-size: clamp(22px, min(5.6vw, 5vh), 96px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  box-shadow: var(--psp-lift);
+}
+.kiosk-pago__cta:disabled { opacity: 0.45; box-shadow: none; }
+.kiosk-pago__salida {
+  grid-row: 2;
+  align-self: center;
+  min-width: 300px;
+  min-height: 64px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: clamp(16px, min(2.4vw, 2.2vh), 26px);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.28em;
+}
+
+.kiosk-pago__zocalo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vw;
+  padding: 0 4vw;
+  font-size: clamp(12px, min(1.9vw, 1.6vh), 22px);
+  font-weight: 600;
+}
+/* Sólo existe en demostración y en desarrollo: no es producto, es un atajo de prueba. */
+.kiosk-pago__demo { grid-row: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.kiosk-pago__demo button {
+  min-height: 64px;
+  padding: 0 0.8em;
+  border: 2px solid var(--psp-color-text);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kiosk-pago__cola[data-waiting] .kiosk-pago__cola-uno { animation: none; }
+  .kiosk-pago .psp-blob { animation: none; }
+}
