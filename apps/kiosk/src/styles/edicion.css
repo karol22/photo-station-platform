@@ -1,1 +1,224 @@
 /* Pantalla: edicion. Sólo clases con prefijo `.kiosk-edicion`. Lo común vive en `../styles.css`. */
+
+/* ==========================================================================
+   EDICIÓN · PANTALLA 7 — una sola decisión
+   La foto a sangre ocupa la banda alta entera. Debajo, a la altura de la mano,
+   el riel de estilos con la cara real de la persona y la fila de accesorios.
+   Y la salida, presente desde el segundo cero, ocupando el ancho completo.
+   Aquí no hay rejilla lienzo+inspector, ni panel con barra de desplazamiento,
+   ni vista previa como tarjeta blanca con sombra: eso es un editor de escritorio.
+   ========================================================================== */
+.kiosk-edicion {
+  display: grid;
+  /* CARTEL 1060 · REPISA 300 · ALCANCE 300 · ZÓCALO 140, sobre 1920 menos la marquesina. */
+  /* Todas las bandas con mínimo 0: si una creciera con su contenido, empujaría a las demás fuera
+     del vidrio y habría que desplazarse para llegar a la salida. */
+  grid-template-rows: minmax(0, 1060fr) minmax(0, 300fr) minmax(0, 300fr) minmax(0, 140fr);
+  /* Ocupa el marco entero en vez de empujarlo: el alto del marco lo fija la pantalla, no la foto.
+     Sin esto, el tamaño natural de la imagen estira el contenedor y la salida se sale del vidrio. */
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: var(--psp-color-text);
+  text-align: center;
+  /* La habitación de la edición. La luz y la profundidad se derivan del propio campo. */
+  --psp-field: var(--psp-color-accent-4);
+  --psp-rincon: color-mix(in srgb, var(--psp-field) 72%, var(--psp-color-text));
+  --psp-aro: color-mix(in srgb, var(--psp-field) 38%, #ffffff);
+  --psp-lift: 10px 10px 0 var(--psp-rincon);
+  background: var(--psp-field);
+}
+
+/* CARTEL: la foto y nada más. El marco de acento va dibujado encima, no debajo. */
+/* La fila se declara en fracciones y no en `auto`: con `auto`, la banda se estira hasta lo que
+   mide la foto y deja de ser una banda. */
+.kiosk-edicion__cartel { display: grid; grid-template-rows: minmax(0, 1fr); place-items: center; min-height: 0; overflow: hidden; padding: 1.6vh 3vw; }
+/* El contenedor se ciñe a la foto —de ahí la proporción real de la imagen, que llega en una
+   variable— para que lo que se arrastra encima caiga exactamente donde se ve. Se mide por alto
+   contra su banda, no por su tamaño natural: la foto no decide cuánto ocupa la pantalla. */
+.kiosk-edicion__foto {
+  position: relative;
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  aspect-ratio: var(--psp-foto-ratio, 3 / 4);
+  border: 5px solid var(--psp-color-text);
+  box-shadow: var(--psp-lift);
+}
+.kiosk-edicion__foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* REPISA: el riel de estilos arriba y la fila de accesorios abajo. */
+.kiosk-edicion__repisa {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-content: center;
+  gap: 0.8vh;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 2.4vw 0.6vh;
+}
+
+/* --- El riel de estilos ---------------------------------------------------
+   Los seis caben a la vez: cero barra de desplazamiento. Cada ficha lleva su
+   acento, así que el riel también enseña la paleta de la marca. */
+.kiosk-edicion__looks { min-height: 0; }
+.kiosk-edicion__looks .kiosk-filters__row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 1.1vw;
+  overflow: visible;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  list-style: none;
+  scroll-snap-type: none;
+}
+.kiosk-edicion__looks .kiosk-filters__cell { display: grid; min-width: 0; min-height: 0; }
+.kiosk-edicion__looks .kiosk-filters__item {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  gap: 0.4vh;
+  min-width: 64px;
+  min-height: 64px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.kiosk-edicion__looks .kiosk-filters__thumb {
+  align-self: center;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 4px solid var(--psp-color-text);
+  border-radius: 0;
+  background: var(--psp-rincon);
+}
+.kiosk-edicion__looks .kiosk-filters__thumb--empty { width: 100%; height: auto; }
+.kiosk-edicion__looks .kiosk-filters__label {
+  font-size: clamp(0.75rem, 1.5vw, 1.05rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+/* El activo: aro del acento del propio estilo y un punto más grande. */
+.kiosk-edicion__looks .kiosk-filters__item[aria-pressed='true'] { transform: scale(1.06); }
+.kiosk-edicion__looks .kiosk-filters__item[aria-pressed='true'] .kiosk-filters__thumb {
+  border-color: var(--psp-look);
+  border-width: 8px;
+  box-shadow: var(--psp-lift);
+}
+
+/* --- La fila de accesorios ------------------------------------------------
+   Hueco previsto: aquí se monta la fila de accesorios anclados al rostro
+   (sombrero, gafas, bigote) y la herramienta de texto. Hoy la ocupan los marcos
+   y las pegatinas de la experiencia; la fila nueva convive en el mismo sitio. */
+.kiosk-edicion__accesorios {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2vw;
+  min-height: 0;
+}
+.kiosk-edicion__accesorio {
+  display: grid;
+  place-items: center;
+  width: clamp(64px, 5.6vh, 96px);
+  height: clamp(64px, 5.6vh, 96px);
+  padding: 6px;
+  border: 4px solid var(--psp-color-text);
+  background: var(--psp-aro);
+  color: inherit;
+  font: inherit;
+  box-shadow: var(--psp-lift);
+}
+.kiosk-edicion__accesorio img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.kiosk-edicion__accesorio[aria-pressed='true'] { background: var(--psp-color-text); }
+
+/* ALCANCE: la salida, y debajo el único control de retoque. */
+.kiosk-edicion__alcance {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-content: center;
+  gap: 1.2vh;
+  padding: 0 4vw;
+}
+.kiosk-edicion__accion {
+  display: block;
+  width: 100%;
+  /* 160 px en el panel de 1920; nunca menos de 96, que es el piso de una decisión de una sola vez. */
+  min-height: clamp(96px, 8.4vh, 160px);
+  padding: 0.4em 1em;
+  border: 0;
+  background: var(--psp-color-text);
+  color: var(--psp-aro);
+  font: inherit;
+  font-size: clamp(1.8rem, 5.4vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  box-shadow: var(--psp-lift);
+}
+.kiosk-edicion__accion:disabled { opacity: 0.42; box-shadow: none; }
+
+/* Dos fichas, sin jerga y sin porcentajes: la persona elige verse como está o un poquito. */
+.kiosk-edicion__retoque { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 1.6vw; }
+.kiosk-edicion__ficha {
+  min-height: clamp(64px, 5vh, 96px);
+  padding: 0 0.8em;
+  border: 5px solid var(--psp-color-text);
+  background: transparent;
+  color: var(--psp-color-text);
+  font: inherit;
+  font-size: clamp(1.1rem, 2.6vw, 1.9rem);
+  font-weight: 800;
+}
+.kiosk-edicion__ficha[aria-pressed='true'] {
+  background: var(--psp-color-text);
+  color: var(--psp-aro);
+  box-shadow: var(--psp-lift);
+}
+
+/* ZÓCALO. */
+.kiosk-edicion__zocalo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vw;
+  padding: 0 4vw;
+  font-size: clamp(0.8rem, 1.9vw, 1.2rem);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kiosk-edicion__looks .kiosk-filters__item { transition: none; }
+  .kiosk-edicion__looks .kiosk-filters__item[aria-pressed='true'] { transform: none; }
+}
+
+/* ==========================================================================
+   EDICIÓN DOCUMENTAL
+   Sobria y foto por foto: ahí cada imagen es un trámite distinto y los ajustes
+   finos siguen existiendo. Sin panel con barra de desplazamiento: las
+   herramientas seguras son pocas y caben en columna.
+   ========================================================================== */
+.kiosk-edicion-doc { display: grid; gap: 24px; }
+@media (min-width: 900px) and (orientation: landscape) {
+  .kiosk-edicion-doc { grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); align-items: start; }
+}
+.kiosk-edicion-doc__vista { display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.kiosk-edicion-doc__ajustes { display: flex; flex-direction: column; gap: 14px; }
+.kiosk-edicion-doc__marco { display: flex; justify-content: center; }
+.kiosk-edicion-doc__marco img { max-width: 100%; border: 3px solid var(--psp-color-text); display: block; }

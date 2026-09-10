@@ -1,1 +1,6 @@
 /* Pantalla: seleccion. Sólo clases con prefijo `.kiosk-seleccion`. Lo común vive en `../styles.css`. */
+
+/* La selección dejó de ser una pantalla propia: mirar las tomas y quedarse con unas cuantas es una
+   sola decisión, y vive en la revisión (`revision.css`, PANTALLA 6). La ruta sobrevive para las
+   sesiones guardadas en esa etapa y muestra exactamente la misma pantalla, así que no tiene estilos
+   propios. Este archivo queda vacío a propósito: un archivo por pantalla, y ésta ya no existe. */

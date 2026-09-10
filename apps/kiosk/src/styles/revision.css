@@ -1,1 +1,206 @@
 /* Pantalla: revision. Sólo clases con prefijo `.kiosk-revision`. Lo común vive en `../styles.css`. */
+
+/* ==========================================================================
+   REVISIÓN · PANTALLA 6 — descartar dos de seis
+   Las cinco bandas del recorrido social, con el mismo vocabulario de la atracción:
+   campo a sangre, tinta única, relieve sin difuminado y nada táctil a la altura
+   de la cara. Arriba se mira lo que uno se lleva; abajo, a la altura de la mano,
+   se apaga lo que sobra.
+   ========================================================================== */
+.kiosk-revision {
+  display: grid;
+  /* CARTEL 1060 · REPISA 300 · ALCANCE 300 · ZÓCALO 140, sobre 1920 menos la marquesina. */
+  /* Todas las bandas con mínimo 0: si una creciera con su contenido, empujaría a las demás fuera
+     del vidrio y habría que desplazarse para llegar a la única acción de la pantalla. */
+  grid-template-rows: minmax(0, 1060fr) minmax(0, 300fr) minmax(0, 300fr) minmax(0, 140fr);
+  /* Ocupa el marco entero en vez de empujarlo: el alto del marco lo fija la pantalla, no la foto.
+     Sin esto, el tamaño natural de la imagen estira el contenedor y las bandas de abajo —incluida
+     la única acción— se salen del vidrio, que es exactamente lo que esta pantalla no puede hacer. */
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: var(--psp-color-text);
+  text-align: center;
+  /* El campo de esta habitación. La luz y la profundidad se derivan del propio tono, así el
+     relieve siempre pertenece al color que se está viendo y no al primero de la paleta. */
+  --psp-field: var(--psp-color-accent-2);
+  --psp-rincon: color-mix(in srgb, var(--psp-field) 72%, var(--psp-color-text));
+  --psp-aro: color-mix(in srgb, var(--psp-field) 38%, #ffffff);
+  --psp-lift: 10px 10px 0 var(--psp-rincon);
+  background: var(--psp-field);
+}
+
+/* CARTEL: una sola cosa, lo que te llevas. Sin objetivos táctiles. */
+/* La fila se declara en fracciones y no en `auto`: con `auto`, la banda se estira hasta lo que
+   mide la foto y deja de ser una banda. */
+.kiosk-revision__cartel { display: grid; grid-template-rows: minmax(0, 1fr); min-height: 0; overflow: hidden; padding: 2.2vh 4vw; }
+
+/* La tira del resultado: tantos huecos como fotos caben, en el orden en que se tomaron. */
+.kiosk-revision__tira {
+  display: grid;
+  grid-template-columns: repeat(var(--psp-tira-cols, 2), minmax(0, 1fr));
+  /* Las filas se reparten la banda: si crecieran con la foto, la tira empujaría hacia abajo la
+     única acción de la pantalla y habría que desplazarse para terminar. */
+  grid-auto-rows: minmax(0, 1fr);
+  /* Los huecos se estiran a su fila: es lo que le da a la foto un alto contra el que medirse. Con
+     los huecos centrados, cada uno crecía hasta el tamaño natural de su imagen. */
+  gap: 1.8vh 1.8vw;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Flexible y no rejilla: así el alto del hueco es el de su fila y la foto tiene contra qué
+   medirse. En una rejilla de filas automáticas, la foto se mediría contra sí misma. */
+.kiosk-revision__hueco {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+}
+/* El hueco vacío ES la instrucción: mientras se vea un hueco, falta una foto. Canto punteado,
+   igual que los huecos de la tira durante la captura, para que se lea como el mismo objeto. */
+.kiosk-revision__hueco[data-empty] {
+  border: 5px dashed var(--psp-color-text);
+  align-self: center;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  max-height: 100%;
+  opacity: 0.55;
+}
+.kiosk-revision__hueco-texto { font-size: clamp(0.9rem, 1.7vw, 1.3rem); font-weight: 700; padding: 0 0.6em; }
+
+/* La foto es uno de los tres rectángulos con nombre del sistema: no se enmascara ni se redondea.
+   El canto de tinta la separa del campo sin inventar una tarjeta blanca debajo. */
+.kiosk-revision__foto {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: 5px solid var(--psp-color-text);
+  box-shadow: var(--psp-lift);
+  background: var(--psp-rincon);
+}
+
+/* REPISA: las seis tomas, a la altura de la mano. */
+.kiosk-revision__repisa {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: center;
+  gap: 1vh;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 3vw 0.8vh;
+}
+.kiosk-revision__pista {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8vw;
+  margin: 0;
+  font-size: clamp(1rem, 2.2vw, 1.6rem);
+  font-weight: 700;
+}
+.kiosk-revision__pista .psp-blob { flex: 0 0 auto; width: clamp(40px, 6vw, 96px); height: auto; }
+.kiosk-revision__pista .psp-blob path { stroke: var(--psp-color-text); stroke-width: 3; paint-order: stroke fill; }
+
+.kiosk-revision__tomas {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 1.4vw;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  list-style: none;
+}
+.kiosk-revision__tomas > li { display: grid; min-width: 0; min-height: 0; }
+.kiosk-revision__toma {
+  /* Objetivo táctil de sobra: con seis a lo ancho de 1080 cada uno pasa de 140 px. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  min-height: 64px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  /* Apagada: sigue estando, y volver a tocarla la enciende. Nada desaparece de la pantalla. */
+  opacity: 0.4;
+  transition: opacity 160ms ease, transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.kiosk-revision__toma[data-kept] { opacity: 1; }
+.kiosk-revision__toma[data-kept] .kiosk-revision__foto { border-width: 6px; }
+.kiosk-revision__toma:not([data-kept]) .kiosk-revision__foto {
+  border-style: dashed;
+  box-shadow: none;
+}
+.kiosk-revision__toma:active { transform: scale(0.96); }
+/* El estado se ve —encendida o apagada—, así que su nombre sólo existe para quien no lo ve. */
+.kiosk-revision__estado {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ALCANCE: exactamente una acción, ancho completo, a la altura del pulgar de alguien de pie. */
+.kiosk-revision__alcance { display: grid; place-items: center; padding: 0 4vw; }
+.kiosk-revision__accion {
+  display: block;
+  width: 100%;
+  /* 160 px en el panel de 1920; nunca menos de 96, que es el piso de una decisión de una sola vez. */
+  min-height: clamp(96px, 8.4vh, 160px);
+  padding: 0.4em 1em;
+  border: 0;
+  background: var(--psp-color-text);
+  color: var(--psp-aro);
+  font: inherit;
+  font-size: clamp(1.8rem, 5.4vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  box-shadow: var(--psp-lift);
+}
+.kiosk-revision__accion:disabled { opacity: 0.42; box-shadow: none; }
+
+/* ZÓCALO: lo que la operación obliga a decir, en tinta plena y fuera del camino. */
+.kiosk-revision__zocalo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vw;
+  padding: 0 4vw;
+  font-size: clamp(0.8rem, 1.9vw, 1.2rem);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kiosk-revision__toma { transition: none; }
+}
+
+/* ==========================================================================
+   REVISIÓN DOCUMENTAL
+   Nada de lo anterior aplica: crema, un solo acento, cero siluetas sobre la foto
+   y cero movimiento de campo. Lo que se juzga aquí es la fidelidad, y comparar es
+   la prueba de que la imagen no se alteró.
+   ========================================================================== */
+.kiosk-revision-doc { display: grid; gap: 24px; }
+@media (min-width: 900px) and (orientation: landscape) {
+  .kiosk-revision-doc { grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); align-items: start; }
+}
+.kiosk-revision-doc__vista { display: flex; flex-direction: column; gap: 20px; align-items: center; }
+.kiosk-revision-doc__criterios { display: flex; flex-direction: column; gap: 16px; }
+.kiosk-revision-doc__foto {
+  display: block;
+  max-width: 100%;
+  border: 3px solid var(--psp-color-text);
+}

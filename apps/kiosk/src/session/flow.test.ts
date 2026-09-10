@@ -47,12 +47,14 @@ describe('flow: siguiente pantalla por producto', () => {
     expect(nextScreen(p, 'printing', opts)).toBe('/session/finish');
   });
 
-  it('entretenimiento gratuito con varias fotos pasa por selección', () => {
+  it('entretenimiento gratuito con varias fotos elige dentro de la revisión', () => {
     const p = product({ kind: 'entertainment', captureCount: 4, editing: { enabled: false, allowedTools: [], allowedPresetIds: [] } });
     const opts = { paymentRequired: false, consentRequired: true };
     expect(firstWorkingStage(p, opts)).toBe('consent');
     expect(nextScreen(p, 'consent', opts)).toBe('/session/capture');
-    expect(nextScreen(p, 'reviewing', opts)).toBe('/session/select');
+    // Elegir ya no es una etapa aparte: descartar lo que sobra ES la revisión.
+    expect(nextScreen(p, 'reviewing', opts)).toBe('/session/compose');
+    // Una sesión guardada en la etapa vieja sigue avanzando a la siguiente que sí está en el plan.
     expect(nextScreen(p, 'selecting', opts)).toBe('/session/compose');
   });
 

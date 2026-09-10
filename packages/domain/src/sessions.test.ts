@@ -49,12 +49,13 @@ describe('stagesForProduct', () => {
     expect(stagesForProduct(product('prd_doc'), { paymentRequired: true, consentRequired: false })).toEqual([
       'started', 'product_selected', 'configuring', 'awaiting_payment', 'capturing', 'reviewing', 'editing', 'composing', 'confirming', 'printing', 'delivering', 'finishing', 'done',
     ]);
-    // Documento con 4 copias sigue sin selección; el consentimiento sólo si se requiere.
-    expect(stagesForProduct(product('prd_doc', { captureCount: 2 }), { paymentRequired: false, consentRequired: true })).not.toContain('selecting');
+    // El consentimiento sólo si se requiere.
     expect(stagesForProduct(product('prd_doc'), { paymentRequired: false, consentRequired: true })).toContain('consent');
     expect(stagesForProduct(product('prd_doc'), { paymentRequired: false, consentRequired: false })).not.toContain('awaiting_payment');
+    // Elegir no es una etapa: la revisión es la decisión completa, con o sin varias tomas.
     const strip = product('prd_strip', { kind: 'entertainment', category: 'photo_strip', captureCount: 4 });
-    expect(stagesForProduct(strip, { paymentRequired: true, consentRequired: false })).toContain('selecting');
+    expect(stagesForProduct(strip, { paymentRequired: true, consentRequired: false })).not.toContain('selecting');
+    expect(stagesForProduct(strip, { paymentRequired: true, consentRequired: false })).toContain('reviewing');
     const single = product('prd_single', { kind: 'entertainment', category: 'fun', captureCount: 1 });
     expect(stagesForProduct(single, { paymentRequired: true, consentRequired: false })).not.toContain('selecting');
     const digital = product('prd_digital', { printCount: 0, editing: { enabled: false, allowedTools: [] } });
@@ -309,6 +310,15 @@ describe('orden del recorrido creativo', () => {
   it('elegir va antes que editar, para no editar fotos que se van a descartar', () => {
     const strip = product('prd_tira', { captureCount: 6, kind: 'entertainment', category: 'photo_strip', editing: { enabled: true, allowedTools: ['brightness'] } });
     const stages = stagesForProduct(strip, { paymentRequired: true, consentRequired: false });
-    expect(stages.indexOf('selecting')).toBeLessThan(stages.indexOf('editing'));
+    // Elegir vive dentro de `reviewing`: descartar las que sobran ES la selección.
+    expect(stages.indexOf('reviewing')).toBeLessThan(stages.indexOf('editing'));
+  });
+
+  it('mirar las tomas y quedarse con unas cuantas es una sola etapa', () => {
+    const strip = product('prd_tira', { captureCount: 6, kind: 'entertainment', category: 'photo_strip', editing: { enabled: true, allowedTools: ['brightness'] } });
+    const stages = stagesForProduct(strip, { paymentRequired: true, consentRequired: false });
+    expect(stages.filter((s) => s === 'reviewing' || s === 'selecting')).toEqual(['reviewing']);
+    // La etapa sigue siendo válida en el grafo: hay sesiones guardadas que están en ella.
+    expect(canTransition('selecting', 'editing')).toBe(true);
   });
 });
