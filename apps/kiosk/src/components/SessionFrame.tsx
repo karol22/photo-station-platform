@@ -20,14 +20,24 @@ export interface SessionFrameProps {
   footer?: ReactNode;
   hideCancel?: boolean;
   contentAlign?: 'start' | 'center';
+  /**
+   * Qué hace la pantalla cuando el tiempo se agota y la sesión ya no se puede cancelar (hay pago
+   * o hay capturas). Sin esto, la sesión simplemente avanza a la siguiente etapa.
+   */
+  onAutoAdvance?: () => void;
 }
 
-export function SessionFrame({ title, children, noTimeout, timeoutSec, footer, hideCancel, contentAlign }: SessionFrameProps) {
+export function SessionFrame({ title, children, noTimeout, timeoutSec, footer, hideCancel, contentAlign, onAutoAdvance }: SessionFrameProps) {
   const { t } = useT();
-  const { session, product, flow, cancel } = useSession();
+  const { session, product, flow, advance, cancel } = useSession();
   const simplified = useKioskStore((s) => s.bundle?.effective.values['kiosk.simplifiedMode'] === true);
-  const timeout = useSessionTimeout(!noTimeout, timeoutSec);
+  // Una sesión con dinero o fotografías de por medio no se cancela sola: sigue con lo que la
+  // pantalla considere su mejor opción, y si la pantalla no propone ninguna, avanza de etapa.
+  const timeout = useSessionTimeout(!noTimeout, timeoutSec, {
+    onAutoAdvance: onAutoAdvance ?? (() => void advance('idle_auto_advance')),
+  });
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const keeps = timeout.onExpiry === 'auto_advance';
 
   const stages = product && flow ? stagesForProduct(product, flow).filter((s) => !['started', 'product_selected', 'configuring', 'delivering', 'finishing', 'done'].includes(s)) : [];
   const stepIndex = session ? stages.indexOf(session.stage) : -1;
@@ -85,14 +95,22 @@ export function SessionFrame({ title, children, noTimeout, timeoutSec, footer, h
       <Sheet
         open={!noTimeout && timeout.warning && timeout.remaining > 0 && !confirmCancel}
         title={t('kiosk.timeout.still_there')}
-        description={t('kiosk.timeout.still_there_text', { seconds: Math.max(0, Math.ceil(timeout.remaining)) })}
+        description={
+          keeps
+            ? t('kiosk.timeout.keeps_going_text', { seconds: Math.max(0, Math.ceil(timeout.remaining)) })
+            : t('kiosk.timeout.still_there_text', { seconds: Math.max(0, Math.ceil(timeout.remaining)) })
+        }
         dismissible={false}
         hideHandle
         actions={
           <>
-            <BigButton variant="ghost" onClick={() => void cancel('user_left')}>
-              {t('kiosk.timeout.end')}
-            </BigButton>
+            {/* Con dinero de por medio no se ofrece «terminar»: tirar una sesión pagada no puede
+                ser un botón al alcance de un toque distraído. */}
+            {keeps ? null : (
+              <BigButton variant="ghost" onClick={() => void cancel('user_left')}>
+                {t('kiosk.timeout.end')}
+              </BigButton>
+            )}
             <BigButton variant="primary" size="xl" onClick={() => void timeout.extend()}>
               {t('kiosk.timeout.continue')}
             </BigButton>

@@ -52,6 +52,21 @@ function useGestureLock(): void {
   }, []);
 }
 
+/**
+ * La sesión puede morir desde fuera: el técnico la cancela, el agente la expira, algo falla. Sin
+ * este guardia la pantalla se queda mostrando un paso de una sesión que ya no existe y cada toque
+ * responde con un error del agente. `done` no entra: ése es el final feliz y lo cierra `Finish`.
+ */
+function useTerminalGuard(): void {
+  const navigate = useNavigate();
+  const stage = useKioskStore((s) => s.session?.stage);
+  useEffect(() => {
+    if (stage !== 'cancelled' && stage !== 'expired' && stage !== 'failed' && stage !== 'abandoned') return;
+    if (window.location.pathname === ROUTES.attract || window.location.pathname === ROUTES.tech) return;
+    navigate(ROUTES.attract, { replace: true });
+  }, [stage, navigate]);
+}
+
 function Bootstrap({ children }: { children: React.ReactNode }) {
   const { t } = useT();
   const navigate = useNavigate();
@@ -61,6 +76,7 @@ function Bootstrap({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   useStationEvents();
   useGestureLock();
+  useTerminalGuard();
 
   useEffect(() => {
     let cancelled = false;

@@ -12,6 +12,7 @@ export function useStationEvents(): void {
   const setConnection = useKioskStore((s) => s.setConnection);
   const refreshBundle = useKioskStore((s) => s.refreshBundle);
   const refreshStatus = useKioskStore((s) => s.refreshStatus);
+  const reconcile = useKioskStore((s) => s.reconcile);
 
   useEffect(() => {
     if (typeof EventSource === 'undefined') return;
@@ -25,6 +26,9 @@ export function useStationEvents(): void {
       source.onopen = () => {
         setConnection('online');
         void refreshStatus().catch(() => undefined);
+        // Reconectar es justo el momento de resincronizar: durante el corte pudo aprobarse un
+        // pago, subirse una captura o terminar la sesión, y ninguno de esos eventos vuelve solo.
+        void reconcile().catch(() => undefined);
       };
       // El agente emite eventos con nombre (`event: <type>`); EventSource sólo los entrega a
       // listeners por nombre, así que se registra el mismo manejador para cada tipo del contrato
@@ -57,5 +61,5 @@ export function useStationEvents(): void {
       if (retry) clearTimeout(retry);
       source?.close();
     };
-  }, [applyEvent, setConnection, refreshBundle, refreshStatus]);
+  }, [applyEvent, setConnection, refreshBundle, refreshStatus, reconcile]);
 }

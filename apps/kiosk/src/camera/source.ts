@@ -22,6 +22,12 @@ export interface CameraSource {
   readonly element: HTMLVideoElement | HTMLCanvasElement;
   start(): Promise<void>;
   stop(): void;
+  /**
+   * Avisa cuando la fuente deja de dar imagen sola: cable desconectado, cámara tomada por otra
+   * aplicación, permiso revocado. Sin esto, el `<video>` se congela en el último cuadro y la
+   * cabina sigue «capturando» un fotograma muerto.
+   */
+  onLost?(handler: () => void): () => void;
   /** Sólo la fuente sintética conoce sus rostros; alimenta al `MockFaceAnalyzer`. */
   landmarks?(atMs: number, frame: { width: number; height: number }): FaceLandmarks[];
 }
@@ -33,6 +39,8 @@ export class WebcamSource implements CameraSource {
   readonly kind = 'webcam' as const;
   readonly element: HTMLVideoElement;
   private stream: MediaStream | undefined;
+  private lostHandlers = new Set<() => void>();
+  private stopped = false;
   width = FRAME_WIDTH;
   height = FRAME_HEIGHT;
 
@@ -53,9 +61,27 @@ export class WebcamSource implements CameraSource {
     await this.element.play();
     this.width = this.element.videoWidth || FRAME_WIDTH;
     this.height = this.element.videoHeight || FRAME_HEIGHT;
+    for (const track of this.stream.getVideoTracks()) {
+      track.addEventListener('ended', this.onTrackLost);
+      track.addEventListener('mute', this.onTrackLost);
+    }
+  }
+
+  private readonly onTrackLost = (): void => this.reportLost();
+
+  private reportLost(): void {
+    if (this.stopped) return;
+    for (const handler of this.lostHandlers) handler();
+  }
+
+  onLost(handler: () => void): () => void {
+    this.lostHandlers.add(handler);
+    return () => this.lostHandlers.delete(handler);
   }
 
   stop(): void {
+    this.stopped = true;
+    this.lostHandlers.clear();
     this.stream?.getTracks().forEach((track) => track.stop());
     this.stream = undefined;
     this.element.srcObject = null;

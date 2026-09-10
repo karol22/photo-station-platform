@@ -20,6 +20,21 @@ export interface KioskData {
   connection: ConnectionState;
   visionLimited: boolean;
   lastError: { code: string; message: string; incidentCode?: string } | undefined;
+  /**
+   * Retenciones activas del temporizador de inactividad. Mientras haya al menos una, la persona
+   * está ocupada con la máquina —posando, esperando una subida— aunque no toque la pantalla,
+   * y el tiempo no corre. Es un contador y no un booleano porque dos pantallas pueden retener a la vez.
+   */
+  idleHolds: number;
+  /**
+   * Sesión que quedó abierta en el aparato y que todavía no se pudo cerrar.
+   *
+   * Cerrar la sesión es del agente, no del navegador: si la llamada falla y el kiosco limpia su
+   * estado igual, la máquina se queda con una sesión viva y rechaza a la siguiente persona con
+   * `session_active`, que es un error sin salida delante de alguien que acaba de llegar. Mientras
+   * esto tenga un identificador, la cabina no ofrece empezar y sigue intentando cerrarla.
+   */
+  pendingRelease: string | undefined;
 }
 
 export const INITIAL_DATA: KioskData = {
@@ -34,6 +49,8 @@ export const INITIAL_DATA: KioskData = {
   connection: 'connecting',
   visionLimited: false,
   lastError: undefined,
+  idleHolds: 0,
+  pendingRelease: undefined,
 };
 
 /** Aplica un evento SSE del agente al estado. Devuelve el mismo objeto si nada cambia. */
@@ -113,4 +130,14 @@ export function availableLocales(bundle: KioskBundle | undefined): Locale[] {
   const value = bundle?.effective.values['kiosk.locales'];
   const list = Array.isArray(value) ? value.filter((v): v is Locale => v === 'es' || v === 'en') : [];
   return list.length > 0 ? list : ['es', 'en'];
+}
+
+/** Toma una retención del temporizador de inactividad. */
+export function holdIdle<T extends { idleHolds: number }>(state: T): T {
+  return { ...state, idleHolds: state.idleHolds + 1 };
+}
+
+/** Suelta una retención; nunca baja de cero aunque se suelte de más. */
+export function releaseIdle<T extends { idleHolds: number }>(state: T): T {
+  return { ...state, idleHolds: Math.max(0, state.idleHolds - 1) };
 }

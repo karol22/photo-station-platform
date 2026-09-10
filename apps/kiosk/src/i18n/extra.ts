@@ -68,6 +68,8 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.attract.loading': ['Preparando la estación…', 'Preparing the station…'],
   'kiosk.attract.out_of_service': ['Fuera de servicio', 'Out of service'],
   'kiosk.attract.out_of_service_text': ['Esta estación no está disponible por el momento. Disculpa las molestias.', 'This station is not available right now. Sorry for the inconvenience.'],
+  'kiosk.attract.releasing': ['Un momento', 'One moment'],
+  'kiosk.attract.releasing_text': ['La cabina está terminando la sesión anterior. En unos segundos queda lista.', 'The booth is closing the previous session. It will be ready in a few seconds.'],
   'kiosk.attract.maintenance': ['En mantenimiento', 'Under maintenance'],
   'kiosk.attract.maintenance_text': ['Estamos dando mantenimiento a la estación. Vuelve en unos minutos.', 'The station is being serviced. Please come back in a few minutes.'],
   'kiosk.attract.no_bundle': ['La estación se está configurando', 'The station is being set up'],
@@ -180,6 +182,7 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.payment.estado.demo': ['Demostración, sin cobro', 'Demo, no charge'],
   'kiosk.payment.estado.operator_started': ['Iniciada por el personal', 'Started by staff'],
   'kiosk.payment.declined_hint': ['Puedes intentar de nuevo o cancelar.', 'You can try again or cancel.'],
+  'kiosk.payment.under_review_hint': ['Estamos confirmando el cobro con el banco. No te vayas: la sesión sigue en cuanto responda.', 'We are confirming the charge with the bank. Stay here: the session continues as soon as it answers.'],
   'kiosk.payment.device_out_hint': ['Por ahora no es posible cobrar en esta estación.', 'Payment is not possible at this station right now.'],
   'kiosk.payment.retry': ['Intentar de nuevo', 'Try again'],
   'kiosk.payment.simulate_title': ['Simulación de pago (sólo pruebas)', 'Payment simulation (testing only)'],
@@ -218,6 +221,7 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.capture.guidance_hint': ['Sugerencia', 'Suggestion'],
   'kiosk.capture.expected_people': ['{{n}} personas en el cuadro', '{{n}} people in the frame'],
   'kiosk.capture.start_sequence': ['Empezar', 'Begin'],
+  'kiosk.capture.burst_running': ['Foto {{n}} de {{m}} · sigue posando', 'Photo {{n}} of {{m}} · keep posing'],
   'kiosk.capture.criteria_hidden': ['Ver detalles', 'Show details'],
 
   /* ---------- instrucciones (respaldo de instructions.*) ---------- */
@@ -484,6 +488,7 @@ export const EXTRA_TABLE: Record<string, Pair> = {
   'kiosk.timeout.extend': ['Más tiempo', 'More time'],
   'kiosk.timeout.still_there': ['¿Sigues ahí?', 'Are you still there?'],
   'kiosk.timeout.still_there_text': ['La sesión terminará en {{seconds}} s si no respondes.', 'The session will end in {{seconds}} s if you do not respond.'],
+  'kiosk.timeout.keeps_going_text': ['Seguimos con tus fotos en {{seconds}} s. Nada se pierde.', 'We keep going with your photos in {{seconds}} s. Nothing is lost.'],
   'kiosk.timeout.continue': ['Sí, continuar', 'Yes, continue'],
   'kiosk.timeout.end': ['Terminar ahora', 'End now'],
 

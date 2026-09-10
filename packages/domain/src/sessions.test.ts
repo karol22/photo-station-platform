@@ -6,6 +6,7 @@ import {
   SESSION_TRANSITIONS,
   canReleaseTransition,
   canTransition,
+  idleExpiryAction,
   commercialStateFor,
   computeTimers,
   nextReleaseStatus,
@@ -216,5 +217,35 @@ describe('nextReleaseStatus', () => {
     expect(() => nextReleaseStatus('pending', 'complete')).toThrow(/invalid transition/);
     expect(canReleaseTransition('pending', 'complete')).toBe(false);
     expect(canReleaseTransition('ready', 'install')).toBe(true);
+  });
+});
+
+describe('idleExpiryAction', () => {
+  it('cancela cuando no hay pago ni capturas', () => {
+    expect(idleExpiryAction({ stage: 'awaiting_payment', payment: { state: 'awaiting' }, captures: [] })).toBe('cancel');
+  });
+
+  it('cancela cuando la sesión ni siquiera llegó al pago', () => {
+    expect(idleExpiryAction({ stage: 'product_selected' })).toBe('cancel');
+  });
+
+  it('avanza sola cuando el pago quedó aprobado', () => {
+    expect(idleExpiryAction({ stage: 'capturing', payment: { state: 'approved' }, captures: [] })).toBe('auto_advance');
+  });
+
+  it('avanza sola cuando el pago quedó en revisión, porque el dinero ya salió', () => {
+    expect(idleExpiryAction({ stage: 'editing', payment: { state: 'under_review' }, captures: [] })).toBe('auto_advance');
+  });
+
+  it('avanza sola cuando hay capturas aunque la sesión sea gratuita', () => {
+    expect(idleExpiryAction({ stage: 'editing', payment: { state: 'free' }, captures: [{}, {}] })).toBe('auto_advance');
+  });
+
+  it('cancela una sesión gratuita que todavía no tiene ninguna foto', () => {
+    expect(idleExpiryAction({ stage: 'capturing', payment: { state: 'free' }, captures: [] })).toBe('cancel');
+  });
+
+  it('cancela en etapa terminal aunque haya pago y capturas', () => {
+    expect(idleExpiryAction({ stage: 'done', payment: { state: 'approved' }, captures: [{}] })).toBe('cancel');
   });
 });

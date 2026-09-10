@@ -17,7 +17,8 @@ export function AttractScreen() {
   const navigate = useNavigate();
   const bundle = useKioskStore((s) => s.bundle);
   const status = useKioskStore((s) => s.status);
-  const resetSession = useKioskStore((s) => s.resetSession);
+  const releaseSession = useKioskStore((s) => s.releaseSession);
+  const pendingRelease = useKioskStore((s) => s.pendingRelease);
   const [slide, setSlide] = useState(0);
 
   const images = useMemo(() => configList(bundle, 'branding.attractImageAssetIds').map((id) => resolveAssetUrl(bundle, id)).filter((u): u is string => !!u), [bundle]);
@@ -33,9 +34,18 @@ export function AttractScreen() {
   const footerText = configString(bundle, 'branding.footerText');
 
   useEffect(() => {
-    // Cualquier sesión previa queda limpia al volver a atracción.
-    resetSession();
-  }, [resetSession]);
+    // Volver a atracción cierra la sesión anterior EN EL APARATO, no sólo en la pantalla. Si el
+    // agente no confirma, queda anotada y se reintenta: la máquina no puede quedarse ocupada por
+    // alguien que ya se fue.
+    void releaseSession('returned_to_attract');
+  }, [releaseSession]);
+
+  // Reintento del cierre pendiente. Mientras exista, la cabina no ofrece empezar.
+  useEffect(() => {
+    if (!pendingRelease) return;
+    const timer = setInterval(() => void releaseSession('release_retry'), 2500);
+    return () => clearInterval(timer);
+  }, [pendingRelease, releaseSession]);
 
   useEffect(() => {
     if (images.length < 2) return;
@@ -43,9 +53,24 @@ export function AttractScreen() {
     return () => clearInterval(id);
   }, [images.length, rotation]);
 
-  const blocked = outOfService || maintenance || !bundle;
-  const blockedTitle = maintenance ? t('kiosk.attract.maintenance') : outOfService ? t('kiosk.attract.out_of_service') : t('kiosk.attract.no_bundle');
-  const blockedText = maintenance ? status?.maintenance.message || t('kiosk.attract.maintenance_text') : outOfService ? t('kiosk.attract.out_of_service_text') : t('kiosk.attract.no_bundle_text');
+  // Una sesión que no se pudo cerrar bloquea la cabina a propósito: es preferible una espera de
+  // segundos, explicada, a que la persona toque «empezar» y se lleve un error del agente.
+  const releasing = !!pendingRelease;
+  const blocked = outOfService || maintenance || !bundle || releasing;
+  const blockedTitle = releasing
+    ? t('kiosk.attract.releasing')
+    : maintenance
+      ? t('kiosk.attract.maintenance')
+      : outOfService
+        ? t('kiosk.attract.out_of_service')
+        : t('kiosk.attract.no_bundle');
+  const blockedText = releasing
+    ? t('kiosk.attract.releasing_text')
+    : maintenance
+      ? status?.maintenance.message || t('kiosk.attract.maintenance_text')
+      : outOfService
+        ? t('kiosk.attract.out_of_service_text')
+        : t('kiosk.attract.no_bundle_text');
 
   return (
     <Shell footer={footerText ? <p className="kiosk-small kiosk-muted">{footerText}</p> : undefined} contentAlign="center">
@@ -78,7 +103,7 @@ export function AttractScreen() {
           </div>
         ) : null}
         {blocked ? (
-          <Notice tone={maintenance ? 'info' : 'warn'} position="static" title={blockedTitle}>
+          <Notice tone={maintenance || releasing ? 'info' : 'warn'} position="static" title={blockedTitle}>
             {blockedText}
           </Notice>
         ) : (

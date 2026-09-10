@@ -78,8 +78,8 @@ export function buildProducts(): Product[] {
     }),
     Product.parse({
       id: P.friendsStrip, organizationId: ID.org.unaDeTodos, internalName: 'tira-amigos', displayName: L('Tira de amigos', 'Friends strip'), category: 'fun', kind: 'entertainment',
-      description: L('Cuatro poses guiadas en una tira clásica 2x6.', 'Four guided poses on a classic 2x6 strip.'), whatYouGet: L('Dos tiras 2x6 con fecha y logo.', 'Two 2x6 strips with date and logo.'),
-      coverAssetId: ID.asset.attractFamily, estimatedDurationSec: 240, captureCount: 4, printCount: 2,
+      description: L('Seis poses guiadas; te quedas con tus cuatro favoritas.', 'Six guided poses; you keep your four favourites.'), whatYouGet: L('Dos tiras 2x6 con fecha y logo.', 'Two 2x6 strips with date and logo.'),
+      coverAssetId: ID.asset.attractFamily, estimatedDurationSec: 240, captureCount: 6, printCount: 2,
       output: { templateId: T.strip2x6, paperSize: '2x6in-strip', copies: 2, printerType: 'photo' },
       experienceId: ID.experience.bestFriends, editing: creativeEditing, retakes: { max: 2 }, autoCapture: false, manualCapture: true, basePrice: mxn(10000), taxInfo: { ratePct: 16, included: true, label: 'IVA incluido' },
       hardwareRequirements: ['camera.primary', 'printer.photo'], requiredFeatures: ['entertainment.mode', 'editing.creative', 'printing.photo'], retentionPolicyId: ID.retention.deleteOnFinish, status: 'active', priority: 10, tags: ['diversion', 'tira', 'insignia'], ...audit(ID.user.adminUnaDeTodos),

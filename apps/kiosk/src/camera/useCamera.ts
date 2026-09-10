@@ -51,7 +51,15 @@ export function useCamera(enabled = true): CameraState {
           await source.start();
         } catch {
           source.stop();
-          kind = 'synthetic';
+          // La cámara sintética es una herramienta de desarrollo y del panel técnico, no un
+          // respaldo silencioso: vender una foto de un rostro dibujado sería un fraude. Sólo
+          // sustituye a la real cuando el técnico la forzó o cuando corremos en desarrollo.
+          if (forced === 'synthetic' || import.meta.env.DEV) {
+            kind = 'synthetic';
+          } else {
+            if (!disposed) setState({ source: undefined, analyzer: undefined, phase: 'failed', visionKind: undefined });
+            return;
+          }
         }
       }
       if (kind === 'synthetic') {
@@ -79,6 +87,11 @@ export function useCamera(enabled = true): CameraState {
         if (ownsAnalyzer) analyzer.dispose();
         return;
       }
+      // Perder la cámara a media sesión es un fallo, no un cuadro congelado: la pantalla pasa a
+      // 'failed' y quien la usa se entera en vez de posar frente a una imagen muerta.
+      source.onLost?.(() => {
+        if (!disposed) setState({ source: undefined, analyzer: undefined, phase: 'failed', visionKind: undefined });
+      });
       setState({ source, analyzer, phase: 'ready', visionKind: analyzer.kind });
     })().catch(() => {
       if (!disposed) setState((s) => ({ ...s, phase: 'failed' }));

@@ -21,7 +21,9 @@ export function buildExperiences(): Experience[] {
     Experience.parse({
       id: ID.experience.bestFriends, organizationId: ID.org.unaDeTodos, key: 'best_friends', name: L('Mejores amigos', 'Best friends'), theme: 'best_friends',
       description: L('Cuatro poses para una tira clásica.', 'Four poses for a classic strip.'),
-      poses: [pose('smile', ['Sonrisa', 'Smile'], ['Sonrían a la cámara.', 'Smile at the camera.'], 2), pose('silly', ['Cara chistosa', 'Silly face'], ['Hagan su cara más ridícula.', 'Make your silliest face.'], 2), pose('hug', ['Abrazo', 'Hug'], ['Un abrazo bien apretado.', 'A big tight hug.'], 2), pose('peace', ['Paz', 'Peace'], ['Señal de paz y guiño.', 'Peace sign and a wink.'], 2)],
+      // Seis poses para cuatro huecos: se dispara de más a propósito. Elegir cuáles se quedan es
+      // el momento que la gente disfruta, y tener dos de sobra es la red que evita repetir tomas.
+      poses: [pose('smile', ['Sonrisa', 'Smile'], ['Sonrían a la cámara.', 'Smile at the camera.'], 2), pose('silly', ['Cara chistosa', 'Silly face'], ['Hagan su cara más ridícula.', 'Make your silliest face.'], 2), pose('hug', ['Abrazo', 'Hug'], ['Un abrazo bien apretado.', 'A big tight hug.'], 2), pose('peace', ['Paz', 'Peace'], ['Señal de paz y guiño.', 'Peace sign and a wink.'], 2), pose('jump', ['Salto', 'Jump'], ['Salten al mismo tiempo.', 'Jump at the same time.'], 2), pose('close', ['Bien juntos', 'Close in'], ['Acérquense mucho a la cámara.', 'Get right up to the camera.'], 2)],
       selection: { min: 4, max: 4, allowReorder: true, allowCompare: true },
       stickerAssetIds: [A.stickerStar, A.stickerHeart, A.blobIdea, A.blobBoost, A.blobCompa, A.blobChispa], editingPresetIds: [ID.editingPreset.vivid, ID.editingPreset.retro, ID.editingPreset.bwSoft], templateId: ID.template.strip2x6, status: 'active', ...audit(ID.user.adminUnaDeTodos),
     }),

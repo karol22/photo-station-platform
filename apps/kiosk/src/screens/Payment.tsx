@@ -13,6 +13,8 @@ import { useSession } from '../session/useSession';
 import { useKioskStore } from '../store';
 
 const SETTLED: PaymentState[] = ['approved', 'free', 'demo', 'not_required', 'operator_started'];
+/** Estados en los que ya salió dinero: cancelar aquí sería quedarse con él. */
+const COMMITTED: PaymentState[] = ['approved', 'under_review'];
 const FAILED: PaymentState[] = ['declined', 'cancelled', 'expired', 'unavailable', 'device_out_of_service'];
 
 export function PaymentScreen() {
@@ -30,8 +32,11 @@ export function PaymentScreen() {
   const state: PaymentState = intent?.state ?? session?.commercial.paymentState ?? 'awaiting';
   const canSimulate = (status?.demoMode || session?.isDemo || import.meta.env.DEV) && intent && !SETTLED.includes(state);
 
-  const createIntent = async () => {
-    if (!session || requested.current) return;
+  const createIntent = async (retry = false) => {
+    if (!session) return;
+    // El cerrojo evita crear dos intentos al entrar; un reintento explícito lo suelta, porque
+    // si no, el botón «reintentar» no hace absolutamente nada. El agente deduplica del otro lado.
+    if (requested.current && !retry) return;
     requested.current = true;
     setCreating(true);
     try {
@@ -78,15 +83,20 @@ export function PaymentScreen() {
             <p className="kiosk-lead">{creating ? t('kiosk.payment.starting') : t('kiosk.payment.hint')}</p>
           </>
         ) : null}
+        {state === 'under_review' ? <p className="kiosk-lead">{t('kiosk.payment.under_review_hint')}</p> : null}
         {state === 'declined' ? <p>{t('kiosk.payment.declined_hint')}</p> : null}
         {state === 'device_out_of_service' || state === 'unavailable' ? <p>{t('kiosk.payment.device_out_hint')}</p> : null}
       </div>
       <div className="kiosk-actions">
-        <BigButton variant="secondary" onClick={() => void cancel('payment_cancelled')}>
-          {t('kiosk.common.cancel')}
-        </BigButton>
+        {/* Con el cobro ya hecho, cancelar desaparece: la sesión continúa. Dejar el botón ahí
+            durante los 900 ms que tarda el avance es ofrecerle a alguien tirar lo que pagó. */}
+        {COMMITTED.includes(state) ? null : (
+          <BigButton variant="secondary" onClick={() => void cancel('payment_cancelled')}>
+            {t('kiosk.common.cancel')}
+          </BigButton>
+        )}
         {failed ? (
-          <BigButton variant="primary" size="xl" loading={creating} loadingLabel={t('kiosk.common.loading')} onClick={() => void createIntent()} data-testid="payment-retry">
+          <BigButton variant="primary" size="xl" loading={creating} loadingLabel={t('kiosk.common.loading')} onClick={() => void createIntent(true)} data-testid="payment-retry">
             {t('kiosk.payment.retry')}
           </BigButton>
         ) : null}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PrintJob, StationSession, StationStatus } from '@psp/contracts';
-import { INITIAL_DATA, applyStationEvent, availableLocales, effectiveCameraKind, initialLocale } from './reducers';
+import { INITIAL_DATA, applyStationEvent, availableLocales, effectiveCameraKind, holdIdle, initialLocale, releaseIdle } from './reducers';
 
 const status = {
   apiVersion: 'station.v1',
@@ -57,5 +57,27 @@ describe('reductor de eventos SSE', () => {
     expect(initialLocale(bundle)).toBe('en');
     expect(availableLocales(bundle)).toEqual(['en']);
     expect(availableLocales(undefined)).toEqual(['es', 'en']);
+  });
+});
+
+describe('retención del temporizador de inactividad', () => {
+  it('cuenta retenciones y nunca baja de cero', () => {
+    let state = { ...INITIAL_DATA };
+    expect(state.idleHolds).toBe(0);
+    state = holdIdle(state);
+    state = holdIdle(state);
+    expect(state.idleHolds).toBe(2);
+    state = releaseIdle(state);
+    expect(state.idleHolds).toBe(1);
+    state = releaseIdle(state);
+    state = releaseIdle(state);
+    expect(state.idleHolds).toBe(0);
+  });
+
+  it('no muta el estado recibido', () => {
+    const state = { ...INITIAL_DATA, idleHolds: 1 };
+    const next = holdIdle(state);
+    expect(state.idleHolds).toBe(1);
+    expect(next).not.toBe(state);
   });
 });

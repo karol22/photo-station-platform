@@ -48,6 +48,8 @@ export { ChoiceCard, CHOICE_STATE_ICON, choiceStateFromAvailability } from './ki
 export type { ChoiceCardProps, ChoiceCardState } from './kiosk/ChoiceCard';
 export { Countdown } from './kiosk/Countdown';
 export type { CountdownProps } from './kiosk/Countdown';
+export { SoundBoard, SOUND_SCORES, buzz, cueDuration, volumeToGain } from './kiosk/sound';
+export type { AudioContextLike, SoundBoardOptions, SoundCue, SoundTone } from './kiosk/sound';
 export { ProgressDots } from './kiosk/ProgressDots';
 export type { ProgressDotsProps } from './kiosk/ProgressDots';
 export { TimeoutBar, formatClock } from './kiosk/TimeoutBar';

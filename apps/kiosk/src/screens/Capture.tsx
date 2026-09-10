@@ -16,6 +16,8 @@ import { SessionFrame } from '../components/SessionFrame';
 import { useT } from '../i18n';
 import { retakesLeft } from '../session/flow';
 import { useSession } from '../session/useSession';
+import { useIdleHold } from '../session/useSessionTimeout';
+import { useSound } from '../sound/useSound';
 import { useKioskStore } from '../store';
 import { resolveAssetUrl } from '../theme/assets';
 
@@ -24,7 +26,15 @@ interface RetakeState {
   index?: number;
 }
 
-type Phase = 'live' | 'countdown' | 'shooting' | 'uploading';
+/**
+ * Fases de la pantalla. `beat` es el respiro después de cada disparo: la foto recién tomada se ve
+ * un instante y se incorpora a la tira. Sin ese compás, la ráfaga se siente atropellada; es la
+ * queja mejor documentada de las cabinas que disparan seguido.
+ */
+type Phase = 'live' | 'countdown' | 'shooting' | 'uploading' | 'beat';
+
+/** Cuánto se queda en pantalla la foto recién tomada antes de seguir con la siguiente. */
+const BEAT_MS = 1400;
 
 export function CaptureScreen() {
   const { t, tl } = useT();
@@ -35,6 +45,7 @@ export function CaptureScreen() {
   const cameraKind = useKioskStore((s) => s.cameraKind);
   const setSession = useKioskStore((s) => s.setSession);
   const camera = useCamera(true);
+  const sound = useSound();
   const [retake, setRetake] = useState<RetakeState>((location.state as RetakeState | null) ?? {});
 
   const [phase, setPhase] = useState<Phase>('live');
@@ -46,9 +57,21 @@ export function CaptureScreen() {
   const [poseIndex, setPoseIndex] = useState(0);
   const [hints, setHints] = useState<InstructionKey[]>([]);
   const [lastShot, setLastShot] = useState<{ url: string; id: string; index: number } | undefined>();
+  /**
+   * En el recorrido social un solo toque arranca toda la tanda y la máquina lleva el ritmo: nadie
+   * toca la pantalla entre foto y foto, porque está posando. El botón manual queda como escape.
+   */
+  const [burst, setBurst] = useState(false);
+  const burstRef = useRef(false);
+  burstRef.current = burst;
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const latest = useRef<{ analysis?: FrameAnalysis; compliance?: ComplianceResult }>({});
   const phaseRef = useRef<Phase>('live');
   phaseRef.current = phase;
+
+  // Posar no es estar inactivo: mientras corre la cuenta regresiva, el disparo o la subida, el
+  // temporizador de inactividad queda retenido y la sesión pagada no se cancela sola.
+  useIdleHold(phase !== 'live' || burst);
 
   const isDocument = product?.kind === 'document' && !!preset;
   const poses: PoseStep[] = useMemo(() => {
@@ -68,6 +91,7 @@ export function CaptureScreen() {
     if (!session || !product || !camera.source) return;
     setPhase('shooting');
     setFlash(true);
+    sound.play('shutter');
     setTimeout(() => setFlash(false), 500);
     try {
       const snap = latest.current;
@@ -91,39 +115,54 @@ export function CaptureScreen() {
       }
       if (retake.retakeOf) setRetake({});
       const created = updated.captures.filter((c) => c.index === currentIndex).at(-1);
-      if (created && retakesLeft(product, updated, currentIndex) > 0 && (product.retakes.perPhoto || product.retakes.wholeSession)) {
-        setLastShot({ url: created.url, id: created.id, index: currentIndex });
-        setPhase('live');
+      // El compás: la foto recién tomada se ve un momento y después sigue la tanda sola.
+      // Aquí no se pregunta nada. Se dispara de más a propósito y elegir se hace al final, de
+      // una sola vez, que es donde la decisión tiene sentido y no interrumpe la pose.
+      if (created) setLastShot({ url: created.url, id: created.id, index: currentIndex });
+      const isLast = currentIndex + 1 >= total;
+      if (isLast) {
+        sound.play('complete');
+        setPhase('beat');
+        timers.current.push(
+          setTimeout(() => {
+            setBurst(false);
+            void advance('captured');
+          }, BEAT_MS),
+        );
         return;
       }
-      if (currentIndex + 1 < total) {
-        setPoseIndex(currentIndex + 1);
-        setPhase('live');
-        controller.reset();
-      } else {
-        await advance('captured');
-      }
+      setPhase('beat');
+      timers.current.push(
+        setTimeout(() => {
+          setLastShot(undefined);
+          setPoseIndex(currentIndex + 1);
+          setPhase('live');
+          controller.reset();
+        }, BEAT_MS),
+      );
     } catch (error) {
       fail(error, 'capture_failed');
     }
-  }, [session, product, camera.source, isDocument, preset, currentIndex, retake.retakeOf, autoEnabled, setSession, advance, total, controller, fail]);
+  }, [session, product, camera.source, isDocument, preset, currentIndex, retake.retakeOf, autoEnabled, setSession, advance, total, controller, fail, sound]);
 
   const startCountdown = useCallback(
     (seconds: number) => {
       if (phaseRef.current !== 'live') return;
       setPhase('countdown');
       setCountdown(seconds);
+      sound.play(seconds <= 1 ? 'tick_last' : 'tick');
       let left = seconds;
       const tick = setInterval(() => {
         left -= 1;
         setCountdown(left);
+        if (left > 0) sound.play(left === 1 ? 'tick_last' : 'tick');
         if (left <= 0) {
           clearInterval(tick);
           void shoot();
         }
       }, 1000);
     },
-    [shoot],
+    [shoot, sound],
   );
 
   useFrameLoop(
@@ -149,26 +188,38 @@ export function CaptureScreen() {
   );
 
   useEffect(() => {
-    if (camera.phase === 'failed') fail(new Error('camera'), 'camera_unavailable');
+    if (camera.phase !== 'failed') return;
+    // La tanda se detiene antes de avisar: seguir disparando sin cámara subiría cuadros muertos.
+    setBurst(false);
+    for (const timer of timers.current) clearTimeout(timer);
+    timers.current = [];
+    fail(new Error('camera'), 'camera_unavailable');
   }, [camera.phase, fail]);
+
+  // La tanda se encadena sola: cuando la pantalla vuelve a estar viva y la ráfaga sigue en curso,
+  // arranca la cuenta de la siguiente pose tras un respiro para leer la instrucción.
+  useEffect(() => {
+    if (!burst || phase !== 'live' || camera.phase !== 'ready') return;
+    const prepare = Math.max(1, session?.timers.prepareBeforeCaptureSec ?? 2);
+    const timer = setTimeout(() => startCountdown(pose?.countdownSec ?? captureCountdown), prepare * 1000);
+    timers.current.push(timer);
+    return () => clearTimeout(timer);
+  }, [burst, phase, camera.phase, currentIndex, pose?.countdownSec, captureCountdown, startCountdown, session?.timers.prepareBeforeCaptureSec]);
+
+  // Los temporizadores pendientes mueren con la pantalla: salir a media tanda no debe disparar.
+  useEffect(
+    () => () => {
+      for (const timer of timers.current) clearTimeout(timer);
+      timers.current = [];
+    },
+    [],
+  );
 
   if (!session || !product) return null;
 
-  const keepShot = () => {
-    setLastShot(undefined);
-    if (currentIndex + 1 < total) {
-      setPoseIndex(currentIndex + 1);
-      controller.reset();
-    } else {
-      void advance('captured');
-    }
-  };
-
-  const retakeShot = () => {
-    if (!lastShot) return;
-    // Repetir: la siguiente toma sustituye a la anterior en el mismo índice.
-    setRetake({ retakeOf: lastShot.id, index: lastShot.index });
-    setLastShot(undefined);
+  const startBurst = () => {
+    sound.confirm();
+    setBurst(true);
   };
 
   const criteria: CriteriaItem[] = isDocument
@@ -242,37 +293,23 @@ export function CaptureScreen() {
           {visionLimited ? <Notice tone="warn" position="static">{t('kiosk.capture.vision_unavailable')}</Notice> : null}
           {cameraKind === 'synthetic' ? <StatusPill tone="info">{t('kiosk.capture.synthetic_notice')}</StatusPill> : null}
           {autoEnabled ? <p className="kiosk-small kiosk-muted">{t('kiosk.capture.auto_hint')}</p> : null}
-          {product.manualCapture || !autoEnabled ? (
-            <BigButton size="xl" variant="primary" block icon={<Icon name="camera" />} disabled={phase !== 'live' || camera.phase !== 'ready'} loading={phase === 'uploading'} loadingLabel={t('kiosk.capture.uploading')} onClick={() => startCountdown(pose?.countdownSec ?? captureCountdown)} data-testid="capture-manual">
-              {isDocument ? t('kiosk.capture.manual') : t('kiosk.capture.start_sequence')}
+          {/* Un solo toque en el recorrido social: arranca la tanda entera y la máquina lleva el
+              ritmo. Mientras corre, el botón desaparece; no hay nada que tocar, sólo posar. */}
+          {isDocument ? (
+            product.manualCapture || !autoEnabled ? (
+              <BigButton size="xl" variant="primary" block icon={<Icon name="camera" />} disabled={phase !== 'live' || camera.phase !== 'ready'} loading={phase === 'uploading'} loadingLabel={t('kiosk.capture.uploading')} onClick={() => startCountdown(pose?.countdownSec ?? captureCountdown)} data-testid="capture-manual">
+                {t('kiosk.capture.manual')}
+              </BigButton>
+            ) : null
+          ) : burst ? (
+            <p className="kiosk-lead kiosk-muted" data-testid="capture-burst">{t('kiosk.capture.burst_running', { n: currentIndex + 1, m: total })}</p>
+          ) : (
+            <BigButton size="xl" variant="primary" block icon={<Icon name="camera" />} disabled={camera.phase !== 'ready'} onClick={startBurst} data-testid="capture-manual">
+              {t('kiosk.capture.start_sequence')}
             </BigButton>
-          ) : null}
-          {!isDocument ? <p className="kiosk-small kiosk-muted">{retakesForPhoto === 0 ? t('kiosk.capture.no_retakes') : retakesForPhoto === 1 ? t('kiosk.capture.retake_one_left') : t('kiosk.capture.retakes_left', { n: retakesForPhoto })}</p> : null}
+          )}
         </div>
       </div>
-      <Sheet
-        open={!!lastShot}
-        title={t('kiosk.common.photo_n_of_m', { n: (lastShot?.index ?? 0) + 1, m: total })}
-        dismissible={false}
-        hideHandle
-        size="half"
-        actions={
-          <>
-            <BigButton variant="secondary" icon={<Icon name="retry" />} onClick={retakeShot} disabled={retakesForPhoto === 0}>
-              {t('kiosk.capture.retake')}
-            </BigButton>
-            <BigButton variant="primary" size="xl" icon={<Icon name="check" />} onClick={keepShot} data-testid="capture-keep">
-              {t('kiosk.capture.keep')}
-            </BigButton>
-          </>
-        }
-      >
-        {lastShot ? (
-          <div className="kiosk-preview">
-            <img src={lastShot.url} alt="" style={{ transform: 'scaleX(-1)' }} />
-          </div>
-        ) : null}
-      </Sheet>
     </SessionFrame>
   );
 }

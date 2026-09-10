@@ -128,6 +128,38 @@ export function computeTimers(effectiveValues: Record<string, unknown>, product:
   };
 }
 
+/**
+ * Estados de pago en los que la persona ya entregó algo a cambio de la sesión. `free`, `demo` y
+ * `operator_started` no mueven dinero, así que no entran: ahí lo que hay que proteger es el
+ * trabajo hecho, no el cobro, y de eso se ocupa `idleExpiryAction`.
+ */
+export const COMMITTED_PAYMENT_STATES: PaymentState[] = ['approved', 'under_review'];
+
+/** Qué hace la cabina cuando se agota el tiempo de inactividad. */
+export type IdleExpiryAction = 'cancel' | 'auto_advance';
+
+/**
+ * Antes de que haya dinero o fotografías de por medio, agotar el tiempo cancela la sesión y libera
+ * la máquina para quien venga detrás: es lo correcto y es lo barato.
+ *
+ * En cuanto la persona pagó, o en cuanto hay capturas suyas en el aparato, cancelar por
+ * inactividad sería quedarse con su dinero o tirar su trabajo porque tardó en decidir. A partir de
+ * ahí la sesión no se cancela: avanza sola con la mejor opción disponible hasta entregarle algo.
+ *
+ * Existe porque una sesión pagada se cancelaba a media secuencia de poses, cuando estar posando
+ * es justamente lo contrario de estar inactivo.
+ */
+export function idleExpiryAction(session: {
+  stage: SessionStage;
+  payment?: { state: PaymentState } | undefined;
+  captures?: readonly unknown[];
+}): IdleExpiryAction {
+  if (TERMINAL_STAGES.includes(session.stage)) return 'cancel';
+  const paid = session.payment ? COMMITTED_PAYMENT_STATES.includes(session.payment.state) : false;
+  const hasWork = (session.captures?.length ?? 0) > 0;
+  return paid || hasWork ? 'auto_advance' : 'cancel';
+}
+
 /** Política de respaldo cuando no hay ninguna configurada: retención mínima (requisito 23.4). */
 export const DEFAULT_RETENTION_POLICY: RetentionPolicy = {
   id: 'ret_delete_on_finish',
