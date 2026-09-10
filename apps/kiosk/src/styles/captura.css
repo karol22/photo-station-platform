@@ -234,7 +234,7 @@
 }
 .kiosk-captura__alcance .psp-bigbutton {
   min-height: max(96px, 14.8vw);
-  font-size: clamp(1.6rem, 5vw, 3.6rem);
+  font-size: var(--psp-font-titular);
   box-shadow: var(--psp-lift);
 }
 /* Mientras la máquina trabaja no hay nada que tocar: la banda la ocupa la pose, actuada. */
@@ -248,7 +248,7 @@
 .kiosk-captura__pose .psp-blob { width: 18vw; height: auto; }
 .kiosk-captura__pose .psp-blob path { stroke: var(--psp-color-text); stroke-width: 2.4; paint-order: stroke fill; }
 .kiosk-captura__instruccion {
-  font-size: clamp(1.4rem, 3.8vw, 2.6rem);
+  font-size: var(--psp-font-destacado);
   font-weight: 700;
   text-wrap: balance;
 }
@@ -263,7 +263,7 @@
   justify-content: center;
   gap: 1.4vw;
   padding: 0 4vw;
-  font-size: clamp(0.8rem, 2.05vw, 1.4rem);
+  font-size: var(--psp-font-micro);
   font-weight: 600;
 }
 

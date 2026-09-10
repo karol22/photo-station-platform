@@ -1,1 +1,198 @@
 /* Pantalla: composicion. Sólo clases con prefijo `.kiosk-composicion`. Lo común vive en `../styles.css`. */
+
+/* ==========================================================================
+   COMPOSICIÓN Y CONFIRMACIÓN
+   El final del recorrido creativo: lo que la persona se lleva ocupa la pantalla, y debajo hay
+   exactamente una acción. Muere la rejilla de dos columnas con el lienzo a la izquierda y una
+   tarjeta blanca de copias a la derecha: eso es un panel de administración, no una cabina.
+
+   Estas dos pantallas conservan `SessionFrame`, porque el temporizador de inactividad que no
+   cancela una sesión con fotografías de por medio vive ahí y no se toca. Lo único que hace falta
+   es que su área de contenido deje de dibujar márgenes alrededor del resultado, y eso se pide
+   desde aquí, anclado a la clase de la pantalla: la regla no existe cuando la pantalla no está.
+   ========================================================================== */
+/* El campo de la etapa se declara en el marco, no en la pantalla: una variable sólo baja, nunca
+   sube, y si se declarara aquí dentro el color llegaría al contenido pero no al vidrio. */
+.psp-kiosk-shell:has(.kiosk-composicion[data-stage='compose']) { --psp-field: var(--psp-color-accent-2); }
+.psp-kiosk-shell:has(.kiosk-composicion[data-stage='confirm']) { --psp-field: var(--psp-color-accent-3); }
+.psp-kiosk-shell:has(> .psp-kiosk-shell__main > .kiosk-composicion) {
+  /* Alto definido, no sólo mínimo: con `min-height` las filas en `fr` se estiran hasta el
+     contenido y el resultado empuja la acción fuera de la pantalla. Aquí nada se desplaza. */
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--psp-field);
+  --psp-rincon: color-mix(in srgb, var(--psp-field) 72%, var(--psp-color-text));
+  /* La luz del sistema es blanco puro y ya tiene token; el literal sólo cubre el arranque, antes
+     de que el tema de la marca se haya aplicado. */
+  --psp-aro: color-mix(in srgb, var(--psp-field) 38%, var(--psp-flash, #ffffff));
+  --psp-lift: 12px 12px 0 var(--psp-rincon);
+}
+/* Rejilla, no columna elástica: con filas en `fr` dentro de un alto automático cada banda crece
+   hasta su contenido y la composición se sale de la pantalla. El alto tiene que ser definido. */
+.psp-kiosk-shell__main:has(> .kiosk-composicion) {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  min-height: 0;
+  background: var(--psp-field);
+  color: var(--psp-color-text);
+}
+/* El título de `SessionFrame` deja de ser un encabezado de aplicación y pasa a ser el rótulo del
+   cartel: una sola línea, ancha, centrada, en la tinta del sistema. */
+.psp-kiosk-shell__main:has(> .kiosk-composicion) > .kiosk-title {
+  margin: 0;
+  padding: 0.34em 4vw 0.1em;
+  text-align: center;
+  text-wrap: balance;
+  font-size: var(--psp-font-titular);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 0.94;
+}
+
+/* Las mismas cinco bandas del resto del recorrido, menos la marquesina, que aquí la pone el marco:
+   CARTEL (se mira) · REPISA (se toca sin decidir) · ALCANCE (la acción) · ZÓCALO (la operación). */
+.kiosk-composicion {
+  display: grid;
+  grid-template-rows: minmax(0, 1060fr) 300fr 300fr 140fr;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+  color: var(--psp-color-text);
+  background: var(--psp-field);
+}
+
+/* CARTEL: una sola cosa, a sangre. Ningún objetivo táctil vive aquí. */
+.kiosk-composicion__cartel {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+/* El resultado no lleva tarjeta, ni radio, ni sombra difuminada: es el producto, y el producto se
+   sostiene solo. El canto de tinta lo separa del campo sin inventarle un marco blanco.
+   Va colocado, no centrado por rejilla: dentro de una fila en `fr` un porcentaje de alto no tiene
+   contra qué resolverse y la foto se sale por abajo, que es justo el borde que importa. */
+.kiosk-composicion__lienzo {
+  position: absolute;
+  inset: 2.2vh 4vw;
+  margin: auto;
+  display: block;
+  /* Llena la banda: el resultado es el producto, no una miniatura en medio de un campo de color.
+     Con el alto fijado y el ancho libre, el navegador conserva la proporción y el canto de tinta
+     sigue pegado a la imagen. */
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  max-height: 100%;
+  border: 0;
+  border-radius: 0;
+  outline: 6px solid var(--psp-color-text);
+  outline-offset: 0;
+  box-shadow: var(--psp-lift);
+  background: transparent;
+}
+
+/* Mientras se dibuja la vista previa no hay giro de cargador: hay seis formas trabajando. */
+.kiosk-composicion__armando {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 2.4vh;
+  background: var(--psp-field);
+}
+.kiosk-composicion__familia { display: flex; align-items: flex-end; justify-content: center; }
+.kiosk-composicion__familia .psp-blob { width: 11vw; height: auto; }
+.kiosk-composicion__familia .psp-blob path { stroke: var(--psp-color-text); stroke-width: 3; paint-order: stroke fill; }
+.kiosk-composicion__familia > * + * { margin-left: -2vw; }
+.kiosk-composicion__familia > * { animation: kiosk-composicion-vaiven 2.6s ease-in-out infinite; }
+@keyframes kiosk-composicion-vaiven {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.6vh); }
+}
+.kiosk-composicion__armando-texto { font-size: var(--psp-font-destacado); font-weight: 700; }
+
+/* REPISA: lo que se toca sin decidir nada grave, y el dato que acompaña. */
+.kiosk-composicion__repisa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2vw;
+  padding: 0 4vw;
+  min-height: 0;
+}
+.kiosk-composicion__copias { display: flex; align-items: center; gap: 2.4vw; }
+.kiosk-composicion__copias-label { font-size: var(--psp-font-cuerpo); font-weight: 700; }
+.kiosk-composicion__copias-valor {
+  font-size: var(--psp-font-titular);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  min-width: 2ch;
+}
+/* Los milímetros de papel son el trámite, no la foto: sólo el recorrido documental los enseña. */
+.kiosk-composicion__papel { font-size: var(--psp-font-micro); font-weight: 600; margin: 0; }
+.kiosk-composicion__resumen { font-size: var(--psp-font-destacado); font-weight: 800; margin: 0; }
+.kiosk-composicion__aviso {
+  margin: 0;
+  padding: 0.5em 1em;
+  background: var(--psp-aro);
+  color: var(--psp-color-text);
+  font-size: var(--psp-font-cuerpo);
+  font-weight: 700;
+  box-shadow: var(--psp-lift);
+  max-width: 90%;
+}
+
+/* ALCANCE: exactamente una acción primaria, ancho completo, a la altura del pulgar. */
+.kiosk-composicion__alcance {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1vh;
+  padding: 0 4vw;
+}
+.kiosk-composicion__accion.psp-bigbutton {
+  width: 100%;
+  min-height: 160px;
+  border-radius: 0;
+  background: var(--psp-color-text);
+  color: var(--psp-aro);
+  border-color: var(--psp-color-text);
+  font-size: var(--psp-font-titular);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  box-shadow: var(--psp-lift);
+}
+/* La salida siempre visible, nunca escondida: pequeña, sin campo, pero con área táctil de sobra. */
+.kiosk-composicion__salida.psp-bigbutton {
+  min-height: 64px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--psp-color-text);
+  box-shadow: none;
+  font-size: var(--psp-font-micro);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* ZÓCALO: a quién llamo y qué máquina es. Tinta plena, nunca atenuada. */
+.kiosk-composicion__zocalo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vw;
+  padding: 0 4vw;
+  font-size: var(--psp-font-micro);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kiosk-composicion__familia > * { animation: none; }
+}

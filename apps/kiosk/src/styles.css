@@ -66,24 +66,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .kiosk-number-field input { font-size: var(--psp-font-cuerpo); width: 6em; min-height: 64px; border-radius: 12px; border: 2px solid var(--psp-color-border, #ccd); text-align: center; }
 .kiosk-textarea { width: 100%; min-height: 96px; font: inherit; font-size: var(--psp-font-cuerpo); border-radius: 12px; border: 2px solid var(--psp-color-border, #ccd); padding: 12px; }
 
-/* Enlace efímero de cliente (ADR-011) */
-.kiosk-handoff { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px; border: 2px dashed var(--psp-color-muted, #94a3b8); border-radius: 20px; width: 100%; }
-.kiosk-handoff--done { border-style: solid; border-color: var(--psp-color-ok, #16a34a); }
-.kiosk-handoff__qr { border-radius: 12px; background: #fff; padding: 4px; box-shadow: 0 6px 18px rgba(11, 27, 63, 0.12); }
-/* El código de rescate va en el papel utilitario: es el único texto que alguien transcribe de
-   pie, y con la pila del sistema `0/O`, `1/I` y `5/S` se confunden a metro y medio. */
-.kiosk-handoff__code {
-  font-family: var(--psp-font-mono);
-  font-size: var(--psp-font-codigo);
-  font-weight: 700;
-  font-feature-settings: var(--psp-feat-codigo);
-  letter-spacing: 0.06em;
-  word-spacing: 0.5em;
-  line-height: 1;
-  margin: 0;
-}
-.kiosk-handoff__scan { display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 120px; justify-content: center; }
-.kiosk-handoff__sim { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+/* El enlace efímero de cliente (ADR-011) sólo se ve en el cierre: sus reglas viven en
+   `styles/cierre.css`, junto a la pantalla que lo enseña. */
 
 
 
