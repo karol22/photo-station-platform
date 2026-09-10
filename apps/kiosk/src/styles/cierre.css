@@ -1,1 +1,304 @@
 /* Pantalla: cierre. Sólo clases con prefijo `.kiosk-cierre`. Lo común vive en `../styles.css`. */
+
+/* ==========================================================================
+   CIERRE
+   El momento de celebración del producto: impresión, entrega y despedida. Muere la tarjeta blanca
+   centrada de 720 px con el código de sesión y el estado de impresión, que son datos de la
+   operación y no del momento; y muere el giro del cargador, porque nadie mira un cargador.
+
+   Las mismas cinco bandas del resto del recorrido. La marquesina la pone el marco a sangre.
+   ========================================================================== */
+/* Alto definido, no sólo mínimo: `KioskShell` a sangre declara `min-height`, y con eso las filas
+   en `fr` se estiran hasta el contenido y la acción se va fuera de la pantalla. Aquí nada se
+   desplaza: lo que sobra se recorta, que en una cabina es siempre mejor que un scroll. */
+.psp-kiosk-shell:has(> .psp-kiosk-shell__main > .kiosk-cierre) {
+  height: 100dvh;
+  overflow: hidden;
+}
+.psp-kiosk-shell__main:has(> .kiosk-cierre) { min-height: 0; overflow: hidden; }
+
+.kiosk-cierre {
+  display: grid;
+  grid-template-rows: minmax(0, 1060fr) 300fr 300fr 140fr;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  text-align: center;
+  color: var(--psp-color-text);
+  background: var(--psp-field);
+}
+/* Cada etapa es una habitación con su color; la luz y la profundidad se derivan de ese color. */
+.kiosk-cierre[data-stage] {
+  --psp-rincon: color-mix(in srgb, var(--psp-field) 72%, var(--psp-color-text));
+  /* La luz del sistema es blanco puro y ya tiene token; el literal sólo cubre el arranque, antes
+     de que el tema de la marca se haya aplicado. */
+  --psp-aro: color-mix(in srgb, var(--psp-field) 38%, var(--psp-flash, #ffffff));
+  --psp-lift: 12px 12px 0 var(--psp-rincon);
+}
+.kiosk-cierre[data-stage='print'] { --psp-field: var(--psp-color-accent-1); }
+.kiosk-cierre[data-stage='done'] { --psp-field: var(--psp-color-accent-6); }
+/* Un aviso de fuera de servicio ocupa la pantalla entera, no una esquina: si la máquina no puede,
+   se ve desde el pasillo y nadie hace fila para nada. */
+.kiosk-cierre[data-stage='error'] { --psp-field: var(--psp-color-accent-4); }
+
+/* CARTEL: una sola cosa. Nada táctil a la altura de la cara. */
+.kiosk-cierre__cartel {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  justify-items: center;
+  gap: 1.4vh;
+  min-height: 0;
+  overflow: hidden;
+  padding: 1.6vh 3vw 0;
+}
+.kiosk-cierre__rotulo {
+  margin: 0;
+  font-size: clamp(2.4rem, 9vw, 6rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+  text-wrap: balance;
+}
+.kiosk-cierre__estado {
+  margin: 0;
+  font-size: clamp(1.4rem, 4.4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+/* El resultado, a sangre y sin tarjeta: es el producto. Va colocado, no centrado por rejilla,
+   porque dentro de una fila en `fr` un porcentaje de alto no tiene contra qué resolverse y la
+   foto se sale por abajo, que es justo el borde que importa. */
+.kiosk-cierre__resultado {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  display: block;
+  /* Llena la banda: con el alto fijado y el ancho libre el navegador conserva la proporción, y el
+     canto de tinta sigue pegado a la imagen en vez de dibujar una caja más grande que ella. */
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0;
+  outline: 6px solid var(--psp-color-text);
+  box-shadow: var(--psp-lift);
+  background: transparent;
+}
+
+/* La entrega: el cuadro del QR vive sobre papel blanco con su zona de silencio, nunca sobre el
+   campo, nunca sobre la foto y nunca con algo animado debajo. Un QR sobre color no escanea, y
+   ponerlo encima de la fotografía es el fallo de entrega número uno documentado. */
+.kiosk-cierre__entrega {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  gap: 3vw;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 1.4vh;
+}
+.kiosk-cierre__entrega--sola { grid-auto-flow: row; }
+
+/* REPISA: la familia celebrando y el resultado en pequeño. Sin scroll, sin rejilla de gestor. */
+.kiosk-cierre__repisa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2vw;
+  padding: 0 4vw;
+  min-height: 0;
+}
+.kiosk-cierre__miniatura {
+  max-height: 100%;
+  max-width: 34vw;
+  width: auto;
+  border-radius: 0;
+  outline: 4px solid var(--psp-color-text);
+  box-shadow: var(--psp-lift);
+}
+/* Los seis, no tres: la marca es el conjunto de colores, y aquí se enseñan todos juntos.
+   La que comparte color con el campo se vestiría de campo y desaparecería, así que se viste de
+   luz: sigue siendo la misma de la bandada, pero se ve. */
+.kiosk-cierre[data-stage='print'] .kiosk-cierre__familia > :nth-child(1) .psp-blob path,
+.kiosk-cierre[data-stage='done'] .kiosk-cierre__familia > :nth-child(6) .psp-blob path {
+  fill: var(--psp-aro);
+}
+.kiosk-cierre__familia { display: flex; align-items: flex-end; justify-content: center; }
+.kiosk-cierre__familia .psp-blob { width: 11vw; height: auto; }
+.kiosk-cierre__familia .psp-blob path { stroke: var(--psp-color-text); stroke-width: 3; paint-order: stroke fill; }
+.kiosk-cierre__familia > * + * { margin-left: -2vw; }
+/* Entran de una en una, y se quedan. Sólo transform y opacity. */
+.kiosk-cierre__familia > * { animation: kiosk-cierre-entra 520ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+@keyframes kiosk-cierre-entra {
+  from { opacity: 0; transform: translate3d(0, 26%, 0) scale(0.82); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Sin nada que tocar no hay banda de alcance: 300 px de campo vacío no dicen nada, y la
+   celebración se queda con el sitio. */
+.kiosk-cierre:has(> .kiosk-cierre__alcance:empty) { grid-template-rows: minmax(0, 1060fr) 600fr 0 140fr; }
+/* La banda se queda en su sitio con altura cero: quitarla del flujo correría el zócalo a una fila
+   que no es la suya y el contacto de la máquina se perdería justo donde más hace falta. */
+.kiosk-cierre__alcance:empty { overflow: hidden; }
+
+/* ALCANCE: exactamente una acción primaria, ancho completo. */
+.kiosk-cierre__alcance {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1vh;
+  padding: 0 4vw;
+}
+.kiosk-cierre__accion.psp-bigbutton {
+  width: 100%;
+  min-height: 160px;
+  border-radius: 0;
+  background: var(--psp-color-text);
+  color: var(--psp-aro);
+  border-color: var(--psp-color-text);
+  font-size: clamp(1.6rem, 5vw, 3.4rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  box-shadow: var(--psp-lift);
+}
+.kiosk-cierre__salida.psp-bigbutton {
+  min-height: 64px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--psp-color-text);
+  box-shadow: none;
+  font-size: clamp(0.95rem, 2.4vw, 1.4rem);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* ZÓCALO: qué máquina es, a quién llamo y qué pasa con las fotos. Tinta plena, nunca atenuada:
+   es el único texto que la operación obliga a leer. */
+.kiosk-cierre__zocalo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vw;
+  padding: 0 4vw;
+  font-size: clamp(0.8rem, 1.9vw, 1.2rem);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   ENLACE EFÍMERO DE CLIENTE (ADR-011)
+   El enlace identifica a la persona ante el Club; jamás transporta la fotografía. Vive aquí
+   porque el cierre es la única pantalla del recorrido que lo enseña.
+   ========================================================================== */
+.kiosk-handoff {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1.2vh;
+  min-height: 0;
+}
+/* El papel: blanco puro, con la zona de silencio dibujada dentro del propio SVG. La marca vive
+   alrededor del papel, nunca dentro de él. */
+.kiosk-handoff__papel {
+  display: grid;
+  place-items: center;
+  padding: 1.2vh 1.2vw;
+  background: var(--psp-qr-paper, #ffffff);
+  box-shadow: var(--psp-lift);
+}
+.kiosk-handoff__qr {
+  display: block;
+  width: min(38vw, 460px);
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+/* El único texto que un ser humano transcribe de pie, y por eso el más grande de la pantalla
+   después del rótulo. Cifras tabulares para que no baile al rotar el token. */
+.kiosk-handoff__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(2.6rem, 11vw, 7.5rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin: 0;
+}
+.kiosk-handoff__instruccion {
+  margin: 0;
+  font-size: clamp(1.1rem, 3vw, 2rem);
+  font-weight: 800;
+  text-wrap: balance;
+}
+.kiosk-handoff__reloj {
+  margin: 0;
+  font-size: clamp(1rem, 2.6vw, 1.6rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.kiosk-handoff__nota { margin: 0; font-size: clamp(0.8rem, 1.9vw, 1.2rem); font-weight: 600; }
+/* Enlazado y caducado: el estado se dice con tamaño, no con una pastilla de color. */
+.kiosk-handoff--done .kiosk-handoff__instruccion { font-size: clamp(1.6rem, 5vw, 3rem); }
+.kiosk-handoff__sim { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.kiosk-handoff__sim .kiosk-chip { min-height: 64px; }
+
+/* ==========================================================================
+   FUERA DE SERVICIO
+   El error ocupa la pantalla entera. Vive en este archivo porque es el otro final del camino.
+   ========================================================================== */
+.kiosk-cierre--error { text-align: center; }
+/* Sin rótulo aparte, el aviso ES el cartel y se centra en él. */
+.kiosk-cierre--error .kiosk-cierre__cartel { grid-template-rows: minmax(0, 1fr); align-items: center; align-content: center; }
+.kiosk-cierre--error .psp-errorpanel {
+  max-width: none;
+  width: 100%;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0 4vw;
+  align-items: center;
+  text-align: center;
+}
+/* El aviso se dibuja con la tinta del sistema sobre el campo, no con una pastilla de color de
+   estado: aquí no hay un tablero que semaforizar, hay una cabina que no puede. */
+.kiosk-cierre--error .psp-errorpanel__icon {
+  font-size: clamp(3rem, 12vw, 8rem);
+  width: 1.4em;
+  height: 1.4em;
+  border-radius: 0;
+  background: transparent;
+  color: var(--psp-color-text);
+}
+.kiosk-cierre--error .psp-errorpanel__icon svg { width: 1em; height: 1em; }
+.kiosk-cierre--error .psp-errorpanel__what {
+  font-size: clamp(2rem, 8vw, 5rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+.kiosk-cierre--error .psp-errorpanel__todo { font-size: clamp(1.2rem, 3.6vw, 2.4rem); font-weight: 700; }
+/* Tinta plena: a quién llamar es el texto que la operación obliga a leer, no letra chica. */
+.kiosk-cierre--error .psp-errorpanel__help { font-size: clamp(1rem, 2.8vw, 1.8rem); font-weight: 600; color: var(--psp-color-text); }
+.kiosk-cierre--error .psp-errorpanel__incident {
+  font-size: clamp(0.85rem, 2vw, 1.2rem);
+  border-radius: 0;
+  background: transparent;
+  color: var(--psp-color-text);
+}
+.kiosk-cierre--error .psp-errorpanel__actions { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kiosk-cierre__familia > * { animation: none; }
+}

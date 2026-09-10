@@ -1,9 +1,15 @@
 /**
  * Error comprensible: qué pasó, qué hacer, cómo pedir ayuda y código de incidente.
  * Los textos salen de `kiosk.errors.<code>.*` con respaldo genérico.
+ *
+ * Un aviso de que la máquina no puede ocupa la pantalla entera, no una tarjeta de 480 px en el
+ * centro: si la cabina falló, eso tiene que verse desde el pasillo para que nadie haga fila para
+ * nada. Se usan las mismas cinco bandas del resto del recorrido, y el canal de contacto va en el
+ * zócalo en tinta plena: dos de cada tres quejas formales documentadas contra cabinas de
+ * autoservicio incluyen «no pude localizar al operador».
  */
 import { useNavigate } from 'react-router-dom';
-import { BigButton, ErrorPanel, Icon } from '@psp/ui';
+import { BigButton, ErrorPanel, Icon, Marquee } from '@psp/ui';
 import { EXTRA_TABLE } from '../i18n/extra';
 import { Shell } from '../components/Shell';
 import { useT } from '../i18n';
@@ -11,6 +17,7 @@ import { ROUTES } from '../session/flow';
 import { useSession } from '../session/useSession';
 import { useKioskStore } from '../store';
 import { configString } from '../theme/assets';
+import { ClosingFooter } from './Finish';
 
 export function ErrorScreen() {
   const { t } = useT();
@@ -29,28 +36,37 @@ export function ErrorScreen() {
   };
 
   return (
-    <Shell contentAlign="center">
-      <ErrorPanel
-        what={t(`kiosk.errors.${code}.title`)}
-        whatToDo={t(`kiosk.errors.${code}.what`)}
-        help={support ? t('kiosk.errors.help_contact', { contact: support }) : t('kiosk.errors.help')}
-        incidentCode={incident}
-        incidentLabel={t('kiosk.errors.incident')}
-        size="lg"
-        actions={
-          <>
-            {session ? (
-              <BigButton variant="secondary" icon={<Icon name="retry" />} onClick={() => navigate(-1)}>
-                {t('kiosk.errors.retry')}
-              </BigButton>
-            ) : null}
-            <BigButton variant="primary" size="xl" onClick={home} data-testid="error-home">
-              {t('kiosk.errors.home')}
+    <Shell bleed hideHeader hideLang marquee={<Marquee cadence="still" />}>
+      <div className="kiosk-cierre kiosk-cierre--error" data-stage="error" data-testid="error">
+        <div className="kiosk-cierre__cartel">
+          {/* El panel conserva su semántica de aviso (`role="alert"`) y su orden —qué pasó, qué
+              hacer, cómo pedir ayuda—; lo que cambia es que ya no vive dentro de una tarjeta. */}
+          <ErrorPanel
+            what={t(`kiosk.errors.${code}.title`)}
+            whatToDo={t(`kiosk.errors.${code}.what`)}
+            help={support ? t('kiosk.errors.help_contact', { contact: support }) : t('kiosk.errors.help')}
+            incidentCode={incident}
+            incidentLabel={t('kiosk.errors.incident')}
+            size="lg"
+            data-testid="error-panel"
+          />
+        </div>
+
+        <div className="kiosk-cierre__repisa" />
+
+        <div className="kiosk-cierre__alcance">
+          <BigButton className="kiosk-cierre__accion" variant="primary" size="xl" block onClick={home} data-testid="error-home">
+            {t('kiosk.errors.home')}
+          </BigButton>
+          {session ? (
+            <BigButton className="kiosk-cierre__salida" variant="ghost" icon={<Icon name="retry" />} onClick={() => navigate(-1)}>
+              {t('kiosk.errors.retry')}
             </BigButton>
-          </>
-        }
-        data-testid="error-panel"
-      />
+          ) : null}
+        </div>
+
+        <ClosingFooter bundle={bundle} />
+      </div>
     </Shell>
   );
 }
