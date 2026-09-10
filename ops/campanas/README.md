@@ -10,6 +10,6 @@ Plantilla: [`PLANTILLA.md`](PLANTILLA.md).
 
 | Campaña | Estado |
 |---|---|
-| [Rediseño visual del kiosco](rediseno-visual-kiosco/STATE.md) | abierta |
+| [Rediseño visual del kiosco](rediseno-visual-kiosco/STATE.md) · [por dónde empezar](rediseno-visual-kiosco/LEEME.md) | abierta, esperando aprobación |
 
 El progreso general del repositorio, que es otra cosa, vive en [`../state/PROGRESS.md`](../state/PROGRESS.md).

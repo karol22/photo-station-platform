@@ -1,7 +1,7 @@
 # Campaña: rediseño visual del kiosco
 
 **Modo:** desarrollador
-**Abierta:** 2026-09-09 · **Estado:** abierta
+**Abierta:** 2026-09-09 · **Estado:** abierta, esperando el único veredicto que cuenta
 
 ## Objetivo
 
@@ -98,9 +98,9 @@ la aprueba mirándola. Eso último es el único veredicto que cuenta.
 
 ## Siguiente acción atómica
 
-Recorrer las ocho pantallas seguidas en el navegador, con la pantalla emulada a 1080×1920, y
-mirarlas: reposo, elegir, consentimiento, pago, captura, revisión, edición y cierre. Es lo único
-que queda antes de enseñárselas a quien las encargó.
+Enseñárselo a quien lo encargó y que lo mire. El recorrido completo ya se ejerció de punta a punta
+en el navegador a 1080×1920 y las trece compuertas están en verde; lo que falta no es trabajo, es
+un juicio que ninguna prueba puede dar.
 
 ## Lo que el plan pedía y no se hizo, con su motivo
 

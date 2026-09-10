@@ -62,6 +62,40 @@ Reglas que la escala impone:
 
 Se mira y se aprueba en `ops/campanas/rediseno-visual-kiosco/ESPECIMEN.html`.
 
+## La marca como material, no como adorno
+
+Cuatro piezas hacen que el kiosco se vea como una cabina y no como un panel de administración.
+
+**`BlobFace`** es la familia: seis siluetas de lóbulos redondos que se funden en una nube mullida,
+de color plano y sin contorno, cada una distinta. Tiene gesto —respira, se asoma, celebra, habla— y
+mirada dirigible: seis formas mirando hacia el precio dicen «mira el precio» en cualquier idioma,
+que es lo que necesita alguien que no va a leer. Cada variante entra desfasada, porque seis formas
+al unísono parecen un banner y desfasadas parecen una bandada.
+
+**`BlobPile`** las apila y las solapa. El montón ES el significado: formas distintas, de tamaños
+distintos, y todas caben. Una fila ordenada de seis siluetas iguales diría catálogo.
+
+**`BlobFrame`** da esa forma a un contenedor sin escalar al personaje, que es el error que vuelve
+ilegible lo que va encima. La amplitud es la única decisión: 0.45 para un botón, 0.30 para una
+miniatura y 0.14 —casi recto— para todo lo que contenga la cara de una persona.
+
+**`Marquee`** es la banda de focos del borde superior. Hace tres trabajos a la vez: es lo que se ve
+moverse desde el fondo de un pasillo, es luz sobre la cara de quien posa, y es el único reloj del
+recorrido social —el tiempo se ve como focos que se apagan, nunca como un contador en rojo—.
+
+Los papeles de color no son posiciones. `assignAccentRoles` deduce del color cuál es la luz, cuál
+confirma y cuál avisa, porque escribir «el cuarto acento confirma el pago» es cierto de una paleta y
+falso de una plataforma multi-marca.
+
+## El sonido
+
+`SoundBoard` sintetiza los avisos con osciladores: **no se empaqueta ni un archivo de audio**. Cuenta,
+obturador, aterrizaje, cobro aprobado, celebración, toque y rechazo. El volumen sale de la máquina y
+en cero la cabina trabaja en silencio sin perder una sola instrucción, porque cada aviso tiene gemelo
+visual obligatorio. El contexto de audio nace en el primer toque, que es cuando un navegador deja
+sonar, y un aparato sin Web Audio queda mudo en vez de roto.
+
+
 Criterios de accesibilidad aplicados: controles táctiles de al menos 64 px en modo kiosco, contraste calculado por luminancia para cada color de marca, estados que combinan icono y texto (nunca sólo color), una acción principal por pantalla, confirmaciones para acciones irreversibles.
 
 ## Cómo se prueba

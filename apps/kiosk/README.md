@@ -3,7 +3,19 @@
 ## Propósito
 UI táctil del cliente y panel técnico de la estación. PWA React (React 19, React Router 7, zustand 5) que **sólo habla con el agente local** en `/station/v1` (fetch) y `/station/v1/events` (EventSource). Toda respuesta pasa por `safeParse` del contrato (`src/api/station.ts`) antes de usarse. Ningún texto de marca, precio, ciudad ni negocio está en el código: todo sale del bundle (`GET /bundle`) o de i18n (`@psp/i18n` + `src/i18n/extra.ts`).
 
-Recorridos: atracción → inicio → producto → (consentimiento) → (pago) → captura documental con guía en tiempo real y auto-captura, o captura de entretenimiento por poses → revisión → edición → (selección) → composición → confirmación → impresión → finalización. Errores comprensibles con código de incidente. Panel técnico protegido por PIN.
+Dos recorridos con ritmos distintos.
+
+**Social**: atracción → elegir → (consentimiento) → (pago) → una ráfaga de tomas que arranca con un
+solo toque → quedarte con las que quieras → un estilo para todas → composición → confirmación →
+impresión → cierre. Se dispara de más a propósito: seis tomas para cuatro huecos, y elegir se hace
+una sola vez al final en lugar de aprobar foto por foto.
+
+**Documental**: atracción → elegir → (consentimiento) → (pago) → captura con guía en tiempo real y
+auto-captura → revisión con criterios y repetición → edición con ajustes finos → composición →
+confirmación → impresión → cierre. Conserva su sobriedad: sin marquesina corriendo, sin siluetas
+sobre la foto y sin embellecimiento, porque a una fotografía de trámite no se le altera la fidelidad.
+
+Errores comprensibles con código de incidente. Panel técnico protegido por PIN.
 
 ## Cómo se usa
 
@@ -39,9 +51,9 @@ pnpm --filter @psp/kiosk preview    # sirve dist/ con el mismo proxy
 | `consent` | `/session/consent` | `Consent` |
 | `awaiting_payment` | `/session/payment` | `Payment` |
 | `capturing` | `/session/capture` | `Capture` (documental o experiencia según el producto) |
-| `reviewing` | `/session/review` | `Review` |
+| `reviewing` | `/session/review` | `Review` (social: quedarte con N de M en una sola pantalla; documental: criterios y repetición) |
 | `editing` | `/session/edit` | `Edit` |
-| `selecting` | `/session/select` | `Select` |
+| `selecting` | `/session/select` | `Review` (la etapa ya no se emite; la ruta sobrevive para recuperar sesiones guardadas en ella) |
 | `composing` | `/session/compose` | `Compose` |
 | `confirming` | `/session/confirm` | `Confirm` |
 | `printing` | `/session/print` | `Print` |
@@ -49,10 +61,27 @@ pnpm --filter @psp/kiosk preview    # sirve dist/ con el mismo proxy
 | `failed` | `/error` | `Error` |
 | — | `/tech` | `Tech` |
 
-La lista de etapas por producto sale de `stagesForProduct` (`@psp/domain`) con `paymentRequired`/`consentRequired` calculados en `flow.ts`; cada avance hace `POST /sessions/:id/stage`. El temporizador de inactividad (`timers.idleTimeoutSec`, aviso a `warningBeforeCancelSec`) vive en `useSessionTimeout`; cualquier toque lo reinicia, "Necesito más tiempo" llama a `POST /extend` y al agotarse cancela y vuelve a atracción.
+La lista de etapas por producto sale de `stagesForProduct` (`@psp/domain`) con
+`paymentRequired`/`consentRequired` calculados en `flow.ts`; cada avance hace `POST /sessions/:id/stage`.
+
+**El temporizador de inactividad** (`useSessionTimeout`) cuenta tres cosas como seguir ahí: tocar la
+pantalla, que la sesión avance de verdad (un `updatedAt` nuevo del agente), y que la máquina esté
+trabajando para la persona —durante la cuenta y la ráfaga nadie toca nada porque está posando, y las
+pantallas retienen el reloj con `useIdleHold`—. Al agotarse, `idleExpiryAction` (`@psp/domain`)
+decide: sin pago ni capturas cancela y libera la cabina; con pago o con capturas **nunca cancela**,
+y cada pantalla declara en `onAutoAdvance` qué significa seguir sola.
+
+**Volver a atracción cierra la sesión en el aparato**, no sólo en la pantalla (`releaseSession`). Si
+el agente no confirma, la cabina se declara ocupada y reintenta en lugar de rechazar a la siguiente
+persona con `session_active`.
 
 ### Estructura
-`src/api` (cliente + SSE) · `src/store` (zustand, reductores puros en `reducers.ts`) · `src/theme` (tema y activos: `assetBaseUrl/hash`) · `src/camera` (fuentes y bucle de frames ~12 fps sobre 640×360) · `src/vision` (analizador) · `src/capture` (recorte y resumen de análisis) · `src/compose/plan.ts` (adaptador a `planTemplate`/`planDocumentSheet`/`renderPlanToCanvas`, con plan mínimo de respaldo) · `src/session` (flujo, sesión, tiempo) · `src/screens` · `src/components` · `src/i18n` (traductor y catálogo extra con paridad es/en).
+`src/api` (cliente + SSE) · `src/store` (zustand, reductores puros en `reducers.ts`) · `src/theme` (tema y activos: `assetBaseUrl/hash`) · `src/camera` (fuentes y bucle de frames ~12 fps sobre 640×360) · `src/vision` (analizador) · `src/capture` (recorte y resumen de análisis) · `src/compose/plan.ts` (adaptador a `planTemplate`/`planDocumentSheet`/`renderPlanToCanvas`, con plan mínimo de respaldo) · `src/session` (flujo, sesión, tiempo) · `src/sound` (mesa de avisos sobre `@psp/ui`) · `src/screens` ·
+`src/components` · `src/styles/` (un archivo por pantalla) · `src/i18n` (traductor, catálogo común y
+`pantallas/`, un archivo por pantalla, con paridad es/en).
+
+Los archivos por pantalla existen para que varias personas trabajen en pantallas distintas sin editar
+las mismas líneas.
 
 ## Cómo se prueba
 ```bash
