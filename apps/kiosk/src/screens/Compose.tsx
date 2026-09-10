@@ -148,7 +148,18 @@ export function ComposeScreen() {
     try {
       // Componer a resolución de impresión bloquea el hilo. Ceder un cuadro antes deja que el
       // botón pinte su estado de carga; si no, el toque parece perdido y la gente toca otra vez.
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      //
+      // Con un temporizador de respaldo, porque `requestAnimationFrame` NO entrega cuadros cuando
+      // la página no está visible: en un aparato con la pantalla apagada o con la aplicación
+      // en segundo plano, esperar sólo por él deja la composición colgada para siempre.
+      await new Promise((resolve) => {
+        const done = () => {
+          clearTimeout(fallback);
+          resolve(undefined);
+        };
+        const fallback = setTimeout(done, 120);
+        requestAnimationFrame(() => requestAnimationFrame(done));
+      });
       const canvas = renderPlanToCanvas(composed.plan, sources);
       const updated = await stationApi.saveComposition(session.id, { imageBase64: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height, copies: product.printCount > 0 ? copies : 0 });
       await linking;
