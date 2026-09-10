@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { Spinner } from '@psp/ui';
 import { useStationEvents } from './api/events';
+import { ScreenTransition } from './components/ScreenTransition';
 import { useT } from './i18n';
 import { ROUTES, screenForStage } from './session/flow';
 import { useKioskStore } from './store';
@@ -126,24 +127,26 @@ export function App() {
   return (
     <BrowserRouter>
       <Bootstrap>
-        <Routes>
-          <Route path={ROUTES.attract} element={<AttractScreen />} />
-          <Route path={ROUTES.home} element={<HomeScreen />} />
-          <Route path={ROUTES.product} element={<ProductDetailScreen />} />
-          <Route path={ROUTES.consent} element={<ConsentScreen />} />
-          <Route path={ROUTES.payment} element={<PaymentScreen />} />
-          <Route path={ROUTES.capture} element={<CaptureScreen />} />
-          <Route path={ROUTES.review} element={<ReviewScreen />} />
-          <Route path={ROUTES.edit} element={<EditScreen />} />
-          <Route path={ROUTES.select} element={<SelectScreen />} />
-          <Route path={ROUTES.compose} element={<ComposeScreen />} />
-          <Route path={ROUTES.confirm} element={<ConfirmScreen />} />
-          <Route path={ROUTES.print} element={<PrintScreen />} />
-          <Route path={ROUTES.finish} element={<FinishScreen />} />
-          <Route path={ROUTES.error} element={<ErrorScreen />} />
-          <Route path={ROUTES.tech} element={<TechScreen />} />
-          <Route path="*" element={<Navigate to={ROUTES.attract} replace />} />
-        </Routes>
+        <ScreenTransition>
+          <Routes>
+            <Route path={ROUTES.attract} element={<AttractScreen />} />
+            <Route path={ROUTES.home} element={<HomeScreen />} />
+            <Route path={ROUTES.product} element={<ProductDetailScreen />} />
+            <Route path={ROUTES.consent} element={<ConsentScreen />} />
+            <Route path={ROUTES.payment} element={<PaymentScreen />} />
+            <Route path={ROUTES.capture} element={<CaptureScreen />} />
+            <Route path={ROUTES.review} element={<ReviewScreen />} />
+            <Route path={ROUTES.edit} element={<EditScreen />} />
+            <Route path={ROUTES.select} element={<SelectScreen />} />
+            <Route path={ROUTES.compose} element={<ComposeScreen />} />
+            <Route path={ROUTES.confirm} element={<ConfirmScreen />} />
+            <Route path={ROUTES.print} element={<PrintScreen />} />
+            <Route path={ROUTES.finish} element={<FinishScreen />} />
+            <Route path={ROUTES.error} element={<ErrorScreen />} />
+            <Route path={ROUTES.tech} element={<TechScreen />} />
+            <Route path="*" element={<Navigate to={ROUTES.attract} replace />} />
+          </Routes>
+        </ScreenTransition>
       </Bootstrap>
     </BrowserRouter>
   );
