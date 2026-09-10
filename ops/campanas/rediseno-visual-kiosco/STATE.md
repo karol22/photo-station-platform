@@ -91,3 +91,24 @@ la aprueba mirándola. Eso último es el único veredicto que cuenta.
 
 Cerrar el plan visual con la dirección ganadora, empaquetar los archivos de fuente elegidos y
 aplicar la dirección a la pantalla en reposo y a la de captura, que son las dos que deciden.
+
+## Lo que el plan pedía y no se hizo, con su motivo
+
+**Los dos QR encadenados de la pantalla de cierre.** El plan proponía dos códigos: uno para unirse
+a la red de la cabina y otro para descargar las fotografías. No se implementa, por dos razones
+independientes y cada una suficiente:
+
+1. El segundo QR entrega fotografías, y de esta máquina no sale ninguna. El enlace efímero es
+   identidad del Club, no transporte de imágenes, y así lo fija
+   [`ADR-011`](../../../docs/arquitectura/decisiones/ADR-011-identidad-efimera-de-cliente.md).
+2. Las claves de red que haría falta leer —nombre de red y contraseña— no existen en
+   `packages/contracts`. Inventarlas rompería la compuerta del catálogo y la política.
+
+Queda un solo código, el del Club. Si algún día se decide que la entrega digital entra, se decide
+antes en [`docs/producto/02-decisiones-abiertas.md`](../../../docs/producto/02-decisiones-abiertas.md),
+que ya tiene abierta esa pregunta con sus tres caminos y sus costos.
+
+**El clip de la sesión en bucle**, también del cierre: no existe grabación de sesión en el aparato.
+
+**Un botón de «otra vez»** al terminar: cruza el cierre de sesión con el arranque de la siguiente
+y toca estado que no pertenece a esa pantalla. Queda pendiente.
