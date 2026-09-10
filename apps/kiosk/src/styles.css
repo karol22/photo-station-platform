@@ -158,13 +158,22 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
    `font-weight: 900` le fabrica una negrita falsa que emborrona una cara de letrero.
    ========================================================================== */
 
-/* El rótulo de la atracción y la llamada a la acción son el papel display. */
-.psp-kiosk .kiosk-attract__rotulo,
-.psp-kiosk .kiosk-attract__cta {
+/* El rótulo de la atracción es el papel display: una a tres palabras, nunca una instrucción.
+   La llamada a la acción NO lo es. «Toca para comenzar» son tres palabras largas y en una cara de
+   letrero, en caja alta y sin minúsculas que den silueta, no cabe en el ancho del panel y además
+   se lee peor: es justo el uso contra el que advierte la propia elección de la familia. Va en el
+   papel de texto, en su peso más alto, que es donde esa cara está hecha para leerse. */
+.psp-kiosk .kiosk-attract__rotulo {
   font-family: var(--psp-paper-display), var(--psp-paper-text), var(--psp-font-system);
   font-weight: 400;
   font-synthesis: none;
   text-transform: uppercase;
+}
+
+.psp-kiosk .kiosk-attract__cta {
+  font-family: var(--psp-paper-text), var(--psp-font-system);
+  font-weight: 800;
+  font-synthesis: none;
 }
 
 /* Entrada del rótulo: sube y se endereza. Es el único titular que se anima. */

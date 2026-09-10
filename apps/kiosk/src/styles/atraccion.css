@@ -1,4 +1,8 @@
-/* Pantalla: atracción. El cartel de la cabina. */
+/* Pantalla: atracción. El cartel de la cabina.
+
+   Todos los tamaños salen de los tokens `--psp-font-*` y ninguno usa `rem`: los 26 px de base del
+   kiosco viven en la clase `.psp-kiosk` y no en `html`, así que un `rem` aquí se mide contra los
+   16 px del navegador y compone por debajo del piso legible. El zócalo salía a 19 px. */
 
 /* ==========================================================================
    ATRACCIÓN
@@ -63,17 +67,16 @@
 /* El precio como titular, no como letra chica. */
 .kiosk-attract__price { display: grid; gap: 2vh; place-items: center; }
 .kiosk-attract__numeral {
-  font-size: clamp(6rem, 26vw, 18rem);
+  font-size: var(--psp-font-numeral);
   font-weight: 900;
   letter-spacing: -0.04em;
   line-height: 0.82;
   font-variant-numeric: tabular-nums;
 }
-.kiosk-attract__aside { font-size: clamp(1.4rem, 3.4vw, 2.6rem); font-weight: 700; opacity: 0.8; }
-/* Canto de tinta en cada forma: sin él, la que comparte color con el campo desaparece y la
-   bandada queda coja. Es un contorno, no una sombra. */
+.kiosk-attract__aside { font-size: var(--psp-font-destacado); font-weight: 700; opacity: 0.8; }
+/* Sin contorno: la lámina de marca dibuja las formas en color plano. El contraste contra el campo
+   lo resuelve el reparto de acentos, no un canto de tinta. */
 .kiosk-attract__flock { display: flex; align-items: flex-end; justify-content: center; }
-.kiosk-attract__flock .psp-blob path { stroke: var(--psp-color-text); stroke-width: 3; paint-order: stroke fill; }
 /* Las medidas en píxeles que trae el componente son una reserva: en el cartel manda el ancho de
    la pantalla, porque esto es un cartel y no una tarjeta. */
 .kiosk-attract__flock .psp-blob { width: 13vw; height: auto; }
@@ -82,7 +85,7 @@
 
 .kiosk-attract__rotulo {
   display: block;
-  font-size: clamp(3rem, 12vw, 8rem);
+  font-size: var(--psp-font-rotulo);
   font-weight: 900;
   letter-spacing: -0.03em;
   line-height: 0.9;
@@ -102,7 +105,6 @@
   padding: 3vh 6vw;
 }
 .kiosk-attract__tile .psp-blob { width: 58%; height: auto; }
-.kiosk-attract__tile .psp-blob path { stroke: var(--psp-color-text); stroke-width: 3; paint-order: stroke fill; }
 .kiosk-attract__tile {
   display: grid; place-items: center; aspect-ratio: 4 / 5;
   border: 4px solid var(--psp-color-text);
@@ -115,13 +117,12 @@
 /* Los tres pasos, actuados. */
 .kiosk-attract__howto { display: flex; align-items: center; justify-content: center; gap: 4vw; width: 100%; }
 .kiosk-attract__howto .psp-blob { width: 26vw; height: auto; }
-.kiosk-attract__howto .psp-blob path { stroke: var(--psp-color-text); stroke-width: 2.4; paint-order: stroke fill; }
 .kiosk-attract__step { animation: kiosk-step-pop 900ms ease both; }
 @keyframes kiosk-step-pop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: none; } }
 
 /* REPISA: el dato que acompaña, a la altura de la mano pero sin ser un botón. */
 .kiosk-attract__repisa { display: grid; place-items: center; }
-.kiosk-attract__desde { font-size: clamp(1.6rem, 4.4vw, 3.2rem); font-weight: 800; }
+.kiosk-attract__desde { font-size: var(--psp-font-titular); font-weight: 800; }
 
 /* ALCANCE: la única acción, a la altura del pulgar de alguien de pie. */
 .kiosk-attract__alcance { display: grid; place-items: center; padding: 0 4vw; }
@@ -130,9 +131,10 @@
   padding: 0.5em 1em;
   background: var(--psp-color-text);
   color: var(--psp-aro);
-  font-size: clamp(1.8rem, 5.6vw, 4rem);
-  font-weight: 900;
+  /* Cabe en el ancho del panel con holgura y sin partirse en dos líneas. */
+  font-size: var(--psp-font-titular);
   letter-spacing: -0.02em;
+  text-wrap: balance;
   box-shadow: var(--psp-lift);
   animation: kiosk-cta-pulse 2.4s ease-in-out infinite;
 }
@@ -142,7 +144,7 @@
 .kiosk-attract__zocalo {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
   gap: 1.4vw; padding: 0 4vw;
-  font-size: clamp(0.8rem, 1.9vw, 1.2rem); font-weight: 600;
+  font-size: var(--psp-font-micro); font-weight: 600;
 }
 
 @media (prefers-reduced-motion: reduce) {
