@@ -63,9 +63,24 @@
   --psp-radius-xl: 24px;
   --psp-radius-pill: 999px;
 
-  /* Tipografía: escala relativa a la base; cada modo fija la base */
-  --psp-font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --psp-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Tipografía: escala relativa a la base; cada modo fija la base.
+
+     Los PAPELES son el vocabulario. Cada texto pertenece a uno y sólo a uno, igual que cada color
+     pertenece a un papel de la tabla de color: display (rótulo y llamada a la acción), numeral
+     (cuenta regresiva y precio), texto (todo lo que se lee) y utilitario (el código de rescate y
+     el identificador de máquina). Las familias viajan con la aplicación —`apps/kiosk/public/fonts`,
+     que llena `scripts/fetch-fonts.sh`— porque la cabina no tiene red: nada de `@import` a un CDN.
+     La pila del sistema queda de respaldo y de nada más; en el Android del aparato resuelve a
+     Roboto, que es exactamente el aspecto que esta plataforma no puede tener. */
+  --psp-paper-display: 'Bungee Layers';
+  --psp-paper-display-inline: 'Bungee Layers Inline';
+  --psp-paper-numeral: 'Anybody';
+  --psp-paper-text: 'Bricolage Grotesque';
+  --psp-paper-util: 'Recursive Mono';
+  --psp-font-system: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --psp-font-system-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --psp-font-family: var(--psp-font-system);
+  --psp-font-mono: var(--psp-font-system-mono);
   --psp-font-base: 16px;
   --psp-font-xs: calc(var(--psp-font-base) * 0.8);
   --psp-font-sm: calc(var(--psp-font-base) * 0.9);
@@ -105,6 +120,77 @@
 }
 
 /* --------------------------------------------------------------------------
+   1.1 Los archivos de los papeles
+
+   Cinco `@font-face` y ni una línea de red. Los `.woff2` viven versionados en
+   `apps/kiosk/public/fonts`, subseteados a latín + latín extendido, y suman menos de 250 KB;
+   `scripts/fetch-fonts.sh` los reconstruye desde el origen y comprueba que cubren el español.
+
+   Dos `src` por familia variable a propósito: `woff2-variations` es la pista antigua y hay
+   navegadores que no la reconocen, y un `format()` desconocido no cae al siguiente formato: se
+   salta la fuente entera. El segundo `src`, con la pista estándar, garantiza que el archivo se
+   cargue igual. Sin `font-display`: el archivo es local y la propiedad no gobierna nada.
+
+   Las reglas viven en el sistema de diseño, pero sólo las consume el kiosco: `@font-face` es
+   perezoso, así que la consola de administración —que no lleva estos archivos— no pide ninguno.
+   -------------------------------------------------------------------------- */
+
+/* Display · Bungee Layers. Dos capas con anchos idénticos glifo a glifo: la misma palabra pintada
+   dos veces sale en dos colores de la paleta, sin fuente de color y sin SVG. */
+@font-face {
+  font-family: 'Bungee Layers';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/BungeeLayers.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Bungee Layers Inline';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/BungeeLayersInline.woff2') format('woff2');
+}
+
+/* Numeral · Anybody. Trae `tnum`, `zero`, `case` y eje de ancho, el mínimo para una cuenta.
+   Archivo también los trae y se descarta por lo contrario: es la grotesca más neutra del lote.
+   El numeral ocupa media pantalla, así que es donde más se nota que la cara no es la del sistema.
+   Sus cifras por defecto son proporcionales: medido en el navegador a 416 px con `wdth` 112 y
+   `wght` 900, entre el dígito más angosto (el 7, 283,7 px) y el más ancho (el 9, 318,0 px) hay
+   34,3 px. Sin `'tnum' 1` la cuenta se desplaza esa distancia en cada tic y se lee como avería. */
+@font-face {
+  font-family: 'Anybody';
+  font-style: normal;
+  font-weight: 400 900;
+  font-stretch: 75% 150%;
+  src:
+    url('/fonts/Anybody-cifras-var.woff2') format('woff2-variations'),
+    url('/fonts/Anybody-cifras-var.woff2') format('woff2');
+}
+
+/* Texto · Bricolage Grotesque. El eje óptico es la razón de elegirla: `font-optical-sizing: auto`
+   —que es el valor por omisión— compone la misma cara con espaciado de rótulo a 96 px y con
+   espaciado de lectura a 22 px, desde un solo archivo y sin que ninguna pantalla lo pida. */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 400 800;
+  src:
+    url('/fonts/BricolageGrotesque-var.woff2') format('woff2-variations'),
+    url('/fonts/BricolageGrotesque-var.woff2') format('woff2');
+}
+
+/* Utilitario · Recursive con el eje MONO fijado en el archivo. Monoespaciada por construcción, así
+   que las seis casillas del código de rescate se alinean sin pedir cifras tabulares, y `0/O`,
+   `1/I` y `5/S` se separan de un vistazo a metro y medio. */
+@font-face {
+  font-family: 'Recursive Mono';
+  font-style: normal;
+  font-weight: 500 800;
+  src:
+    url('/fonts/RecursiveMono-var.woff2') format('woff2-variations'),
+    url('/fonts/RecursiveMono-var.woff2') format('woff2');
+}
+
+/* --------------------------------------------------------------------------
    2. Modos
    -------------------------------------------------------------------------- */
 .psp-kiosk,
@@ -129,14 +215,54 @@
 
 /* Kiosco: grande, táctil, alto contraste, sin selección de texto */
 .psp-kiosk {
-  --psp-font-base: 22px;
+  /* 26 px de base, y la base vive en esta clase, no en `html`. Por eso ninguna medida del kiosco
+     puede ir en `rem`: `rem` mira `html`, que sigue en 16 px, y un texto «destacado» de 1.35rem
+     acaba midiendo 21.6 px, o sea MENOS que el cuerpo. Todo va en `em` o en estos tokens. */
+  --psp-font-base: 26px;
   /* Relieve en vez de sombra. Las sombras del sistema van clavadas a un azul marino que ninguna
      marca puede cambiar, y una sombra difusa al 6 % es el gesto que delata a un panel de
      administración. Aquí la profundidad la pone un desplazamiento duro del tono de la propia marca. */
   --psp-shadow-sm: var(--psp-lift, 6px 6px 0 var(--psp-color-border));
   --psp-shadow-md: var(--psp-lift, 10px 10px 0 var(--psp-color-border));
   --psp-shadow-lg: var(--psp-lift, 10px 10px 0 var(--psp-color-border));
-  --psp-font-display: clamp(calc(var(--psp-font-base) * 2.4), 8vmin, calc(var(--psp-font-base) * 4));
+
+  /* Los papeles, aplicados. El texto del kiosco es Bricolage; el respaldo del sistema queda
+     detrás por si un aparato no trae los archivos, nunca como primera opción. */
+  --psp-font-family: var(--psp-paper-text), var(--psp-font-system);
+  --psp-font-mono: var(--psp-paper-util), var(--psp-font-system-mono);
+
+  /* La escala del cartel. Los tres tamaños que no caben en una pantalla de escritorio llevan
+     tope en `vmin`: en el panel de 1080 el tope y el token coinciden (38.5 vmin de 1080 = 416 px),
+     y en un navegador de trabajo encogen en vez de desbordar. Los demás son puro token. */
+  --psp-font-numeral: min(calc(var(--psp-font-base) * 16), 38.5vmin);
+  --psp-font-precio: min(calc(var(--psp-font-base) * 11.54), 27.8vmin);
+  --psp-font-codigo: min(calc(var(--psp-font-base) * 4.62), 11.2vmin);
+  --psp-font-rotulo: calc(var(--psp-font-base) * 3.7);
+  --psp-font-titular: calc(var(--psp-font-base) * 2.77);
+  --psp-font-destacado: calc(var(--psp-font-base) * 1.54);
+  --psp-font-cuerpo: var(--psp-font-base);
+  /* Piso duro del zócalo: nada del kiosco baja de 22 px, ni el identificador de máquina. */
+  --psp-font-micro: calc(var(--psp-font-base) * 0.85);
+  --psp-font-maquina: var(--psp-font-micro);
+  /* El piso se aplica también a la escala heredada: a base 26, `xs` daba 20.8 px. */
+  --psp-font-xs: var(--psp-font-micro);
+  --psp-font-sm: var(--psp-font-micro);
+  --psp-font-display: clamp(calc(var(--psp-font-base) * 2.4), 8vmin, var(--psp-font-rotulo));
+
+  /* Instancias variables por papel. Una pantalla escribe `font-variation-settings: var(...)` y no
+     tiene que recordar ni un eje. Bricolage no lleva `opsz` aquí: `font-optical-sizing: auto`
+     ya lo ata al tamaño usado, que es justamente lo que hace que un archivo sirva a 22 y a 96. */
+  --psp-vf-numeral: 'wdth' 112;
+  --psp-vf-rotulo: 'wdth' 100;
+  --psp-feat-numeral: 'tnum' 1, 'zero' 0;
+  --psp-feat-codigo: 'zero' 1, 'case' 1;
+
+  /* El cuerpo pesa 550: a metro y medio, 400 se deshilacha sobre un campo de color saturado. */
+  --psp-weight-regular: 550;
+  --psp-weight-medium: 650;
+  --psp-weight-bold: 800;
+  --psp-type-stagger: 55ms;
+
   --psp-control-min: var(--psp-touch-min);
   --psp-focus-width: 4px;
   --psp-line-height: 1.3;
@@ -160,6 +286,157 @@
 .psp-kiosk img {
   -webkit-user-drag: none;
   user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   2.1 Los papeles, listos para usar
+
+   Una pantalla escribe una clase, no nueve propiedades. Cada clase es un papel completo:
+   familia, tamaño, instancia variable, cifras y ritmo. Los tamaños salen del plan visual §3.2.
+   -------------------------------------------------------------------------- */
+
+/* Rótulo: el nombre de la atracción y la llamada a la acción. Bungee es una tipografía de
+   letrero: se dibujó para ir apilada en una fachada, y esa es la escala a la que se lee este
+   texto desde el pasillo. Va en versales porque su caja baja existe pero no es su oficio. */
+.psp-kiosk .psp-type-rotulo {
+  font-family: var(--psp-paper-display), var(--psp-paper-text), var(--psp-font-system);
+  font-size: var(--psp-font-rotulo);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.88;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+/* La palabra en dos colores de la paleta. La capa sólida se pinta con la tinta y la línea
+   interior encima con la luz; los anchos coinciden glifo a glifo, así que basta superponerlas.
+   La capa de dentro es decorativa: se marca `aria-hidden` en la pantalla, no aquí. */
+.psp-kiosk .psp-type-rotulo--capas {
+  position: relative;
+  display: inline-block;
+  color: var(--psp-color-text);
+}
+.psp-kiosk .psp-type-rotulo__inline {
+  position: absolute;
+  inset: 0;
+  font-family: var(--psp-paper-display-inline), var(--psp-paper-display);
+  color: var(--psp-aro, var(--psp-color-bg));
+  pointer-events: none;
+}
+
+/* Numeral: la cuenta regresiva y el precio. Las cifras tabulares no son gusto. Anybody compone
+   cifras proporcionales por omisión, y a 416 px van de 283,7 px el 7 a 318,0 px el 9: el dígito
+   salta 34 px de sitio en cada tic y se lee como un error de render, no como un reloj. */
+.psp-kiosk .psp-type-numeral,
+.psp-kiosk .psp-type-precio {
+  font-family: var(--psp-paper-numeral), var(--psp-paper-text), var(--psp-font-system);
+  font-weight: 900;
+  font-variation-settings: var(--psp-vf-numeral);
+  font-feature-settings: var(--psp-feat-numeral);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+.psp-kiosk .psp-type-numeral { font-size: var(--psp-font-numeral); line-height: 0.8; }
+.psp-kiosk .psp-type-precio { font-size: var(--psp-font-precio); line-height: 0.82; }
+
+/* Texto: titular, destacado, cuerpo y zócalo. Un solo archivo para los cuatro. */
+.psp-kiosk .psp-type-titular {
+  font-size: var(--psp-font-titular);
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+.psp-kiosk .psp-type-destacado {
+  font-size: var(--psp-font-destacado);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.psp-kiosk .psp-type-cuerpo {
+  font-size: var(--psp-font-cuerpo);
+  font-weight: 550;
+  letter-spacing: 0.005em;
+  line-height: 1.28;
+}
+.psp-kiosk .psp-type-micro {
+  font-size: var(--psp-font-micro);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+}
+
+/* Utilitario: el código de rescate y el identificador de máquina. Es el único texto del producto
+   que una persona transcribe de pie, y ahí `0/O`, `1/I` y `5/S` son la diferencia entre recuperar
+   sus fotografías y no recuperarlas. El código se agrupa de tres en tres con `word-spacing`. */
+.psp-kiosk .psp-type-codigo,
+.psp-kiosk .psp-type-maquina {
+  font-family: var(--psp-paper-util), var(--psp-font-system-mono);
+  font-feature-settings: var(--psp-feat-codigo);
+  font-variant-numeric: tabular-nums;
+}
+.psp-kiosk .psp-type-codigo {
+  font-size: var(--psp-font-codigo);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  word-spacing: 0.5em;
+  line-height: 1;
+}
+.psp-kiosk .psp-type-maquina {
+  font-size: var(--psp-font-maquina);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+
+/* --------------------------------------------------------------------------
+   2.2 Movimiento tipográfico
+
+   Contenido a propósito: entra el rótulo y entra el numeral, y nada más. La técnica viene de la
+   referencia de la casa (`web-overlays/shanghai-intro`), que reparte la animación por palabra;
+   allí lo hace GSAP desde un CDN y aquí no hay red, así que el retraso por índice lo pone
+   `:nth-child()`. Si el bloque trae hijos, entran uno detrás de otro; si no, entra entero.
+   Sólo `transform` y `opacity`: el compositor las resuelve sin volver a maquetar.
+   -------------------------------------------------------------------------- */
+@keyframes psp-type-alza {
+  from { opacity: 0; transform: translate3d(0, 0.34em, 0) rotate(-1.6deg); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes psp-type-tic {
+  from { opacity: 0; transform: scale(0.86); }
+  to { opacity: 1; transform: none; }
+}
+
+.psp-kiosk .psp-type-entra { animation: psp-type-alza 420ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+.psp-kiosk .psp-type-entra--tic { animation-name: psp-type-tic; animation-duration: 320ms; }
+
+/* `--piezas` reparte la entrada entre los hijos que la pantalla ya escribe —una palabra o un
+   carácter por hijo— y apaga la del bloque. Se pide a mano y no se detecta con `:has()`: el
+   rótulo en dos colores TAMBIÉN tiene un hijo, y ahí las dos capas entran juntas o se ven
+   desalineadas durante 400 ms. Doce índices alcanzan: un rótulo de trece palabras ya está mal
+   escrito antes de llegar a la tipografía. */
+.psp-kiosk .psp-type-entra--piezas { animation: none; }
+.psp-kiosk .psp-type-entra--piezas > * {
+  display: inline-block;
+  animation: psp-type-alza 420ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  animation-delay: calc(var(--psp-type-index, 0) * var(--psp-type-stagger));
+}
+.psp-kiosk .psp-type-entra--piezas.psp-type-entra--tic > * { animation-name: psp-type-tic; animation-duration: 320ms; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(1) { --psp-type-index: 0; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(2) { --psp-type-index: 1; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(3) { --psp-type-index: 2; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(4) { --psp-type-index: 3; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(5) { --psp-type-index: 4; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(6) { --psp-type-index: 5; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(7) { --psp-type-index: 6; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(8) { --psp-type-index: 7; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(9) { --psp-type-index: 8; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(10) { --psp-type-index: 9; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(11) { --psp-type-index: 10; }
+.psp-kiosk .psp-type-entra--piezas > *:nth-child(n + 12) { --psp-type-index: 11; }
+
+@media (prefers-reduced-motion: reduce) {
+  .psp-kiosk .psp-type-entra,
+  .psp-kiosk .psp-type-entra--piezas > * { animation: none; opacity: 1; transform: none; }
 }
 
 /* Admin: compacto y denso */

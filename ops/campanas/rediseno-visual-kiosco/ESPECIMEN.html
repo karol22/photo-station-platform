@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Espécimen tipográfico · kiosco</title>
+    <!--
+      Se abre con doble clic desde el disco. Las fuentes se leen del mismo lugar del que las lee
+      la cabina, `apps/kiosk/public/fonts`, así que lo que se ve aquí es exactamente lo que se ve
+      en el aparato. Si un papel sale con la cara del sistema, es que el archivo no está: se
+      reconstruye con `scripts/fetch-fonts.sh`.
+    -->
+    <style>
+      @font-face {
+        font-family: 'Bungee Layers';
+        src: url('../../../apps/kiosk/public/fonts/BungeeLayers.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Bungee Layers Inline';
+        src: url('../../../apps/kiosk/public/fonts/BungeeLayersInline.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Anybody';
+        font-weight: 400 900;
+        font-stretch: 75% 150%;
+        src:
+          url('../../../apps/kiosk/public/fonts/Anybody-cifras-var.woff2') format('woff2-variations'),
+          url('../../../apps/kiosk/public/fonts/Anybody-cifras-var.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Bricolage Grotesque';
+        font-weight: 400 800;
+        src:
+          url('../../../apps/kiosk/public/fonts/BricolageGrotesque-var.woff2') format('woff2-variations'),
+          url('../../../apps/kiosk/public/fonts/BricolageGrotesque-var.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Recursive Mono';
+        font-weight: 500 800;
+        src:
+          url('../../../apps/kiosk/public/fonts/RecursiveMono-var.woff2') format('woff2-variations'),
+          url('../../../apps/kiosk/public/fonts/RecursiveMono-var.woff2') format('woff2');
+      }
+
+      :root {
+        --tinta: #14110f;
+        --crema: #f3eee4;
+        --campo: #ff5fa2;
+        --luz: #ffd166;
+        --aro: #ffe6f0;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--crema);
+        color: var(--tinta);
+        font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+        font-size: 18px;
+        line-height: 1.4;
+      }
+      /* El panel real mide 1080 px de ancho. El espécimen compone dentro de esa medida para que
+         los tamaños de la tabla §3.2 se vean a su tamaño, no a uno parecido. */
+      .hoja { width: 1080px; max-width: 100%; margin: 0 auto; padding: 48px 24px 120px; }
+      h1 { font-size: 56px; line-height: 1; margin: 0 0 8px; font-weight: 800; letter-spacing: -0.02em; }
+      h2 {
+        font-size: 22px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+        margin: 64px 0 4px; padding-bottom: 8px; border-bottom: 4px solid var(--tinta);
+      }
+      p { margin: 8px 0; max-width: 62ch; }
+      .nota { font-size: 15px; opacity: 0.75; max-width: 78ch; }
+      .ficha {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 24px;
+        font-size: 14px; margin: 16px 0 24px; padding: 12px 0; border-top: 2px solid var(--tinta);
+      }
+      .ficha b { display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+      .muestra { background: var(--campo); padding: 28px 24px; margin: 12px 0; overflow: hidden; }
+      .muestra--crema { background: var(--crema); border: 3px solid var(--tinta); }
+      .medida { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; margin: 20px 0 2px; }
+
+      /* Los papeles, con las mismas propiedades que fija `packages/ui/src/styles.css` §2.1. */
+      .rotulo {
+        font-family: 'Bungee Layers', sans-serif; font-weight: 400; font-synthesis: none;
+        font-size: 96px; letter-spacing: -0.02em; line-height: 0.88; text-transform: uppercase;
+      }
+      .capas { position: relative; display: inline-block; color: var(--tinta); }
+      .capas span {
+        position: absolute; inset: 0; font-family: 'Bungee Layers Inline', sans-serif; color: var(--luz);
+      }
+      .numeral, .precio {
+        font-family: 'Anybody', sans-serif; font-weight: 900;
+        font-variation-settings: 'wdth' 112; font-feature-settings: 'tnum' 1, 'zero' 0;
+        letter-spacing: -0.04em; font-synthesis: none;
+      }
+      .numeral { font-size: 416px; line-height: 0.8; }
+      .precio { font-size: 300px; line-height: 0.82; }
+      .proporcional { font-feature-settings: 'tnum' 0; }
+      .titular { font-size: 72px; font-weight: 850; letter-spacing: -0.02em; line-height: 0.92; }
+      .destacado { font-size: 40px; font-weight: 700; line-height: 1.2; }
+      .cuerpo { font-size: 26px; font-weight: 550; letter-spacing: 0.005em; line-height: 1.28; }
+      .micro { font-size: 22px; font-weight: 600; letter-spacing: 0.01em; line-height: 1.3; }
+      .codigo, .maquina {
+        font-family: 'Recursive Mono', monospace; font-feature-settings: 'zero' 1, 'case' 1;
+        font-synthesis: none;
+      }
+      .codigo { font-size: 120px; font-weight: 700; letter-spacing: 0.06em; word-spacing: 0.5em; line-height: 1; }
+      .maquina { font-size: 22px; font-weight: 600; letter-spacing: 0.04em; }
+      .confusos { font-family: 'Recursive Mono', monospace; font-size: 72px; font-weight: 700; }
+      .confusos--sistema { font-family: system-ui, sans-serif; }
+
+      table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 16px 0; }
+      th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid rgba(20, 17, 15, 0.2); vertical-align: top; }
+      th { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+      td.n { font-family: 'Recursive Mono', monospace; font-size: 14px; white-space: nowrap; }
+
+      /* Movimiento: por palabra, con retraso por índice. La misma técnica que va en el kiosco. */
+      @keyframes alza {
+        from { opacity: 0; transform: translate3d(0, 0.34em, 0) rotate(-1.6deg); }
+        to { opacity: 1; transform: none; }
+      }
+      @keyframes tic { from { opacity: 0; transform: scale(0.86); } to { opacity: 1; transform: none; } }
+      .entra > * {
+        display: inline-block;
+        animation: alza 420ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+        animation-delay: calc(var(--i, 0) * 55ms);
+      }
+      .entra--tic > * { animation-name: tic; animation-duration: 320ms; }
+      .repetir { margin-top: 12px; font: inherit; font-size: 15px; padding: 8px 16px; border: 3px solid var(--tinta); background: var(--crema); cursor: pointer; }
+      @media (prefers-reduced-motion: reduce) {
+        .entra > * { animation: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hoja">
+      <h1>Cuatro papeles y ni uno más</h1>
+      <p class="nota">
+        Un papel es a la tipografía lo que un papel de color es a la paleta: la unidad que todo el
+        producto habla. Cada texto del kiosco pertenece a uno y sólo a uno. Los cuatro archivos
+        viajan dentro de la aplicación, subseteados a latín y latín extendido, y suman
+        <b>179,9 KB</b> de un presupuesto de 250 KB. La cabina no tiene red: aquí no hay CDN, no hay
+        <code>@import</code> y no hay pila del sistema salvo como respaldo de emergencia.
+      </p>
+      <p class="nota">
+        Esta hoja compone dentro de 1080 px, que es el ancho real del panel, y usa los tamaños de
+        la tabla §3.2 del plan visual sin escalarlos. Lo que se ve aquí es lo que se ve en el vidrio.
+      </p>
+
+      <h2>1 · Papel display — Bungee Layers</h2>
+      <div class="ficha">
+        <div><b>Oficio</b>Rótulo de la atracción, llamada a la acción</div>
+        <div><b>Autoría</b>David Jonathan Ross · SIL OFL 1.1</div>
+        <div><b>Archivos</b>11 012 B + 10 224 B</div>
+        <div><b>Ejes</b>Ninguno: un peso, una anchura</div>
+      </div>
+      <p class="nota">
+        Es una tipografía de letrero, dibujada para ir apilada en una fachada. Su juego de capas es
+        el motivo de elegirla: las dos caras tienen anchos idénticos glifo a glifo —338 códigos
+        comunes, cero diferencias de avance—, así que la misma palabra pintada dos veces sale en
+        dos colores de la paleta sin fuente de color y sin SVG.
+      </p>
+      <div class="medida">96 px · rótulo</div>
+      <div class="muestra">
+        <div class="rotulo">¿Añejo? ¡Sí!</div>
+      </div>
+      <div class="medida">96 px · rótulo en dos capas</div>
+      <div class="muestra">
+        <div class="rotulo capas">CABINA<span aria-hidden="true">CABINA</span></div>
+      </div>
+
+      <h2>2 · Papel numeral — Anybody</h2>
+      <div class="ficha">
+        <div><b>Oficio</b>Cuenta regresiva y precio</div>
+        <div><b>Autoría</b>Etcetera Type Co. · SIL OFL 1.1</div>
+        <div><b>Archivo</b>36 004 B</div>
+        <div><b>Ejes</b>wdth 75–150 · wght 400–900</div>
+      </div>
+      <p class="nota">
+        Trae <code>tnum</code>, <code>zero</code>, <code>case</code> y eje de ancho, que es el
+        mínimo para componer una cuenta regresiva. Archivo también los trae y se descarta por lo
+        contrario: es la grotesca más neutra del lote, y el numeral ocupa media pantalla.
+        Sus cifras por omisión son proporcionales: medido en el navegador a 416 px
+        con <code>wdth</code> 112 y <code>wght</code> 900, el 7 mide 283,7 px y el 9 mide 318,0 px,
+        <b>34,3 px de diferencia</b>. Sin <code>'tnum' 1</code> el número salta de sitio en cada tic
+        y se lee como avería.
+      </p>
+      <div class="medida">416 px · cuenta regresiva, con cifras tabulares</div>
+      <div class="muestra"><div class="numeral">3</div></div>
+      <div class="medida">Tabulares (arriba) contra proporcionales (abajo), a 120 px</div>
+      <div class="muestra">
+        <div class="numeral" style="font-size: 120px">1111 · 4444</div>
+        <div class="numeral proporcional" style="font-size: 120px">1111 · 4444</div>
+      </div>
+      <div class="medida">300 px · precio</div>
+      <div class="muestra"><div class="precio">49</div></div>
+
+      <h2>3 · Papel texto — Bricolage Grotesque</h2>
+      <div class="ficha">
+        <div><b>Oficio</b>Titular, instrucción, botón, zócalo</div>
+        <div><b>Autoría</b>Atelier Triay · SIL OFL 1.1</div>
+        <div><b>Archivo</b>89 132 B</div>
+        <div><b>Ejes</b>opsz 12–96 · wght 400–800</div>
+      </div>
+      <p class="nota">
+        El eje óptico es la razón de elegirla y lo que permite que un solo archivo cubra cuatro
+        tamaños: <code>font-optical-sizing: auto</code> —que es el valor por omisión— ata el eje al
+        tamaño usado, así que a 72 px compone con espaciado de titular y a 22 px con espaciado de
+        lectura, sin que ninguna pantalla lo pida.
+      </p>
+      <div class="medida">72 px · titular</div>
+      <div class="muestra muestra--crema"><div class="titular">¿Listos? Miren al lente</div></div>
+      <div class="medida">40 px · destacado</div>
+      <div class="muestra muestra--crema"><div class="destacado">Acérquense, caben los cuatro</div></div>
+      <div class="medida">26 px · cuerpo</div>
+      <div class="muestra muestra--crema">
+        <div class="cuerpo">
+          El obturador dispara solo. Quédense donde están: la máquina lleva el ritmo y avisa antes
+          de cada toma. «Después eligen las que se quedan» — á é í ó ú ü ñ Á É Í Ó Ú Ü Ñ ¿ ¡ « »
+        </div>
+      </div>
+      <div class="medida">22 px · micro, el piso duro del zócalo</div>
+      <div class="muestra muestra--crema">
+        <div class="micro">Las fotografías no salen de esta máquina. Se borran al terminar la sesión.</div>
+      </div>
+
+      <h2>4 · Papel utilitario — Recursive Mono</h2>
+      <div class="ficha">
+        <div><b>Oficio</b>Código de rescate e identificador de máquina</div>
+        <div><b>Autoría</b>Stephen Nixon / ArrowType · SIL OFL 1.1</div>
+        <div><b>Archivo</b>37 876 B</div>
+        <div><b>Ejes</b>wght 500–800 (MONO fijado en 1)</div>
+      </div>
+      <p class="nota">
+        El eje MONO va fijado en el archivo y no se pide desde CSS: con el eje libre, un motor que
+        ignore <code>font-variation-settings</code> compondría el código en la caja proporcional y
+        las seis casillas dejarían de alinearse. Fijado, los avances son idénticos —600 unidades
+        para todos los glifos— y la caja es tabular por construcción.
+      </p>
+      <div class="medida">120 px · código de rescate, en dos grupos de tres</div>
+      <div class="muestra"><div class="codigo">4KZ B7M</div></div>
+      <div class="medida">72 px · los tres pares que deciden si alguien recupera sus fotografías</div>
+      <div class="muestra muestra--crema">
+        <div class="confusos">0O &nbsp; 1I &nbsp; 5S &nbsp; 8B</div>
+        <div class="micro" style="margin-top: 8px">Arriba, el papel utilitario. Abajo, la pila del sistema.</div>
+        <div class="confusos confusos--sistema">0O &nbsp; 1I &nbsp; 5S &nbsp; 8B</div>
+      </div>
+      <div class="medida">22 px · identificador de máquina y contacto</div>
+      <div class="muestra muestra--crema"><div class="maquina">SIM-0142 · soporte 800 000 0000</div></div>
+
+      <h2>5 · Movimiento tipográfico</h2>
+      <p class="nota">
+        Contenido a propósito: entra el rótulo y entra el numeral del precio, y nada más. La
+        técnica viene de la referencia de la casa, que reparte la animación por palabra; allí lo
+        hace una biblioteca desde un CDN y aquí no hay red, así que el retraso por índice lo pone
+        <code>:nth-child()</code> sobre los hijos que la pantalla ya escribe. Con
+        <code>prefers-reduced-motion</code> no se anima nada.
+      </p>
+      <div class="muestra">
+        <div class="rotulo entra" id="demo">
+          <span style="--i: 0">MÍRATE</span> <span style="--i: 1">AQUÍ</span>
+        </div>
+        <div class="numeral entra entra--tic" style="font-size: 200px">
+          <span style="--i: 3">4</span><span style="--i: 4">9</span>
+        </div>
+      </div>
+      <button class="repetir" type="button" onclick="const n=document.querySelectorAll('.entra');n.forEach(e=>{const c=e.className;e.className='';void e.offsetWidth;e.className=c;});">
+        Repetir la entrada
+      </button>
+
+      <h2>6 · La escala del kiosco</h2>
+      <p class="nota">
+        Base 26 px, y la base vive en la clase <code>.psp-kiosk</code>, no en <code>html</code>. Por
+        eso ninguna medida del kiosco puede ir en <code>rem</code>: <code>rem</code> mira
+        <code>html</code>, que sigue en 16 px.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Token</th><th>px</th><th>Papel</th><th>Instancia y cifras</th><th>Uso</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="n">--psp-font-numeral</td><td class="n">416</td><td>numeral</td><td class="n">wdth 112 · wght 900 · tnum 1 · zero 0</td><td>Cuenta regresiva</td></tr>
+          <tr><td class="n">--psp-font-precio</td><td class="n">300</td><td>numeral</td><td class="n">wdth 112 · wght 900 · tnum 1</td><td>Precio</td></tr>
+          <tr><td class="n">--psp-font-codigo</td><td class="n">120</td><td>utilitario</td><td class="n">wght 700 · zero 1</td><td>Código de rescate</td></tr>
+          <tr><td class="n">--psp-font-rotulo</td><td class="n">96</td><td>display</td><td class="n">sin ejes</td><td>Nombre, llamada a la acción</td></tr>
+          <tr><td class="n">--psp-font-titular</td><td class="n">72</td><td>texto</td><td class="n">opsz auto · wght 850</td><td>Título de pantalla</td></tr>
+          <tr><td class="n">--psp-font-destacado</td><td class="n">40</td><td>texto</td><td class="n">opsz auto · wght 700</td><td>Instrucción, estado</td></tr>
+          <tr><td class="n">--psp-font-cuerpo</td><td class="n">26</td><td>texto</td><td class="n">opsz auto · wght 550</td><td>Todo lo que se lee</td></tr>
+          <tr><td class="n">--psp-font-micro</td><td class="n">22</td><td>texto</td><td class="n">opsz auto · wght 600</td><td>Zócalo. Piso duro</td></tr>
+          <tr><td class="n">--psp-font-maquina</td><td class="n">22</td><td>utilitario</td><td class="n">wght 600</td><td>Id de máquina y contacto</td></tr>
+        </tbody>
+      </table>
+
+      <h2>7 · Lo que falta</h2>
+      <p class="nota">
+        <code>apps/kiosk/src/styles/atraccion.css</code> conserva seis medidas en <code>rem</code>
+        —el rótulo, el numeral, el «desde», el zócalo y las dos secundarias— y fija
+        <code>font-weight: 900</code> sobre el rótulo. El peso ya queda neutralizado desde
+        <code>apps/kiosk/src/styles.css</code>, pero los tamaños siguen mirando a <code>html</code>
+        y le pertenecen a quien trabaja esa pantalla: se cambian por
+        <code>var(--psp-font-rotulo)</code>, <code>var(--psp-font-precio)</code>,
+        <code>var(--psp-font-destacado)</code> y <code>var(--psp-font-micro)</code>.
+      </p>
+      <p class="nota">
+        Las claves <code>branding.typography.*</code> del plan §3.1 no existen todavía en
+        <code>packages/contracts</code>: hoy los papeles son de la plataforma y no de la marca.
+      </p>
+    </div>
+  </body>
+</html>
