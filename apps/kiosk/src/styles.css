@@ -33,8 +33,15 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 @media (max-width: 900px), (orientation: portrait) { .kiosk-capture { grid-template-columns: 1fr; } }
 .kiosk-capture__side { display: flex; flex-direction: column; gap: 16px; }
 .kiosk-capture__countdown { position: absolute; inset: 0; display: grid; place-content: center; background: rgba(0,0,0,0.35); z-index: 2; }
-.kiosk-capture__flash { position: absolute; inset: 0; background: #fff; z-index: 3; animation: kiosk-flash 0.5s ease-out forwards; }
-@keyframes kiosk-flash { from { opacity: 1; } to { opacity: 0; } }
+/* El destello: 110 ms de blanco al 90 % y 180 ms de caída. Medio segundo era una eternidad y
+   además cuenta como estímulo luminoso repetido: el límite de accesibilidad son tres por segundo
+   y aquí hay uno por toma. Sólo se anima la opacidad. */
+.kiosk-capture__flash { position: absolute; inset: 0; background: var(--psp-flash); z-index: 3; animation: kiosk-flash 290ms forwards; }
+@keyframes kiosk-flash {
+  0% { opacity: 0.9; animation-timing-function: linear; }
+  38% { opacity: 0.9; animation-timing-function: ease-out; }
+  100% { opacity: 0; }
+}
 
 /* Revisión / edición / composición */
 .kiosk-preview { display: flex; justify-content: center; }

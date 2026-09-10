@@ -1,1 +1,283 @@
 /* Pantalla: captura. Sólo clases con prefijo `.kiosk-captura`. Lo común vive en `../styles.css`. */
+
+/* ==========================================================================
+   CAPTURA (recorrido social)
+   El espejo a sangre ocupa la banda CARTEL entera. Las mismas cinco bandas que
+   el resto del recorrido: lo que se mira arriba, lo que se toca abajo, y nada
+   táctil a la altura de la cara. El recorrido documental no pasa por aquí:
+   conserva `.kiosk-capture` y su rejilla de lienzo e inspector.
+   ========================================================================== */
+.kiosk-captura {
+  display: grid;
+  /* CARTEL 1060 · REPISA 300 · ALCANCE 300 · ZÓCALO 140, sobre 1920 menos la marquesina. */
+  grid-template-rows: minmax(0, 1060fr) 300fr 300fr 140fr;
+  width: 100%;
+  height: 100%;
+  color: var(--psp-color-text);
+  text-align: center;
+  background: var(--psp-field);
+  /* El campo corta seco: desde el pasillo se percibe antes «cambió de color» que «cambió de
+     contenido», y en la cuenta el color ES el reloj. */
+  transition: background-color 0ms;
+}
+
+/* Cada toma es una habitación, y durante la cuenta cada segundo lo es. La luz y la profundidad se
+   derivan del campo que se está viendo, no del primero de la paleta. */
+.kiosk-captura[data-accent] {
+  --psp-rincon: color-mix(in srgb, var(--psp-field) 72%, var(--psp-color-text));
+  --psp-aro: color-mix(in srgb, var(--psp-field) 38%, var(--psp-flash));
+  --psp-lift: 12px 12px 0 var(--psp-rincon);
+}
+.kiosk-captura[data-accent='1'] { --psp-field: var(--psp-color-accent-1); }
+.kiosk-captura[data-accent='2'] { --psp-field: var(--psp-color-accent-2); }
+.kiosk-captura[data-accent='3'] { --psp-field: var(--psp-color-accent-3); }
+.kiosk-captura[data-accent='4'] { --psp-field: var(--psp-color-accent-4); }
+.kiosk-captura[data-accent='5'] { --psp-field: var(--psp-color-accent-5); }
+.kiosk-captura[data-accent='6'] { --psp-field: var(--psp-color-accent-6); }
+
+/* --------------------------------------------------------------------------
+   CARTEL: el espejo, a sangre. Nunca lleva un objetivo táctil.
+   -------------------------------------------------------------------------- */
+.kiosk-captura__cartel {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+/* La reserva de 16/9 con esquinas redondeadas es de una vista previa dentro de una tarjeta. Aquí
+   el espejo es la pantalla: llena la banda completa y llega al vidrio. */
+.kiosk-captura__cartel .kiosk-camera {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* El aro de luz: la pantalla es la única fuente de relleno que este producto controla. Cuatro
+   barras que crecen desde el canto hacia dentro, porque un borde no se puede engordar con
+   `transform` sin deformarlo. */
+.kiosk-captura__aro {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.kiosk-captura__aro > span {
+  position: absolute;
+  background: var(--psp-aro);
+  transition: transform 320ms ease-out;
+}
+.kiosk-captura__aro > span:nth-child(1) { top: 0; left: 0; right: 0; height: 8.9vw; transform: scaleY(0); transform-origin: top; }
+.kiosk-captura__aro > span:nth-child(2) { bottom: 0; left: 0; right: 0; height: 8.9vw; transform: scaleY(0); transform-origin: bottom; }
+.kiosk-captura__aro > span:nth-child(3) { top: 0; bottom: 0; left: 0; width: 8.9vw; transform: scaleX(0); transform-origin: left; }
+.kiosk-captura__aro > span:nth-child(4) { top: 0; bottom: 0; right: 0; width: 8.9vw; transform: scaleX(0); transform-origin: right; }
+.kiosk-captura[data-aro='true'] .kiosk-captura__aro > span { transform: none; }
+
+/* Los ojos del lente sobre el espejo. La geometría base vive con la atracción, que es donde
+   nacieron; aquí sólo se les cambia el tamaño y se les da el guion del disparo. */
+.kiosk-captura .kiosk-lens {
+  flex-direction: column;
+  align-items: center;
+  gap: 1.6vw;
+  z-index: 3;
+}
+.kiosk-captura .kiosk-lens__eyes { display: flex; gap: 3.4vw; }
+.kiosk-captura .kiosk-lens__eye {
+  width: 8.9vw;
+  height: 8.9vw;
+  /* El crecimiento de t=−2 s dura casi un segundo; el cierre y la apertura se ajustan abajo. */
+  transition: transform 900ms ease-out;
+}
+/* Preparación: siguen parpadeando, que es lo que los hace estar vivos. */
+.kiosk-captura .kiosk-lens[data-state='wide'] .kiosk-lens__eye,
+.kiosk-captura .kiosk-lens[data-state='shut'] .kiosk-lens__eye {
+  animation: none;
+  background: var(--psp-aro);
+}
+.kiosk-captura .kiosk-lens[data-state='wide'] .kiosk-lens__eye { transform: scale(1.9); }
+/* El parpadeo ES el obturador: cuando estos dos ojos se cierran, la foto ya se tomó. Es el único
+   aviso del disparo que llega a quien no oye, así que no desaparece con movimiento reducido. */
+.kiosk-captura .kiosk-lens[data-state='shut'] .kiosk-lens__eye {
+  transform: scale(1.9) scaleY(0.05);
+  transition-duration: 140ms;
+  transition-timing-function: ease-in;
+}
+.kiosk-captura[data-phase='uploading'] .kiosk-lens__eye,
+.kiosk-captura[data-phase='beat'] .kiosk-lens__eye {
+  transition-duration: 90ms;
+  transition-timing-function: ease-out;
+}
+/* Cámara en el bisel: los ojos bajan del canto y una flecha corta dice hacia dónde mirar. Un ojo
+   cortado por la mitad deja de leerse como cara. */
+.kiosk-captura .kiosk-lens__arrow {
+  width: 0;
+  height: 0;
+  border-left: 2vw solid transparent;
+  border-right: 2vw solid transparent;
+  border-bottom: 2.4vw solid var(--psp-color-text);
+}
+
+/* El numeral: tinta gigante sobre la cara, sin velo detrás. Bajarle la luz a la persona en el
+   único momento en que se está mirando pelea contra el motivo por el que vino. */
+.kiosk-captura__numeral {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  font-size: 38.5vw;
+  font-weight: 900;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--psp-color-text);
+  animation: kiosk-captura-digito 1000ms both;
+}
+@keyframes kiosk-captura-digito {
+  0% { opacity: 0; transform: scale(0.62); animation-timing-function: cubic-bezier(0.34, 1.4, 0.64, 1); }
+  12% { opacity: 1; transform: scale(1.08); }
+  18% { opacity: 1; transform: scale(1); animation-timing-function: linear; }
+  80% { opacity: 1; transform: scale(1); animation-timing-function: ease-in; }
+  100% { opacity: 0; transform: scale(1.26); }
+}
+
+/* La caída del destello: bajo el blanco queda un instante el acento de la toma. Son dos capas
+   porque animar `background-color` obliga al hilo principal y aquí sólo se anima la opacidad. */
+.kiosk-captura__caida {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--psp-field);
+  animation: kiosk-captura-caida 290ms ease-out forwards;
+  pointer-events: none;
+}
+@keyframes kiosk-captura-caida {
+  0%, 38% { opacity: 0.35; }
+  100% { opacity: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   REPISA: la tira ES el progreso. Seis huecos vacíos desde el primer segundo,
+   que se van llenando. Ni un número: se ve cuánto falta sin leer nada.
+   -------------------------------------------------------------------------- */
+.kiosk-captura__repisa {
+  position: relative;
+  /* Por encima del cartel, para que la miniatura pueda volar desde el centro de la pantalla. */
+  z-index: 3;
+  display: grid;
+  align-content: center;
+  min-height: 0;
+}
+.kiosk-captura__tira {
+  /* 6·144 + 5·24 + 2·48 = 1080: la rejilla del plan, escrita en proporción de pantalla. */
+  --psp-tira-pad: 4.44vw;
+  --psp-tira-gap: 2.22vw;
+  --psp-tira-w: calc((100vw - 2 * var(--psp-tira-pad) - (var(--psp-slots) - 1) * var(--psp-tira-gap)) / var(--psp-slots));
+  display: grid;
+  grid-template-columns: repeat(var(--psp-slots), 1fr);
+  align-items: center;
+  gap: var(--psp-tira-gap);
+  padding-inline: var(--psp-tira-pad);
+  margin: 0;
+  list-style: none;
+}
+.kiosk-captura__hueco {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  /* El hueco lo manda el ancho de la tira, pero nunca se sale de la banda: la altura se compara
+     contra la banda REPISA en unidades de pantalla, porque un porcentaje contra una fila que se
+     dimensiona por su contenido no resuelve y el hueco se queda en un punto. */
+  height: min(calc(var(--psp-tira-w) * 4 / 3), calc((100dvh - var(--psp-marquee-height, 120px)) * 0.15));
+  margin-inline: auto;
+  border: 4px dashed var(--psp-color-text);
+  overflow: hidden;
+}
+.kiosk-captura__hueco[data-filled='true'] {
+  border-style: solid;
+  background: var(--psp-hueco);
+  box-shadow: var(--psp-lift);
+}
+.kiosk-captura__foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* El vuelo: la foto sale del centro del espejo y aterriza en su hueco con un aplastamiento.
+   El destino es la posición natural del elemento, así que aterriza exacto; el origen se calcula
+   con la misma aritmética de la tira, sin medir nada en el hilo principal. */
+.kiosk-captura__foto--vuelo {
+  --psp-vuelo-x: calc(50vw - (var(--psp-tira-pad) + var(--psp-slot) * (var(--psp-tira-w) + var(--psp-tira-gap)) + var(--psp-tira-w) / 2));
+  /* Del centro del cartel al centro de la repisa: 680 de las 1800 unidades útiles. */
+  --psp-vuelo-y: calc((100dvh - var(--psp-marquee-height, 120px)) * -0.3778);
+  --psp-vuelo-s: calc(var(--psp-slots) * 1.05);
+  animation: kiosk-captura-vuelo 450ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes kiosk-captura-vuelo {
+  0% { transform: translate(var(--psp-vuelo-x), var(--psp-vuelo-y)) scale(var(--psp-vuelo-s)) rotate(6deg); }
+  87% { transform: translate(0, 0) scale(1) rotate(0deg) scaleY(0.92); }
+  100% { transform: none; }
+}
+
+/* --------------------------------------------------------------------------
+   ALCANCE: exactamente una cosa, a la altura del pulgar de alguien de pie.
+   -------------------------------------------------------------------------- */
+.kiosk-captura__alcance {
+  display: grid;
+  place-items: center;
+  padding: 0 4vw;
+  min-height: 0;
+}
+.kiosk-captura__alcance .psp-bigbutton {
+  min-height: max(96px, 14.8vw);
+  font-size: clamp(1.6rem, 5vw, 3.6rem);
+  box-shadow: var(--psp-lift);
+}
+/* Mientras la máquina trabaja no hay nada que tocar: la banda la ocupa la pose, actuada. */
+.kiosk-captura__pose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3vw;
+  min-height: 0;
+}
+.kiosk-captura__pose .psp-blob { width: 18vw; height: auto; }
+.kiosk-captura__pose .psp-blob path { stroke: var(--psp-color-text); stroke-width: 2.4; paint-order: stroke fill; }
+.kiosk-captura__instruccion {
+  font-size: clamp(1.4rem, 3.8vw, 2.6rem);
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+/* --------------------------------------------------------------------------
+   ZÓCALO: lo que la operación obliga a decir, en tinta plena y fuera del camino.
+   -------------------------------------------------------------------------- */
+.kiosk-captura__zocalo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vw;
+  padding: 0 4vw;
+  font-size: clamp(0.8rem, 2.05vw, 1.4rem);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Sin destello: en su lugar queda el aro, que es cambio de estado y no estímulo vestibular. */
+  .kiosk-captura .kiosk-capture__flash,
+  .kiosk-captura__caida { display: none; }
+  /* El numeral cambia sin escala; el corte de campo se conserva, porque es información. */
+  .kiosk-captura__numeral { animation: none; }
+  /* La miniatura no vuela: funde en su hueco. */
+  .kiosk-captura__foto--vuelo { animation: kiosk-captura-fundido 160ms ease both; }
+  .kiosk-captura__pose .psp-blob { animation: none; }
+}
+@keyframes kiosk-captura-fundido {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
