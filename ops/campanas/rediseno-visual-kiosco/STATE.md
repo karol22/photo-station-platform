@@ -19,21 +19,26 @@ mirándolo.
 
 ## Estado del sistema
 
-El recorrido social ya no es un trámite. Lo que cambió y está verificado en el navegador:
+El recorrido social ya no es un trámite ni se ve como un panel de administración.
 
-- **Se dispara de más y se elige una vez.** Seis tomas para cuatro huecos. Un toque arranca la
-  tanda completa y la máquina lleva el ritmo, con un compás entre disparo y disparo para ver la
-  foto y leer la siguiente pose. Ya no se aprueba foto por foto.
-- **Elegir va antes que editar**, y la cabina llega con las mejores ya marcadas (`bestCaptures`).
-- **El estilo es del conjunto**: se elige una vez y se aplica a las cuatro. Los deslizadores finos
-  se quedan en el recorrido documental.
-- **La cabina suena**: cuenta, obturador y celebración sintetizados, sin archivos de audio.
-- **El tiempo no corre mientras la persona posa**, y una sesión con dinero o fotografías de por
-  medio nunca se cancela sola: avanza con la mejor opción.
+**El ritmo es el de una fotocabina.** Seis tomas para cuatro huecos. Un toque arranca la tanda
+entera y la máquina lleva el compás, con un respiro entre disparos para ver la foto y leer la
+siguiente pose. Elegir va antes que editar y la cabina llega con las mejores ya marcadas. El
+estilo se elige una vez y se aplica a las cuatro.
 
-Lo que sigue igual y es el corazón de esta campaña: **lo visual**. Tarjetas blancas con sombra
-sobre crema, tipografía del sistema, el espejo como rectángulo pequeño en una rejilla de dos
-columnas, y los seis colores de la marca usados sólo dentro de las formas con cara.
+**La dirección visual está aplicada.** Cinco bandas fijas en las ocho pantallas: se mira arriba, se
+toca abajo, y nada táctil a la altura de la cara. Color a sangre, cero tarjetas blancas, relieve
+duro en vez de sombra difusa, y la marquesina de focos que además es el único reloj del recorrido.
+La atracción es un cartel con cinco compases y el espejo entra en cuanto la cámara ve a alguien.
+
+**La marca se dibuja como está dibujada**: nubes de lóbulos en color plano, apiladas y solapadas,
+con gesto y mirada dirigible. Y con tipografía propia empaquetada: cuatro familias, 180 KB.
+
+**La cabina suena** —cuenta, obturador, aterrizaje, cobro aprobado y celebración, sin un solo
+archivo de audio— y cada aviso tiene gemelo visual, así que en silencio no se pierde nada.
+
+**Se le puede hacer algo a la foto.** Estilos sobre la cara real, pegatinas que se arrastran, y
+accesorios que se colocan solos donde va la cara.
 
 ## Hechos confirmados
 
@@ -52,10 +57,14 @@ columnas, y los seis colores de la marca usados sólo dentro de las formas con c
 
 ## Preguntas abiertas
 
-- Cuál de las tres direcciones visuales gana, y qué se injerta de las otras dos.
-- Qué archivos de fuente se empaquetan. Verificadas por descarga real y lectura de tablas: Bungee,
-  Baloo 2, Anybody, MuseoModerno, Asap, UNAL Ancízar, Bricolage Grotesque, Archivo.
-- Cuántas opciones muestra la pantalla de elegir.
+- **El veredicto que cuenta**: si la persona que lo encargó lo aprueba mirándolo. Es el único que
+  no se puede automatizar y el que cierra la campaña.
+- **Nada se ha visto en el aparato de verdad**: no hay Android, ni panel de 43 pulgadas a 300
+  nits, ni metro y medio de distancia. Todo está verificado en un navegador de escritorio con la
+  pantalla emulada a 1080×1920. La prueba de los cuatro metros del plan sigue sin hacerse.
+- **Los aretes cuelgan a la altura de la mandíbula** y no de la oreja, porque la malla facial se
+  acaba en el contorno del rostro. El sombrero se apoya bajo con pelo abundante.
+- **El logotipo todavía no se compone como la lámina**: dos líneas apretadas con el arco encima.
 
 ## Caminos considerados
 
@@ -89,8 +98,9 @@ la aprueba mirándola. Eso último es el único veredicto que cuenta.
 
 ## Siguiente acción atómica
 
-Cerrar el plan visual con la dirección ganadora, empaquetar los archivos de fuente elegidos y
-aplicar la dirección a la pantalla en reposo y a la de captura, que son las dos que deciden.
+Recorrer las ocho pantallas seguidas en el navegador, con la pantalla emulada a 1080×1920, y
+mirarlas: reposo, elegir, consentimiento, pago, captura, revisión, edición y cierre. Es lo único
+que queda antes de enseñárselas a quien las encargó.
 
 ## Lo que el plan pedía y no se hizo, con su motivo
 
