@@ -110,6 +110,10 @@ function Bootstrap({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     applyBundleTheme(bundle);
     document.documentElement.classList.toggle('kiosk--simplified', configBool(bundle, 'kiosk.simplifiedMode'));
+    // La preferencia de movimiento llega de tres sitios y cualquiera basta: el ajuste del sistema
+    // (que la cabina respeta con su media query), esta clave de la máquina, y la ficha que la
+    // pantalla en reposo ofrece para la sesión.
+    document.documentElement.classList.toggle('kiosk--reduced-motion', configBool(bundle, 'kiosk.reducedMotion'));
     const orientation = bundle?.effective.values['kiosk.orientation'];
     document.documentElement.dataset['orientation'] = orientation === 'landscape' ? 'landscape' : 'portrait';
   }, [bundle]);

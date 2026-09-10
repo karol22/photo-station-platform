@@ -3487,9 +3487,10 @@
 }
 
 .psp-blob[data-mood='idle'] { animation: psp-blob-bob 3.6s ease-in-out infinite; }
+/* 22 px y no 6: a metro y medio, seis píxeles de recorrido son una forma quieta. */
 @keyframes psp-blob-bob {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-6px) rotate(-2.5deg); }
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  50% { transform: translateY(-22px) rotate(-3.5deg) scale(1.045); }
 }
 
 .psp-blob[data-mood='curious'] { animation: psp-blob-peek 4.2s ease-in-out infinite; }
@@ -3521,11 +3522,17 @@
 
 /* Con movimiento reducido las formas siguen ahí y siguen vestidas de la marca, pero se quedan
    quietas. Ninguna instrucción del recorrido depende de que se muevan. */
+:where(.kiosk--reduced-motion) .psp-blob[data-mood] { animation: none; }
+:where(.kiosk--reduced-motion) .psp-blob .psp-blob__face { transition: none; }
+
 @media (prefers-reduced-motion: reduce) {
   .psp-blob[data-mood] { animation: none; }
-  .psp-blob .psp-blob__face,
-  .psp-blob .psp-blob__face ellipse { animation: none; transition: none; }
+  .psp-blob .psp-blob__face { transition: none; }
 }
+
+/* El parpadeo se queda en los dos casos. Ciento cuarenta milisegundos de cambio de forma en un
+   objeto pequeño no son estímulo vestibular, y es el único aviso visual del instante del disparo
+   para quien no oye el obturador. */
 
 /* --------------------------------------------------------------------------
    Marquesina: la banda de focos del borde superior. Es identidad, es luz sobre
@@ -3546,10 +3553,14 @@
   flex: 1 1 0;
   aspect-ratio: 1;
   max-width: 3.2vw;
-  border-radius: 50%;
-  background: var(--psp-bulb-color, var(--psp-color-accent));
-  /* El halo es una sombra sin desplazamiento: un foco encendido derrama luz alrededor. */
-  box-shadow: 0 0 1.4vw color-mix(in srgb, var(--psp-bulb-color, var(--psp-color-accent)) 70%, transparent);
+  /* El halo va horneado en el fondo, no en una sombra: se pinta una vez, se anima sólo la
+     opacidad, y sin él veinticuatro puntos a cuatro metros leen como una línea punteada. */
+  background: radial-gradient(
+    circle closest-side,
+    var(--psp-bulb-color, var(--psp-color-accent)) 0 38%,
+    color-mix(in srgb, var(--psp-bulb-color, var(--psp-color-accent)) 45%, transparent) 62%,
+    transparent 78%
+  );
   opacity: 0.22;
   transition: opacity 200ms ease;
 }
@@ -3574,6 +3585,11 @@
 /* Con movimiento reducido la marquesina sigue existiendo —es identidad y es luz— pero deja de
    correr: se queda encendida y firme. El reloj de `wait` no depende de animación, así que no
    pierde información. */
+/* Los focos dejan de correr pero siguen apagándose de uno en uno: es cambio de estado a menos de
+   media vez por segundo, muy por debajo del umbral, y es el único reloj del recorrido. */
+:where(.kiosk--reduced-motion) .psp-marquee .psp-marquee__bulb { animation: none; opacity: 0.85; }
+:where(.kiosk--reduced-motion) .psp-marquee__bulb[data-lit='false'] { opacity: 0.08; }
+
 @media (prefers-reduced-motion: reduce) {
   .psp-marquee .psp-marquee__bulb { animation: none; opacity: 0.85; }
   .psp-marquee__bulb[data-lit='false'] { opacity: 0.08; }
