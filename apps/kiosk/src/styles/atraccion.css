@@ -149,3 +149,12 @@
   .kiosk-attract__cta, .kiosk-attract__tile, .kiosk-attract__step, .kiosk-lens__eye { animation: none; }
 }
 
+
+/* El compás de invitación sigue la lámina de marca: crema de fondo, el montón de formas ocupando
+   la pantalla y el logotipo con su arco encima. El color pleno se guarda para los momentos —la
+   cuenta, la celebración, el cobro aprobado— donde sí es información y no decorado. */
+.kiosk-attract[data-beat='invite'] { --psp-field: var(--psp-color-bg); }
+.kiosk-attract__invite { display: grid; gap: 2vh; place-items: center; width: 100%; padding: 0 4vw; }
+.kiosk-attract__pile { width: min(92%, 900px); }
+.kiosk-attract__rotulo { position: relative; display: block; padding-top: 4vh; }
+.kiosk-attract__smile { position: absolute; top: 0; left: 50%; width: 12vw; transform: translateX(-50%); }

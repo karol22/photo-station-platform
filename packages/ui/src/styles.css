@@ -3605,3 +3605,12 @@
 /* Contenedor con forma de la familia: recorta su contenido, no lo repinta. */
 .psp-blobframe { position: relative; display: grid; place-items: center; overflow: hidden; }
 .psp-blobframe__def { position: absolute; width: 0; height: 0; pointer-events: none; }
+
+/* El montón: las seis formas apiladas y solapadas. El montón ES el significado de la marca —
+   formas distintas, de tamaños distintos, y todas caben— así que se solapan a propósito. */
+.psp-blobpile { position: relative; width: 100%; aspect-ratio: 3 / 2; }
+.psp-blobpile__slot { position: absolute; }
+.psp-blobpile__slot .psp-blob { width: 100%; height: auto; }
+
+/* El arco de sonrisa: la marca reducida a un trazo. */
+.psp-smile { display: block; width: 100%; height: auto; color: var(--psp-color-text); }

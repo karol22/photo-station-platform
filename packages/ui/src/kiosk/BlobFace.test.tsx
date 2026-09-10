@@ -3,26 +3,52 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { BLOB_VARIANTS, BlobFace } from './BlobFace';
 import { applyBrandingTheme, readBrandingAccents, DEFAULT_ACCENTS } from '../theme';
 
+/** Los bultos de una variante, leídos del dibujo. */
+function lobes(variant: (typeof BLOB_VARIANTS)[number]) {
+  const markup = renderToStaticMarkup(<BlobFace variant={variant} />);
+  return [...markup.matchAll(/<circle cx="([\d.]+)" cy="([\d.]+)" r="([\d.]+)"/g)].map(([, cx, cy, r]) => ({
+    cx: Number(cx),
+    cy: Number(cy),
+    r: Number(r),
+  }));
+}
+
 describe('formas ilustradas', () => {
-  it('cada variante dibuja una silueta cerrada y distinta de las demás', () => {
-    const paths = BLOB_VARIANTS.map((variant) => {
-      const markup = renderToStaticMarkup(<BlobFace variant={variant} />);
-      const match = /<path d="([^"]+)"/.exec(markup);
-      expect(match, `variante ${variant} sin trazo`).not.toBeNull();
-      const d = match![1]!;
-      expect(d.endsWith('Z')).toBe(true);
-      return d;
-    });
-    expect(new Set(paths).size).toBe(BLOB_VARIANTS.length);
+  it('cada variante es un montón de bultos, y ninguna es un solo círculo', () => {
+    for (const variant of BLOB_VARIANTS) {
+      expect(lobes(variant).length, `variante ${variant}`).toBeGreaterThanOrEqual(2);
+    }
   });
 
-  it('ninguna silueta es una circunferencia: los radios varían', () => {
+  it('los bultos se solapan, para que se fundan en una nube en vez de leerse como pelotas', () => {
     for (const variant of BLOB_VARIANTS) {
-      const markup = renderToStaticMarkup(<BlobFace variant={variant} />);
-      const numbers = [...markup.matchAll(/C([\d.]+) ([\d.]+)/g)].map(([, x]) => Number(x));
-      const spread = Math.max(...numbers) - Math.min(...numbers);
-      expect(spread, `variante ${variant} demasiado uniforme`).toBeGreaterThan(20);
+      const list = lobes(variant);
+      for (const lobe of list.slice(1)) {
+        // Cada bulto toca a alguno de los demás con holgura: distancia menor que la suma de radios.
+        const tocaAAlguno = list.some((otro) => otro !== lobe && Math.hypot(otro.cx - lobe.cx, otro.cy - lobe.cy) < otro.r + lobe.r - 4);
+        expect(tocaAAlguno, `variante ${variant}: un bulto suelto`).toBe(true);
+      }
     }
+  });
+
+  it('las seis siluetas son distintas entre sí', () => {
+    const firmas = BLOB_VARIANTS.map((variant) => JSON.stringify(lobes(variant)));
+    expect(new Set(firmas).size).toBe(BLOB_VARIANTS.length);
+  });
+
+  it('ninguna silueta se sale del lienzo', () => {
+    for (const variant of BLOB_VARIANTS) {
+      for (const lobe of lobes(variant)) {
+        expect(lobe.cx - lobe.r, `variante ${variant}`).toBeGreaterThanOrEqual(0);
+        expect(lobe.cx + lobe.r, `variante ${variant}`).toBeLessThanOrEqual(100);
+        expect(lobe.cy - lobe.r, `variante ${variant}`).toBeGreaterThanOrEqual(0);
+        expect(lobe.cy + lobe.r, `variante ${variant}`).toBeLessThanOrEqual(100);
+      }
+    }
+  });
+
+  it('la silueta va sin contorno: el color es plano, como en la lámina de marca', () => {
+    expect(renderToStaticMarkup(<BlobFace variant={1} />)).not.toContain('stroke=');
   });
 
   it('es determinista: el mismo dibujo dos veces es idéntico', () => {

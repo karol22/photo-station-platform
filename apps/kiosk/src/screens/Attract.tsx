@@ -17,7 +17,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BlobFace, BLOB_VARIANTS, Marquee, Notice, StatusPill, type BlobVariant } from '@psp/ui';
+import { BlobFace, BLOB_VARIANTS, BlobPile, BrandSmile, Marquee, Notice, StatusPill, type BlobVariant } from '@psp/ui';
 import { CameraView } from '../components/CameraView';
 import { Shell } from '../components/Shell';
 import { useCamera, useFrameLoop } from '../camera/useCamera';
@@ -207,12 +207,13 @@ export function AttractScreen() {
 
           {current.key === 'invite' ? (
             <div className="kiosk-attract__invite">
-              <span className="kiosk-attract__rotulo">{publicName}</span>
-              <div className="kiosk-attract__flock" aria-hidden="true">
-                {BLOB_VARIANTS.map((variant, i) => (
-                  <BlobFace key={variant} variant={variant} size={132} mood="excited" gaze={{ x: (i - 2.5) / 5, y: 1 }} />
-                ))}
-              </div>
+              {/* El montón, no una fila: formas distintas, tamaños distintos, y todas caben.
+                  Es el significado de la marca, no su adorno. */}
+              <BlobPile className="kiosk-attract__pile" gaze={{ x: 0, y: 1 }} />
+              <span className="kiosk-attract__rotulo">
+                <BrandSmile className="kiosk-attract__smile" />
+                {publicName}
+              </span>
             </div>
           ) : null}
         </div>

@@ -55,8 +55,21 @@ export interface BlobFaceProps extends BaseProps {
   title?: string;
 }
 
+/** Un bulto de la silueta, en unidades de lienzo (0..100). */
+interface Lobe {
+  cx: number;
+  cy: number;
+  r: number;
+}
+
 interface Shape {
-  /** Ocho radios alrededor del centro, en fracción del radio base. */
+  /**
+   * Los bultos que forman la silueta. Se pintan del mismo color y sin contorno, así que se funden
+   * en una sola nube mullida: es exactamente cómo está dibujada la marca. Los ocho radios de
+   * `radii` siguen existiendo aparte, para los contenedores, que sí son casi rectangulares.
+   */
+  lobes: Lobe[];
+  /** Ocho radios alrededor del centro, en fracción del radio base. Los usan los contenedores. */
   radii: [number, number, number, number, number, number, number, number];
   expression: BlobExpression;
   /** Desplazamiento del par de ojos respecto al centro, en unidades de lienzo. */
@@ -68,12 +81,45 @@ interface Shape {
  * que es como se ven en una cabina: de pie y a un metro de la pantalla.
  */
 const SHAPES: Record<BlobVariant, Shape> = {
-  1: { radii: [1.02, 0.72, 0.88, 1.16, 0.94, 0.8, 1.1, 0.86], expression: 'open', eyes: { x: 2, y: -4, gap: 15 } },
-  2: { radii: [0.84, 1.14, 0.9, 0.76, 1.06, 1.2, 0.82, 0.94], expression: 'happy', eyes: { x: -1, y: -2, gap: 17 } },
-  3: { radii: [1.06, 0.98, 1.08, 0.96, 1.04, 0.98, 1.06, 0.96], expression: 'calm', eyes: { x: 0, y: 0, gap: 16 } },
-  4: { radii: [0.9, 0.86, 1.18, 1.22, 1.04, 0.8, 0.86, 0.92], expression: 'grin', eyes: { x: 1, y: -6, gap: 18 } },
-  5: { radii: [1.18, 0.9, 0.78, 0.88, 1.14, 1.02, 0.86, 1.08], expression: 'curious', eyes: { x: 5, y: -3, gap: 14 } },
-  6: { radii: [0.8, 1.22, 0.84, 1.1, 0.82, 1.16, 0.88, 1.06], expression: 'wink', eyes: { x: -2, y: -3, gap: 16 } },
+  // Cada una es un montón de bultos distinto: una alta con una joroba, una ancha y baja, una casi
+  // redonda, una con dos cabezas, una tumbada, una con un brazo que asoma. Ninguna es un círculo
+  // y ninguna se parece a otra, que es lo que quiere decir «diferentes formas, la misma energía».
+  1: {
+    lobes: [{ cx: 50, cy: 56, r: 30 }, { cx: 38, cy: 34, r: 19 }, { cx: 63, cy: 38, r: 15 }],
+    radii: [1.02, 0.72, 0.88, 1.16, 0.94, 0.8, 1.1, 0.86],
+    expression: 'open',
+    eyes: { x: 0, y: -2, gap: 15 },
+  },
+  2: {
+    lobes: [{ cx: 48, cy: 58, r: 28 }, { cx: 70, cy: 50, r: 20 }, { cx: 30, cy: 46, r: 22 }],
+    radii: [0.84, 1.14, 0.9, 0.76, 1.06, 1.2, 0.82, 0.94],
+    expression: 'happy',
+    eyes: { x: -2, y: 0, gap: 17 },
+  },
+  3: {
+    lobes: [{ cx: 50, cy: 52, r: 32 }, { cx: 50, cy: 30, r: 20 }],
+    radii: [1.06, 0.98, 1.08, 0.96, 1.04, 0.98, 1.06, 0.96],
+    expression: 'calm',
+    eyes: { x: 0, y: 0, gap: 16 },
+  },
+  4: {
+    lobes: [{ cx: 42, cy: 60, r: 26 }, { cx: 62, cy: 44, r: 24 }, { cx: 36, cy: 36, r: 17 }],
+    radii: [0.9, 0.86, 1.18, 1.22, 1.04, 0.8, 0.86, 0.92],
+    expression: 'grin',
+    eyes: { x: 4, y: -4, gap: 18 },
+  },
+  5: {
+    lobes: [{ cx: 52, cy: 60, r: 27 }, { cx: 30, cy: 52, r: 18 }, { cx: 68, cy: 36, r: 21 }],
+    radii: [1.18, 0.9, 0.78, 0.88, 1.14, 1.02, 0.86, 1.08],
+    expression: 'curious',
+    eyes: { x: 6, y: -6, gap: 14 },
+  },
+  6: {
+    lobes: [{ cx: 46, cy: 50, r: 29 }, { cx: 68, cy: 62, r: 19 }, { cx: 58, cy: 28, r: 16 }],
+    radii: [0.8, 1.22, 0.84, 1.1, 0.82, 1.16, 0.88, 1.06],
+    expression: 'wink',
+    eyes: { x: -3, y: -2, gap: 16 },
+  },
 };
 
 const CENTER = 50;
@@ -211,7 +257,13 @@ export function BlobFace({ variant, color, size = 96, expression, animated, mood
       {...rest}
     >
       {title ? <title>{title}</title> : null}
-      <path d={blobPath(shape.radii)} fill={color ?? `var(--psp-color-accent-${variant})`} />
+      {/* Los bultos van del mismo color y sin contorno: así se funden en una sola nube mullida en
+          vez de leerse como tres círculos pegados. Es literalmente cómo está dibujada la marca. */}
+      <g fill={color ?? `var(--psp-color-accent-${variant})`}>
+        {shape.lobes.map((lobe, i) => (
+          <circle key={i} cx={lobe.cx} cy={lobe.cy} r={lobe.r} />
+        ))}
+      </g>
       <g className="psp-blob__face" transform={look.x || look.y ? `translate(${look.x.toFixed(2)} ${look.y.toFixed(2)})` : undefined}>
         {face(expression ?? shape.expression, shape.eyes)}
       </g>
