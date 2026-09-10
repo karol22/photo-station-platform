@@ -33,6 +33,31 @@ export function useVolume(): number {
   return configNumber(bundle, 'kiosk.volume', 50);
 }
 
+/**
+ * Realimentación de toque para toda la aplicación.
+ *
+ * Se resuelve con un solo oyente delegado en vez de tocar cada botón: así ningún control nuevo
+ * nace mudo por olvido, y el día que la marca cambie el sonido cambia en un sitio. Se escucha
+ * `pointerdown` y no `click` porque la confirmación tiene que llegar cuando el dedo baja, no
+ * cuando se levanta; medio segundo de diferencia es lo que separa «respondió» de «se trabó».
+ */
+export function useTapFeedback(): void {
+  const volume = useVolume();
+  useEffect(() => {
+    board.setVolume(volume);
+    const onDown = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const control = target.closest('button, [role="button"], a[href]');
+      if (!control || control.matches(':disabled, [aria-disabled="true"]')) return;
+      board.play('tap');
+      buzz();
+    };
+    document.addEventListener('pointerdown', onDown, { passive: true, capture: true });
+    return () => document.removeEventListener('pointerdown', onDown, { capture: true });
+  }, [volume]);
+}
+
 export function useSound(): KioskSound {
   const volume = useVolume();
   useEffect(() => {

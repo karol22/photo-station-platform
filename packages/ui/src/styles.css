@@ -89,7 +89,10 @@
   --psp-touch-min: 64px;
   --psp-control-min: 40px;
   --psp-focus-width: 3px;
+  /* Se conserva por compatibilidad; el anillo real usa los dos de abajo. */
   --psp-focus-color: var(--psp-color-accent);
+  --psp-focus-ink: #111111;
+  --psp-focus-halo: #ffffff;
   --psp-transition: 160ms ease;
   --psp-backdrop: rgba(11, 27, 63, 0.55);
 
@@ -127,6 +130,12 @@
 /* Kiosco: grande, táctil, alto contraste, sin selección de texto */
 .psp-kiosk {
   --psp-font-base: 22px;
+  /* Relieve en vez de sombra. Las sombras del sistema van clavadas a un azul marino que ninguna
+     marca puede cambiar, y una sombra difusa al 6 % es el gesto que delata a un panel de
+     administración. Aquí la profundidad la pone un desplazamiento duro del tono de la propia marca. */
+  --psp-shadow-sm: var(--psp-lift, 6px 6px 0 var(--psp-color-border));
+  --psp-shadow-md: var(--psp-lift, 10px 10px 0 var(--psp-color-border));
+  --psp-shadow-lg: var(--psp-lift, 10px 10px 0 var(--psp-color-border));
   --psp-font-display: clamp(calc(var(--psp-font-base) * 2.4), 8vmin, calc(var(--psp-font-base) * 4));
   --psp-control-min: var(--psp-touch-min);
   --psp-focus-width: 4px;
@@ -160,11 +169,16 @@
   --psp-line-height: 1.45;
 }
 
-/* Foco visible en ambos modos */
+/* Foco visible en ambos modos.
+   Doble anillo, oscuro por dentro y claro por fuera, porque un anillo de un solo color depende de
+   la paleta que traiga la marca: con el acento amarillo de una marca cálida sobre su fondo crema,
+   el anillo simple desaparecía. Dos tonos opuestos garantizan contraste contra cualquier fondo,
+   venga el color que venga por configuración. */
 .psp-kiosk :focus-visible,
 .psp-admin :focus-visible {
-  outline: var(--psp-focus-width) solid var(--psp-focus-color);
+  outline: var(--psp-focus-width) solid var(--psp-focus-ink);
   outline-offset: 2px;
+  box-shadow: 0 0 0 calc(var(--psp-focus-width) + 2px) var(--psp-focus-halo);
 }
 
 /* Tonos: cada componente con data-tone / data-status fija --psp-tone y derivados */

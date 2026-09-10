@@ -7,6 +7,7 @@ import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-route
 import { Spinner } from '@psp/ui';
 import { useStationEvents } from './api/events';
 import { ScreenTransition } from './components/ScreenTransition';
+import { useTapFeedback } from './sound/useSound';
 import { useT } from './i18n';
 import { ROUTES, screenForStage } from './session/flow';
 import { useKioskStore } from './store';
@@ -78,6 +79,7 @@ function Bootstrap({ children }: { children: React.ReactNode }) {
   useStationEvents();
   useGestureLock();
   useTerminalGuard();
+  useTapFeedback();
 
   useEffect(() => {
     let cancelled = false;

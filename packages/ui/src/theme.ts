@@ -89,6 +89,25 @@ export function contrastColor(color: string, options: ContrastOptions = {}): str
   return contrastRatio(rgb, lightRgb) >= contrastRatio(rgb, darkRgb) ? light : dark;
 }
 
+/**
+ * Matiz en grados (0–360). Se necesita para repartir papeles entre los acentos de una marca sin
+ * saber cuáles son: «el que confirma» es verde-azulado venga de donde venga, y «el que avisa» es
+ * ámbar. Un gris devuelve 0, que es inofensivo porque un gris nunca gana ninguno de esos papeles.
+ */
+export function hueOf(color: string): number {
+  const rgb = parseHexColor(color);
+  if (!rgb) return 0;
+  const r = rgb.r / 255;
+  const g = rgb.g / 255;
+  const b = rgb.b / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  if (delta === 0) return 0;
+  const hue = max === r ? ((g - b) / delta) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+  return (hue * 60 + 360) % 360;
+}
+
 /** Mezcla lineal en RGB: `weight` es la proporción de `b` (0 = sólo `a`, 1 = sólo `b`). */
 export function mixColors(a: string, b: string, weight: number): string {
   const ca = parseHexColor(a);
@@ -137,6 +156,43 @@ export function readBrandingAccents(values: Record<string, unknown>): string[] {
   return Array.from({ length: 6 }, (_unused, i) => source[i % source.length]!.trim());
 }
 
+export interface AccentRoles {
+  /** El más luminoso: la luz, el halo, el refugio del texto sobre campos oscuros. */
+  luz: string;
+  /** Verde-azulado si lo hay: lo que salió bien. */
+  confirma: string;
+  /** Ámbar si lo hay: lo que pide atención sin ser un error. */
+  avisa: string;
+  /** Los acentos ordenados por matiz: el orden en que la sesión cambia de habitación. */
+  etapas: string[];
+}
+
+/**
+ * Reparte papeles entre los acentos de la marca.
+ *
+ * Escribir «el cuarto acento confirma el pago» es cierto de una paleta concreta y falso de la
+ * plataforma: la siguiente marca trae otros seis colores en otro orden y la pantalla queda
+ * diciendo que el pago salió bien en morado. Aquí el papel se deduce del color —el más luminoso
+ * es la luz, el verde-azulado confirma, el ámbar avisa— y si la paleta no trae ese matiz, se cae
+ * a la luminancia, que siempre existe.
+ *
+ * Es pura y determinista: la misma paleta reparte siempre los mismos papeles.
+ */
+export function assignAccentRoles(accents: readonly string[]): AccentRoles {
+  const list = accents.filter((c) => parseHexColor(c) !== null);
+  if (list.length === 0) return { luz: DEFAULT_PALETTE.accent, confirma: DEFAULT_PALETTE.accent, avisa: DEFAULT_PALETTE.accent, etapas: [DEFAULT_PALETTE.accent] };
+  const byLuminance = [...list].sort((a, b) => relativeLuminance(parseHexColor(b)!) - relativeLuminance(parseHexColor(a)!));
+  const inRange = (color: string, from: number, to: number) => {
+    const hue = hueOf(color);
+    return hue >= from && hue <= to;
+  };
+  const luz = byLuminance[0]!;
+  const confirma = byLuminance.find((c) => inRange(c, 90, 170)) ?? byLuminance[1] ?? luz;
+  const avisa = byLuminance.find((c) => inRange(c, 15, 55)) ?? byLuminance[2] ?? luz;
+  const etapas = [...list].sort((a, b) => hueOf(a) - hueOf(b));
+  return { luz, confirma, avisa, etapas };
+}
+
 /** Destino mínimo de `applyBrandingTheme`: cualquier objeto con `style.setProperty`. */
 export interface ThemeRoot {
   style: { setProperty(name: string, value: string): void };
@@ -155,7 +211,10 @@ export function resolvePalette(palette: BrandingPalette): Required<BrandingPalet
 export function buildThemeVariables(palette: BrandingPalette): Record<string, string> {
   const p = resolvePalette(palette);
   const bgIsDark = relativeLuminance(parseHexColor(p.background) ?? { r: 255, g: 255, b: 255 }) < 0.4;
-  const surface = bgIsDark ? mixColors(p.background, LIGHT, 0.1) : LIGHT;
+  // La superficie se deriva del fondo que declaró la marca, no se fuerza a blanco puro. Forzarla
+  // era el origen del aspecto rechazado: la plataforma repartía rectángulos blancos sobre el
+  // crema que la marca había elegido, que es exactamente el aspecto de un panel de administración.
+  const surface = bgIsDark ? mixColors(p.background, LIGHT, 0.1) : mixColors(p.background, LIGHT, 0.55);
   const muted = mixColors(p.text, p.background, 0.42);
   const border = mixColors(p.text, p.background, 0.82);
   const borderStrong = mixColors(p.text, p.background, 0.6);
@@ -197,9 +256,28 @@ export function applyBrandingTheme(
   root?: ThemeRoot | null,
 ): Record<string, string> {
   const variables = buildThemeVariables(readBrandingPalette(values));
-  readBrandingAccents(values).forEach((color, i) => {
+  const accents = readBrandingAccents(values);
+  accents.forEach((color, i) => {
     variables[`--psp-color-accent-${i + 1}`] = color;
   });
+
+  // Papeles por color, no por posición: ninguna pantalla escribe `accent-4`.
+  const roles = assignAccentRoles(accents);
+  variables['--psp-role-luz'] = roles.luz;
+  variables['--psp-role-confirma'] = roles.confirma;
+  variables['--psp-role-avisa'] = roles.avisa;
+
+  // Los tres tokens de luz. El campo lo fija cada pantalla; aro y rincón se derivan de él, así que
+  // una pantalla que cambie `--psp-field` arrastra su luz y su profundidad sin declararlas.
+  const palette = resolvePalette(readBrandingPalette(values));
+  variables['--psp-field'] = accents[0] ?? palette.primary;
+  variables['--psp-aro'] = mixColors(variables['--psp-field']!, LIGHT, 0.62);
+  variables['--psp-rincon'] = mixColors(variables['--psp-field']!, palette.text, 0.28);
+  // Relieve sin difuminar: la gráfica de un puesto de feria se separa con un desplazamiento duro,
+  // no con una sombra suave, que es el gesto que delata a un panel de administración.
+  variables['--psp-lift'] = `10px 10px 0 ${variables['--psp-rincon']}`;
+  variables['--psp-flash'] = LIGHT;
+  variables['--psp-qr-paper'] = LIGHT;
   const target = root === undefined ? defaultRoot() : root;
   if (target) {
     for (const [name, value] of Object.entries(variables)) target.style.setProperty(name, value);

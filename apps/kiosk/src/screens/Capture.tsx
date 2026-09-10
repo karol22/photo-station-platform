@@ -218,7 +218,6 @@ export function CaptureScreen() {
   if (!session || !product) return null;
 
   const startBurst = () => {
-    sound.confirm();
     setBurst(true);
   };
 

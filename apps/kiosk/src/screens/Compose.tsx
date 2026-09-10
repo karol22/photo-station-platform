@@ -140,9 +140,13 @@ export function ComposeScreen() {
             <canvas ref={canvasRef} data-testid="compose-canvas" style={{ maxWidth: '100%', maxHeight: '55vh', borderRadius: 12, boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }} />
             {rendering ? <Spinner size="xl" label={t('kiosk.compose.rendering')} /> : null}
           </div>
-          <p className="kiosk-small kiosk-muted">
-            {t('kiosk.compose.paper')}: {Math.round(template.canvas.widthMm)} × {Math.round(template.canvas.heightMm)} mm · {tl(template.name)}
-          </p>
+          {/* Los milímetros de papel son un dato de la máquina, no de la persona. En el recorrido
+              social sobran; en el documental sí importan, porque el formato es el trámite. */}
+          {isDocument ? (
+            <p className="kiosk-small kiosk-muted">
+              {t('kiosk.compose.paper')}: {Math.round(template.canvas.widthMm)} × {Math.round(template.canvas.heightMm)} mm · {tl(template.name)}
+            </p>
+          ) : null}
           {info?.fallback ? <Notice tone="warn" position="static">{t('kiosk.compose.no_template')}</Notice> : null}
         </div>
         <div className="kiosk-stack">
