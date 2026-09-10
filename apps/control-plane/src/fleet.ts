@@ -40,7 +40,14 @@ import {
 } from './store';
 
 export const DEMO_PROVISIONING_TOKEN = 'demo-provisioning-token';
-const DEMO_ORGANIZATION = 'org_una_de_todos';
+/**
+ * Organización a la que enrola `DEMO_PROVISIONING_TOKEN`: la marca del dataset demo, es decir
+ * `DEMO_IDS.org.unaDeTodos` de `@psp/fixtures`. Se repite aquí como literal a propósito: el
+ * control-plane no depende de `@psp/fixtures` en tiempo de ejecución (`main.ts` y `seed/run.ts` lo
+ * cargan con `import()` opcional y el servidor arranca sin el paquete). `fleet.test.ts` fija este
+ * valor contra `DEMO_IDS` para que no vuelva a quedarse atrás cuando la marca del dataset cambie.
+ */
+export const DEMO_ORGANIZATION = 'org_una_de_todos';
 
 function parse<S extends z.ZodTypeAny>(schema: S, input: unknown): z.output<S> {
   const result = schema.safeParse(input);
@@ -79,6 +86,10 @@ export function registerFleetRoutes(app: FastifyInstance, ctx: AppContext): void
   app.post('/enroll', async (request, reply) => {
     const body = parse(EnrollRequest, request.body);
     const organizations = ctx.repo.list<Organization>('organizations');
+    // El `find` es el camino real del token demo y no se puede reemplazar por `organizations[0]`:
+    // `EntityRepo.list` ordena por `id`, así que en el dataset demo el índice 0 es `org_fotorapida`,
+    // no la marca. El respaldo sólo cubre datasets que no traen la organización demo — el mínimo
+    // hermético de `test-dataset.ts`, que tiene una sola organización.
     const organization =
       body.provisioningToken === DEMO_PROVISIONING_TOKEN
         ? (organizations.find((o) => o.id === DEMO_ORGANIZATION) ?? organizations[0])
